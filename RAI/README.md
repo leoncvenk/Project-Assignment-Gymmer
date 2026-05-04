@@ -22,7 +22,7 @@ source .venv/bin/activate
 .venv\Scripts\activate
 
 pip install -r requirements.txt
-python app.py 
+python main.py
 ```
 
 ---
@@ -38,6 +38,7 @@ npm run dev
 ```
 
 ### Mobile
+
 ```bash
 cd frontend/mobile
 npm install
