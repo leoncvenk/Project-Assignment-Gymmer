@@ -39,3 +39,33 @@ def pridobi_povezave_izdelkov():
         time.sleep(0.5)
 
     return list(vse_povezave)
+
+def pridobi_podatke_izdelka(url):
+    podatki_izdelka = {
+        "url": url,
+        "ime_izdelka": "Neznano",
+        "hranilne_vrednosti": {}
+    }
+    
+    try:
+        odgovor_izdelka = requests.get(url, headers=HEADERS)
+        soup_izdelka = BeautifulSoup(odgovor_izdelka.text, 'html.parser')
+        
+        h1 = soup_izdelka.find('h1')
+        if h1:
+            podatki_izdelka["ime_izdelka"] = h1.text.strip()
+            
+        tabele = soup_izdelka.find_all('table')
+        for tabela in tabele:
+            for vrstica in tabela.find_all('tr'):
+                celice = vrstica.find_all(['td', 'th'])
+                if len(celice) == 2:
+                    kljuc = celice[0].text.strip()
+                    vrednost = celice[1].text.strip()
+                    if kljuc and vrednost:
+                        podatki_izdelka["hranilne_vrednosti"][kljuc] = vrednost
+                        
+    except Exception as e:
+        print(f"Napaka pri izdelku {url}: {e}")
+        
+    return podatki_izdelka
