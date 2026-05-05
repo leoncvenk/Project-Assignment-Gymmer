@@ -69,3 +69,28 @@ def pridobi_podatke_izdelka(url):
         print(f"Napaka pri izdelku {url}: {e}")
         
     return podatki_izdelka
+
+def praskaj_vse_strani_in_hranilne_vrednosti():
+    povezave_seznam = pridobi_povezave_izdelkov()
+    print(f"\nSkupaj najdenih {len(povezave_seznam)} unikatnih izdelkov. Začenjam praskanje hranilnih vrednosti...")
+    
+    vsi_podatki = []
+
+    for index, url in enumerate(povezave_seznam, 1):
+        print(f"[{index}/{len(povezave_seznam)}] Obdelujem: {url}")
+        
+        podatki = pridobi_podatke_izdelka(url)
+        vsi_podatki.append(podatki)
+            
+        time.sleep(0.5)
+        
+    return vsi_podatki
+
+if __name__ == "__main__":
+    rezultati = praskaj_vse_strani_in_hranilne_vrednosti()
+    
+    print("\nObdelava končana.")
+
+    if rezultati:
+        print("\nPrimer prvega izdelka:")
+        print(json.dumps(rezultati[0], indent=4, ensure_ascii=False))
