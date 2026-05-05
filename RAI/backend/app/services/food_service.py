@@ -1,8 +1,9 @@
+from dataclasses import replace
 from datetime import datetime, timezone
 from uuid import uuid4
 
 from app.models.food import Food
-from app.schemas.food_schema import CreateFoodSchema
+from app.schemas.food_schema import CreateFoodSchema, UpdateFoodSchema
 
 UNKNOWN_BRAND = None
 
@@ -58,6 +59,34 @@ class FoodService:
             self.foods_by_barcode[food.barcode] = food
 
         return food
+    
+    def update_food(self, food_id: str, data: UpdateFoodSchema):
+        food = self.get_food_by_id(food_id)
+
+        if food is None:
+            return None
+
+        update_data = data.model_dump(exclude_unset=True)
+
+        for key, value in update_data.items():
+            if isinstance(value, str):
+                update_data[key] = value.strip()
+
+        updated_food = replace(
+            food,
+            **update_data,
+            updated_at=datetime.now(timezone.utc),
+        )
+
+        self.foods_by_id[food_id] = updated_food
+
+        if food.barcode and food.barcode != updated_food.barcode:
+            self.foods_by_barcode.pop(food.barcode, None)
+
+        if updated_food.barcode:
+            self.foods_by_barcode[updated_food.barcode] = updated_food
+
+        return updated_food
 
     def get_food_by_id(self, food_id: str) -> Food | None:
         return self.foods_by_id.get(food_id)
