@@ -22,7 +22,7 @@ class CreateFoodSchema(BaseModel):
 class UpdateFoodSchema(BaseModel):
     name: Optional[str] = Field(default=None, min_length=1, max_length=255)
 
-    brand: Optional[str] = Field(default="Unknown", max_length=255)
+    brand: Optional[str] = Field(default=None, max_length=255)
     barcode: Optional[str] = Field(default=None, max_length=64)
     category: Optional[str] = Field(default=None, max_length=100)
 
