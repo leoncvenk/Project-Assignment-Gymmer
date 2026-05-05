@@ -4,7 +4,7 @@ from app.schemas.food_schema import CreateFoodSchema, FoodResponseSchema
 from app.services.food_service import FoodService
 
 router = APIRouter()
-service = FoodService
+service = FoodService()
 
 @router.post("/foods", response_model=FoodResponseSchema)
 def create_food(data: CreateFoodSchema):
