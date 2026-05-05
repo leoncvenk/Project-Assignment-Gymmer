@@ -4,7 +4,7 @@ from uuid import uuid4
 from app.models.food import Food
 from app.schemas.food_schema import CreateFoodSchema
 
-UNKNOWN_BRAND = "Unknown"
+UNKNOWN_BRAND = None
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
