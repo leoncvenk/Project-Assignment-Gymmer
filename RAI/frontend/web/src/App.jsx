@@ -1,4 +1,4 @@
-import { useState } from 'react'
+/* import { useState } from 'react' */
 import { BrowserRouter } from 'react-router-dom';
 
 function App() {
@@ -6,7 +6,7 @@ function App() {
   return (
     <BrowserRouter>
         <div className="App">
-          <Header title="Gymmer"></Header>
+          {/* <Header title="Gymmer"></Header> */}
         </div>
     </BrowserRouter>
   );
