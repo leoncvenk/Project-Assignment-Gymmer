@@ -1,0 +1,93 @@
+name: RAI CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "RAI/**"
+      - ".github/workflows/rai_ci.yml"
+
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "RAI/**"
+      - ".github/workflows/rai_ci.yml"
+
+jobs:
+  backend-tests:
+    name: Backend tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [ "3.11", "3.12" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install backend dependencies
+        working-directory: RAI/backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run backend tests
+        working-directory: RAI/backend
+        run: pytest
+
+  web-check:
+    name: Web frontend check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: RAI/frontend/web/package-lock.json
+
+      - name: Install web dependencies
+        working-directory: RAI/frontend/web
+        run: npm ci
+
+      - name: Lint web
+        working-directory: RAI/frontend/web
+        run: npm run lint
+
+      - name: Build web
+        working-directory: RAI/frontend/web
+        run: npm run build
+
+  mobile-check:
+    name: Mobile frontend check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: RAI/frontend/mobile/package-lock.json
+
+      - name: Install mobile dependencies
+        working-directory: RAI/frontend/mobile
+        run: npm ci
+
+      - name: Lint mobile
+        working-directory: RAI/frontend/mobile
+        run: npm run lint
