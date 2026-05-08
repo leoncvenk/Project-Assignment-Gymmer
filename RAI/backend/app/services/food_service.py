@@ -1,41 +1,54 @@
-from dataclasses import replace
+from dataclasses import asdict
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from app.core.database import get_db
 from app.models.food import Food
 from app.schemas.food_schema import CreateFoodSchema, UpdateFoodSchema
 
 UNKNOWN_BRAND = None
+FOODS_COLLECTION = "foods"
+
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
 
-def _normalize_brand(brand: str | None) -> str:
+
+def _normalize_brand(brand: str | None) -> str | None:
     if brand is None or brand.strip() == "":
         return UNKNOWN_BRAND
-    
+
     return brand.strip()
 
+
+def _food_from_document(document: dict) -> Food:
+    return Food(
+        id=document["id"],
+        name=document["name"],
+        brand=document.get("brand"),
+        barcode=document.get("barcode"),
+        category=document.get("category"),
+        source=document.get("source", "manual"),
+        source_id=document.get("source_id"),
+        image_url=document.get("image_url"),
+        is_verified=document.get("is_verified", False),
+        created_at=document.get("created_at"),
+        updated_at=document.get("updated_at"),
+    )
+
+
 class FoodService:
-    def __init__(self):
-        self.foods_by_id: dict[str, Food] = {}
-        self.foods_by_barcode: dict[str, Food] = {}
+    @property
+    def collection(self):
+        return get_db()[FOODS_COLLECTION]
 
-    def create_food(self, data: CreateFoodSchema) -> Food:
-        """
-        Create a new food.
+    async def create_food(self, data: CreateFoodSchema) -> Food:
+        barcode = data.barcode.strip() if data.barcode else None
 
-        Rules:
-        - barcode is unique
-        - if barcode already exists, return existing food
-        - duplicate names are allowed
-        - missing brand becomes "Unknown"
-        - users cannot verify food directly
-        - food is not overwritten by new scans/imports
-        """
-
-        if data.barcode and data.barcode in self.foods_by_barcode:
-            return self.foods_by_barcode[data.barcode]
+        if barcode:
+            existing = await self.collection.find_one({"barcode": barcode})
+            if existing:
+                return _food_from_document(existing)
 
         now = _now()
 
@@ -43,7 +56,7 @@ class FoodService:
             id=str(uuid4()),
             name=data.name.strip(),
             brand=_normalize_brand(data.brand),
-            barcode=data.barcode.strip() if data.barcode else None,
+            barcode=barcode,
             category=data.category.strip() if data.category else None,
             source=data.source,
             source_id=data.source_id.strip() if data.source_id else None,
@@ -53,17 +66,14 @@ class FoodService:
             updated_at=now,
         )
 
-        self.foods_by_id[food.id] = food
-
-        if food.barcode:
-            self.foods_by_barcode[food.barcode] = food
+        await self.collection.insert_one(asdict(food))
 
         return food
-    
-    def update_food(self, food_id: str, data: UpdateFoodSchema):
-        food = self.get_food_by_id(food_id)
 
-        if food is None:
+    async def update_food(self, food_id: str, data: UpdateFoodSchema) -> Food | None:
+        existing = await self.collection.find_one({"id": food_id})
+
+        if existing is None:
             return None
 
         update_data = data.model_dump(exclude_unset=True)
@@ -72,41 +82,46 @@ class FoodService:
             if isinstance(value, str):
                 update_data[key] = value.strip()
 
-        updated_food = replace(
-            food,
-            **update_data,
-            updated_at=datetime.now(timezone.utc),
+        if "brand" in update_data:
+            update_data["brand"] = _normalize_brand(update_data["brand"])
+
+        if update_data.get("barcode") == "":
+            update_data["barcode"] = None
+
+        # Users cannot verify food directly.
+        update_data.pop("is_verified", None)
+
+        update_data["updated_at"] = _now()
+
+        await self.collection.update_one(
+            {"id": food_id},
+            {"$set": update_data},
         )
 
-        self.foods_by_id[food_id] = updated_food
+        updated = await self.collection.find_one({"id": food_id})
 
-        if food.barcode and food.barcode != updated_food.barcode:
-            self.foods_by_barcode.pop(food.barcode, None)
+        return _food_from_document(updated)
 
-        if updated_food.barcode:
-            self.foods_by_barcode[updated_food.barcode] = updated_food
+    async def get_food_by_id(self, food_id: str) -> Food | None:
+        document = await self.collection.find_one({"id": food_id})
 
-        return updated_food
+        if document is None:
+            return None
 
-    def get_food_by_id(self, food_id: str) -> Food | None:
-        return self.foods_by_id.get(food_id)
+        return _food_from_document(document)
 
-    def get_food_by_barcode(self, barcode: str) -> Food | None:
+    async def get_food_by_barcode(self, barcode: str) -> Food | None:
         normalized_barcode = barcode.strip()
-        return self.foods_by_barcode.get(normalized_barcode)
 
-    def request_verification(self, food_id: str, user_id: str) -> bool:
-        """
-        Placeholder for future verification flow.
+        document = await self.collection.find_one({"barcode": normalized_barcode})
 
-        Later:
-        - user requests verification
-        - request is stored
-        - when enough requests exist, admin is notified
-        - admin decides whether food becomes verified
-        """
+        if document is None:
+            return None
 
-        food = self.get_food_by_id(food_id)
+        return _food_from_document(document)
+
+    async def request_verification(self, food_id: str, user_id: str) -> bool:
+        food = await self.get_food_by_id(food_id)
 
         if food is None:
             return False
