@@ -37,6 +37,17 @@ def test_create_food_optional_fields():
     assert food.barcode is None
     assert food.category is None
 
+def test_create_food_strips_string_fields():
+    food = CreateFoodSchema(
+        name="  Chicken  ",
+        brand="  Perutnina Ptuj  ",
+        barcode=" 123 ",
+    )
+
+    assert food.name == "Chicken"
+    assert food.brand == "Perutnina Ptuj"
+    assert food.barcode == "123"
+
 def test_update_food_no_fields():
     food = UpdateFoodSchema()
 

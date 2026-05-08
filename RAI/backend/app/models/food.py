@@ -1,26 +1,24 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Literal
+from typing import Literal
 
 FoodSource = Literal["manual", "open_food_facts", "internal"]
+
 
 @dataclass(frozen=True)
 class Food:
     id: str
-
     name: str
-    brand: Optional[str] = None
 
-    barcode: Optional[str] = None
-
-    category: Optional[str] = None
+    brand: str | None = None
+    barcode: str | None = None
+    category: str | None = None
 
     source: FoodSource = "manual"
-    source_id: Optional[str] = None
-
-    image_url: Optional[str] = None
+    source_id: str | None = None
+    image_url: str | None = None
 
     is_verified: bool = False
 
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
