@@ -24,7 +24,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 # for tests
 pip install -r requirements-dev.txt
-python main.py
+uvicorn app.main:app --reload
 ```
 
 ---

@@ -1,51 +1,73 @@
-from fastapi.testclient import TestClient
+import pytest
+import pytest_asyncio
+from asgi_lifespan import LifespanManager
+from httpx import ASGITransport, AsyncClient
+
 from app.main import app
 
-client = TestClient(app)
 
-def test_update_food_partial():
-    create = client.post("/foods", json={"name": "Apple"})
+@pytest_asyncio.fixture
+async def client():
+    async with LifespanManager(app):
+        transport = ASGITransport(app=app)
+
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+        ) as test_client:
+            yield test_client
+
+
+@pytest.mark.asyncio
+async def test_update_food_partial(client):
+    create = await client.post("/foods", json={"name": "Apple"})
     food_id = create.json()["id"]
 
-    response = client.patch(
+    response = await client.patch(
         f"/foods/{food_id}",
-        json={"name": "Green Apple"}
+        json={"name": "Green Apple"},
     )
 
     assert response.status_code == 200
     assert response.json()["name"] == "Green Apple"
 
-def test_update_food_does_not_override_other_fields():
-    create = client.post(
+
+@pytest.mark.asyncio
+async def test_update_food_does_not_override_other_fields(client):
+    create = await client.post(
         "/foods",
-        json={"name": "Milk", "brand": "Alpsko"}
+        json={"name": "Milk", "brand": "Alpsko"},
     )
     food_id = create.json()["id"]
 
-    client.patch(
+    await client.patch(
         f"/foods/{food_id}",
-        json={"name": "Updated Milk"}
+        json={"name": "Updated Milk"},
     )
 
-    response = client.get(f"/foods/{food_id}")
+    response = await client.get(f"/foods/{food_id}")
 
     assert response.json()["brand"] == "Alpsko"
 
-def test_update_food_invalid():
-    create = client.post("/foods", json={"name": "Rice"})
+
+@pytest.mark.asyncio
+async def test_update_food_invalid(client):
+    create = await client.post("/foods", json={"name": "Rice"})
     food_id = create.json()["id"]
 
-    response = client.patch(
+    response = await client.patch(
         f"/foods/{food_id}",
-        json={"name": ""}
+        json={"name": ""},
     )
 
     assert response.status_code == 422
 
-def test_update_food_not_found():
-    response = client.patch(
+
+@pytest.mark.asyncio
+async def test_update_food_not_found(client):
+    response = await client.patch(
         "/foods/nonexistent",
-        json={"name": "Ghost Food"}
+        json={"name": "Ghost Food"},
     )
 
     assert response.status_code == 404
