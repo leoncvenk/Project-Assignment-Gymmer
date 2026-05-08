@@ -2,13 +2,13 @@ name: RAI CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "RAI/**"
       - ".github/workflows/rai_ci.yml"
 
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "RAI/**"
       - ".github/workflows/rai_ci.yml"
@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [ "3.11", "3.12" ]
+        python-version: ["3.11", "3.12"]
 
     steps:
       - name: Checkout
@@ -40,7 +40,10 @@ jobs:
 
       - name: Run backend tests
         working-directory: RAI/backend
-        run: pytest
+        run: pytest -v
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          DB_NAME: ${{ secrets.DB_NAME }}
 
   web-check:
     name: Web frontend check
