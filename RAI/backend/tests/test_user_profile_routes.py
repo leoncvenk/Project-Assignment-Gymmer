@@ -2,12 +2,15 @@ import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
+from uuid import uuid4
 
 from app.core.database import get_db
 from app.main import app
 from app.services.user_profile_service import USER_PROFILES_COLLECTION
 from app.services.user_service import USERS_COLLECTION
 
+def unique_email() -> str:
+    return f"test-{uuid4().hex}@example.com"
 
 @pytest_asyncio.fixture
 async def client():
@@ -29,11 +32,13 @@ async def client():
 
 
 async def register_and_login(client: AsyncClient) -> str:
+    email = unique_email()
+
     await client.post(
         "/auth/register",
         json={
             "username": "luka",
-            "email": "luka@example.com",
+            "email": email,
             "password": "password123",
         },
     )
@@ -41,7 +46,7 @@ async def register_and_login(client: AsyncClient) -> str:
     login = await client.post(
         "/auth/login",
         json={
-            "email": "luka@example.com",
+            "email": email,
             "password": "password123",
         },
     )

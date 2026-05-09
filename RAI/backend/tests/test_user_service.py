@@ -1,6 +1,7 @@
 import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
+from uuid import uuid4
 
 from app.core.database import get_db
 from app.core.security import verify_password
@@ -8,6 +9,8 @@ from app.main import app
 from app.schemas.user_schema import CreateUserSchema
 from app.services.user_service import USERS_COLLECTION, UserService
 
+def unique_email() -> str:
+    return f"test-{uuid4().hex}@example.com"
 
 @pytest_asyncio.fixture
 async def user_service():
@@ -22,10 +25,12 @@ async def user_service():
 
 @pytest.mark.asyncio
 async def test_create_user_stores_user(user_service):
+    email = unique_email()
+
     user = await user_service.create_user(
         CreateUserSchema(
             username="luka",
-            email="luka@example.com",
+            email=email,
             password="password123",
         )
     )
@@ -33,16 +38,18 @@ async def test_create_user_stores_user(user_service):
     assert user is not None
     assert user.id is not None
     assert user.username == "luka"
-    assert user.email == "luka@example.com"
+    assert user.email == email
     assert user.hashed_password != "password123"
     assert verify_password("password123", user.hashed_password)
 
 
 @pytest.mark.asyncio
 async def test_create_user_duplicate_email_returns_none(user_service):
+    email = unique_email()
+
     payload = CreateUserSchema(
         username="luka",
-        email="luka@example.com",
+        email=email,
         password="password123",
     )
 
@@ -55,15 +62,17 @@ async def test_create_user_duplicate_email_returns_none(user_service):
 
 @pytest.mark.asyncio
 async def test_get_user_by_email_existing_user(user_service):
+    email = unique_email()
+
     user = await user_service.create_user(
         CreateUserSchema(
             username="luka",
-            email="luka@example.com",
+            email=email,
             password="password123",
         )
     )
 
-    result = await user_service.get_user_by_email("luka@example.com")
+    result = await user_service.get_user_by_email(email)
 
     assert result is not None
     assert result.id == user.id
@@ -79,10 +88,12 @@ async def test_get_user_by_email_missing_user_returns_none(user_service):
 
 @pytest.mark.asyncio
 async def test_get_user_by_id_existing_user(user_service):
+    email = unique_email()
+    
     user = await user_service.create_user(
         CreateUserSchema(
             username="luka",
-            email="luka@example.com",
+            email=email,
             password="password123",
         )
     )
