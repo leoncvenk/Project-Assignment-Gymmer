@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
@@ -20,5 +18,5 @@ class UserResponseSchema(BaseModel):
     id: str
     username: str
     email: EmailStr
-    created_at: datetime
-    updated_at: datetime
+    roles: list[str]
+    profile_completed: bool
