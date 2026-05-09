@@ -14,6 +14,16 @@ class Food:
     barcode: str | None = None
     category: str | None = None
 
+    calories_per_100g: float | None = None
+
+    protein_g_per_100g: float | None = None
+    carbs_g_per_100g: float | None = None
+    fat_g_per_100g: float | None = None
+
+    fiber_g_per_100g: float | None = None
+    sugar_g_per_100g: float | None = None
+    salt_g_per_100g: float | None = None
+
     source: FoodSource = "manual"
     source_id: str | None = None
     image_url: str | None = None

@@ -28,6 +28,15 @@ def _food_from_document(document: dict) -> Food:
         brand=document.get("brand"),
         barcode=document.get("barcode"),
         category=document.get("category"),
+
+        calories_per_100g=document.get("calories_per_100g"),
+        protein_g_per_100g=document.get("protein_g_per_100g"),
+        carbs_g_per_100g=document.get("carbs_g_per_100g"),
+        fat_g_per_100g=document.get("fat_g_per_100g"),
+        fiber_g_per_100g=document.get("fiber_g_per_100g"),
+        sugar_g_per_100g=document.get("sugar_g_per_100g"),
+        salt_g_per_100g=document.get("salt_g_per_100g"),
+
         source=document.get("source", "manual"),
         source_id=document.get("source_id"),
         image_url=document.get("image_url"),
@@ -58,6 +67,15 @@ class FoodService:
             brand=_normalize_brand(data.brand),
             barcode=barcode,
             category=data.category.strip() if data.category else None,
+
+            calories_per_100g=data.calories_per_100g,
+            protein_g_per_100g=data.protein_g_per_100g,
+            carbs_g_per_100g=data.carbs_g_per_100g,
+            fat_g_per_100g=data.fat_g_per_100g,
+            fiber_g_per_100g=data.fiber_g_per_100g,
+            sugar_g_per_100g=data.sugar_g_per_100g,
+            salt_g_per_100g=data.salt_g_per_100g,
+
             source=data.source,
             source_id=data.source_id.strip() if data.source_id else None,
             image_url=data.image_url,
@@ -87,6 +105,12 @@ class FoodService:
 
         if update_data.get("barcode") == "":
             update_data["barcode"] = None
+
+        if update_data.get("category") == "":
+            update_data["category"] = None
+
+        if update_data.get("source_id") == "":
+            update_data["source_id"] = None
 
         # Users cannot verify food directly.
         update_data.pop("is_verified", None)

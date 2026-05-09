@@ -73,3 +73,38 @@ async def test_create_food_duplicate_barcode_route(client):
     )
 
     assert first.json()["id"] == second.json()["id"]
+
+@pytest.mark.asyncio
+async def test_create_food_route_with_nutrition_fields(client):
+    response = await client.post(
+        "/foods",
+        json={
+            "name": "Banana",
+            "calories_per_100g": 89,
+            "protein_g_per_100g": 1.1,
+            "carbs_g_per_100g": 22.8,
+            "fat_g_per_100g": 0.3,
+        },
+    )
+
+    assert response.status_code in [200, 201]
+
+    data = response.json()
+    assert data["name"] == "Banana"
+    assert data["calories_per_100g"] == 89
+    assert data["protein_g_per_100g"] == 1.1
+    assert data["carbs_g_per_100g"] == 22.8
+    assert data["fat_g_per_100g"] == 0.3
+
+
+@pytest.mark.asyncio
+async def test_create_food_route_rejects_negative_nutrition(client):
+    response = await client.post(
+        "/foods",
+        json={
+            "name": "Broken food",
+            "calories_per_100g": -10,
+        },
+    )
+
+    assert response.status_code == 422
