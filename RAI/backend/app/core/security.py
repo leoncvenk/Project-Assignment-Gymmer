@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta, timezone
+from fastapi import HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -12,6 +14,7 @@ pwd_context = CryptContext(
     deprecated="auto",
 )
 
+security = HTTPBearer()
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
@@ -49,3 +52,26 @@ def decode_access_token(token: str) -> dict | None:
 
     except JWTError:
         return None
+    
+def get_current_user_id(
+        credentials: HTTPAuthorizationCredentials
+) -> str:
+    token = credentials.credentials
+
+    payload = decode_access_token(token)
+
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
+    
+    user_id = payload.get("sub")
+
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload"
+        )
+    
+    return user_id

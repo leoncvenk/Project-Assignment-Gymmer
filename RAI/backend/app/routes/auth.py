@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 
 from app.schemas.auth_schema import LoginSchema, TokenSchema
 from app.schemas.user_schema import CreateUserSchema, UserResponseSchema
 from app.services.auth_service import AuthService
+from app.models.user import User
+from app.services.auth_service import AuthService, get_authenticated_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -42,3 +44,7 @@ async def login(data: LoginSchema):
         "access_token": token,
         "token_type": "bearer",
     }
+
+@router.get("/me", response_model=UserResponseSchema)
+async def get_me(current_user: User = Depends(get_authenticated_user)):
+    return current_user

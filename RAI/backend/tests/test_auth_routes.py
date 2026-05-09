@@ -119,3 +119,44 @@ async def test_login_unknown_email_returns_401(client):
     )
 
     assert response.status_code == 401
+
+@pytest.mark.asyncio
+async def test_auth_me_returns_current_user(client):
+    register = await client.post(
+        "/auth/register",
+        json={
+            "username": "luka",
+            "email": "luka@example.com",
+            "password": "password123",
+        },
+    )
+
+    login = await client.post(
+        "/auth/login",
+        json={
+            "email": "luka@example.com",
+            "password": "password123"
+        },
+    )
+
+    token = login.json()["access_token"]
+
+    response = await client.get(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["id"] == register.json()["id"]
+    assert data["username"] == "luka"
+    assert data["email"] == "luka@example.com"
+    assert "hashed_password" not in data
+
+@pytest.mark.asyncio
+async def test_auth_me_missing_token_returns_401(client):
+    response = await client.get("/auth/me")
+
+    assert response.status_code == 401
+ 
