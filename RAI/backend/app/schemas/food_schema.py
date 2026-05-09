@@ -13,6 +13,16 @@ class CreateFoodSchema(BaseModel):
     barcode: str | None = Field(default=None, max_length=64)
     category: str | None = Field(default=None, max_length=100)
 
+    calories_per_100g: float | None = Field(default=None, ge=0)
+
+    protein_g_per_100g: float | None = Field(default=None, ge=0)
+    carbs_g_per_100g: float | None = Field(default=None, ge=0)
+    fat_g_per_100g: float | None = Field(default=None, ge=0)
+
+    fiber_g_per_100g: float | None = Field(default=None, ge=0)
+    sugar_g_per_100g: float | None = Field(default=None, ge=0)
+    salt_g_per_100g: float | None = Field(default=None, ge=0)
+
     source: FoodSource = "manual"
     source_id: str | None = Field(default=None, max_length=255)
 
@@ -40,6 +50,16 @@ class UpdateFoodSchema(BaseModel):
     brand: str | None = Field(default=None, max_length=255)
     barcode: str | None = Field(default=None, max_length=64)
     category: str | None = Field(default=None, max_length=100)
+
+    calories_per_100g: float | None = Field(default=None, ge=0)
+
+    protein_g_per_100g: float | None = Field(default=None, ge=0)
+    carbs_g_per_100g: float | None = Field(default=None, ge=0)
+    fat_g_per_100g: float | None = Field(default=None, ge=0)
+
+    fiber_g_per_100g: float | None = Field(default=None, ge=0)
+    sugar_g_per_100g: float | None = Field(default=None, ge=0)
+    salt_g_per_100g: float | None = Field(default=None, ge=0)
 
     source: FoodSource | None = None
     source_id: str | None = Field(default=None, max_length=255)
@@ -69,6 +89,16 @@ class FoodResponseSchema(BaseModel):
     brand: str | None
     barcode: str | None
     category: str | None
+
+    calories_per_100g: float | None
+
+    protein_g_per_100g: float | None
+    carbs_g_per_100g: float | None
+    fat_g_per_100g: float | None
+
+    fiber_g_per_100g: float | None
+    sugar_g_per_100g: float | None
+    salt_g_per_100g: float | None
 
     source: FoodSource
     source_id: str | None

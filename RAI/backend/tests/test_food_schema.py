@@ -48,6 +48,37 @@ def test_create_food_strips_string_fields():
     assert food.brand == "Perutnina Ptuj"
     assert food.barcode == "123"
 
+def test_create_food_accepts_nutrition_fields():
+    food = CreateFoodSchema(
+        name="Chicken breast",
+        calories_per_100g=165,
+        protein_g_per_100g=31,
+        carbs_g_per_100g=0,
+        fat_g_per_100g=3.6,
+        fiber_g_per_100g=0,
+        sugar_g_per_100g=0,
+        salt_g_per_100g=0.2,
+    )
+
+    assert food.calories_per_100g == 165
+    assert food.protein_g_per_100g == 31
+    assert food.fat_g_per_100g == 3.6
+
+
+def test_create_food_rejects_negative_nutrition_values():
+    with pytest.raises(ValidationError):
+        CreateFoodSchema(
+            name="Broken food",
+            calories_per_100g=-1,
+        )
+
+
+def test_update_food_rejects_negative_nutrition_values():
+    with pytest.raises(ValidationError):
+        UpdateFoodSchema(
+            protein_g_per_100g=-5,
+        )
+
 def test_update_food_no_fields():
     food = UpdateFoodSchema()
 
@@ -78,6 +109,13 @@ def test_food_response_schema():
         brand=None,
         barcode=None,
         category=None,
+        calories_per_100g=52,
+        protein_g_per_100g=0.3,
+        carbs_g_per_100g=14,
+        fat_g_per_100g=0.2,
+        fiber_g_per_100g=2.4,
+        sugar_g_per_100g=10.4,
+        salt_g_per_100g=0,
         source="manual",
         source_id=None,
         image_url=None,
