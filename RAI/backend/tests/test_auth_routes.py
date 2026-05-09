@@ -2,11 +2,14 @@ import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
+from uuid import uuid4
 
 from app.core.database import get_db
 from app.main import app
 from app.services.user_service import USERS_COLLECTION
 
+def unique_email() -> str:
+    return f"test-{uuid4().hex}@example.com"
 
 @pytest_asyncio.fixture
 async def client():
@@ -27,11 +30,13 @@ async def client():
 
 @pytest.mark.asyncio
 async def test_register_user(client):
+    email = unique_email()
+    
     response = await client.post(
         "/auth/register",
         json={
             "username": "luka",
-            "email": "luka@example.com",
+            "email": email,
             "password": "password123",
         },
     )
@@ -40,16 +45,18 @@ async def test_register_user(client):
 
     data = response.json()
     assert data["username"] == "luka"
-    assert data["email"] == "luka@example.com"
+    assert data["email"] == email
     assert "id" in data
     assert "hashed_password" not in data
 
 
 @pytest.mark.asyncio
 async def test_register_duplicate_email_returns_409(client):
+    email = unique_email()
+    
     payload = {
         "username": "luka",
-        "email": "luka@example.com",
+        "email": email,
         "password": "password123",
     }
 
@@ -62,11 +69,13 @@ async def test_register_duplicate_email_returns_409(client):
 
 @pytest.mark.asyncio
 async def test_login_user_returns_token(client):
+    email = unique_email()
+    
     await client.post(
         "/auth/register",
         json={
             "username": "luka",
-            "email": "luka@example.com",
+            "email": email,
             "password": "password123",
         },
     )
@@ -74,7 +83,7 @@ async def test_login_user_returns_token(client):
     response = await client.post(
         "/auth/login",
         json={
-            "email": "luka@example.com",
+            "email": email,
             "password": "password123",
         },
     )
@@ -88,11 +97,13 @@ async def test_login_user_returns_token(client):
 
 @pytest.mark.asyncio
 async def test_login_invalid_password_returns_401(client):
+    email = unique_email()
+    
     await client.post(
         "/auth/register",
         json={
             "username": "luka",
-            "email": "luka@example.com",
+            "email": email,
             "password": "password123",
         },
     )
@@ -100,7 +111,7 @@ async def test_login_invalid_password_returns_401(client):
     response = await client.post(
         "/auth/login",
         json={
-            "email": "luka@example.com",
+            "email": email,
             "password": "wrongpassword",
         },
     )
@@ -122,11 +133,13 @@ async def test_login_unknown_email_returns_401(client):
 
 @pytest.mark.asyncio
 async def test_auth_me_returns_current_user(client):
+    email = unique_email()
+    
     register = await client.post(
         "/auth/register",
         json={
             "username": "luka",
-            "email": "luka@example.com",
+            "email": email,
             "password": "password123",
         },
     )
@@ -134,7 +147,7 @@ async def test_auth_me_returns_current_user(client):
     login = await client.post(
         "/auth/login",
         json={
-            "email": "luka@example.com",
+            "email": email,
             "password": "password123"
         },
     )
@@ -151,7 +164,7 @@ async def test_auth_me_returns_current_user(client):
     data = response.json()
     assert data["id"] == register.json()["id"]
     assert data["username"] == "luka"
-    assert data["email"] == "luka@example.com"
+    assert data["email"] == email
     assert data["roles"] == ["user"]
     assert data["profile_completed"] is False
     assert "created_at" not in data
@@ -163,4 +176,3 @@ async def test_auth_me_missing_token_returns_401(client):
     response = await client.get("/auth/me")
 
     assert response.status_code == 401
- 
