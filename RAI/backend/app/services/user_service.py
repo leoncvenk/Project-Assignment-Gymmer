@@ -73,3 +73,9 @@ class UserService:
             return None
 
         return _user_from_document(document)
+    
+    async def mark_profile_completed(self, user_id: str) -> None:
+        await self.collection.update_one(
+            {"id": user_id},
+            {"$set": {"profile_completed": True, "updated_at": _now()}},
+        )
