@@ -20,7 +20,11 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        include:
+          - python-version: "3.11"
+            db-name: rai_test_py311
+          - python-version: "3.12"
+            db-name: rai_test_py312
 
     steps:
       - name: Checkout
@@ -43,7 +47,7 @@ jobs:
         run: pytest -v
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
-          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_NAME: ${{ matrix.db-name }}
 
   web-check:
     name: Web frontend check
