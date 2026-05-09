@@ -20,6 +20,8 @@ def _user_from_document(document: dict) -> User:
         username=document["username"],
         email=document["email"],
         hashed_password=document["hashed_password"],
+        roles=document.get("rolse", ["user"]),
+        profile_completed=document.get("profile_completed", False),
         created_at=document["created_at"],
         updated_at=document["updated_at"],
     )
@@ -46,6 +48,8 @@ class UserService:
             username=username,
             email=email,
             hashed_password=hash_password(data.password),
+            roles=["user"],
+            profile_completed=False,
             created_at=now,
             updated_at=now,
         )
@@ -69,3 +73,9 @@ class UserService:
             return None
 
         return _user_from_document(document)
+    
+    async def mark_profile_completed(self, user_id: str) -> None:
+        await self.collection.update_one(
+            {"id": user_id},
+            {"$set": {"profile_completed": True, "updated_at": _now()}},
+        )

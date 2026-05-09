@@ -9,5 +9,8 @@ class User:
     email: str
     hashed_password: str
 
+    roles: list[str]
+    profile_completed: bool
+
     created_at: datetime
     updated_at: datetime

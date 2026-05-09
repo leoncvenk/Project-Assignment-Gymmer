@@ -152,6 +152,10 @@ async def test_auth_me_returns_current_user(client):
     assert data["id"] == register.json()["id"]
     assert data["username"] == "luka"
     assert data["email"] == "luka@example.com"
+    assert data["roles"] == ["user"]
+    assert data["profile_completed"] is False
+    assert "created_at" not in data
+    assert "updated_at" not in data
     assert "hashed_password" not in data
 
 @pytest.mark.asyncio
