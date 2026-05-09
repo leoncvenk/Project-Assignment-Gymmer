@@ -1,0 +1,71 @@
+from dataclasses import asdict
+from datetime import datetime, timezone
+from uuid import uuid4
+
+from app.core.database import get_db
+from app.core.security import hash_password
+from app.models.user import User
+from app.schemas.user_schema import CreateUserSchema
+
+USERS_COLLECTION = "users"
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _user_from_document(document: dict) -> User:
+    return User(
+        id=document["id"],
+        username=document["username"],
+        email=document["email"],
+        hashed_password=document["hashed_password"],
+        created_at=document["created_at"],
+        updated_at=document["updated_at"],
+    )
+
+
+class UserService:
+    @property
+    def collection(self):
+        return get_db()[USERS_COLLECTION]
+
+    async def create_user(self, data: CreateUserSchema) -> User | None:
+        email = data.email.lower().strip()
+        username = data.username.strip()
+
+        existing = await self.collection.find_one({"email": email})
+
+        if existing:
+            return None
+
+        now = _now()
+
+        user = User(
+            id=str(uuid4()),
+            username=username,
+            email=email,
+            hashed_password=hash_password(data.password),
+            created_at=now,
+            updated_at=now,
+        )
+
+        await self.collection.insert_one(asdict(user))
+
+        return user
+
+    async def get_user_by_email(self, email: str) -> User | None:
+        document = await self.collection.find_one({"email": email.lower().strip()})
+
+        if document is None:
+            return None
+
+        return _user_from_document(document)
+
+    async def get_user_by_id(self, user_id: str) -> User | None:
+        document = await self.collection.find_one({"id": user_id})
+
+        if document is None:
+            return None
+
+        return _user_from_document(document)
