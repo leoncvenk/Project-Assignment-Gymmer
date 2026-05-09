@@ -34,7 +34,7 @@ async def client():
 async def register_and_login(client: AsyncClient) -> str:
     email = unique_email()
 
-    await client.post(
+    register = await client.post(
         "/auth/register",
         json={
             "username": "luka",
@@ -43,6 +43,8 @@ async def register_and_login(client: AsyncClient) -> str:
         },
     )
 
+    assert register.status_code == 201
+
     login = await client.post(
         "/auth/login",
         json={
@@ -50,6 +52,8 @@ async def register_and_login(client: AsyncClient) -> str:
             "password": "password123",
         },
     )
+
+    assert login.status_code == 200
 
     return login.json()["access_token"]
 
