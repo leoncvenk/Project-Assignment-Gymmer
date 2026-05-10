@@ -18,9 +18,15 @@ service = NutritionSummaryService()
 @router.get(
     "/users/me/nutrition-summary",
     response_model=NutritionSummaryResponseSchema,
+    summary="Get daily nutrition summary",
+    description="Returns aggregated calories and macros for the authenticated user for a specific date.",
 )
 async def get_my_nutrition_summary(
-    date_value: date = Query(..., alias="date"),
+    date_value: date = Query(
+        ...,
+        alias="date",
+        description="Date to aggregate nutrition data for (YYYY-MM-DD).",
+    ),
     current_user_id: str = Depends(get_current_user_id),
 ):
     return await service.get_daily_summary(
