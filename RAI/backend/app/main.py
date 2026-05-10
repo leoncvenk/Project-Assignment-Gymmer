@@ -12,6 +12,9 @@ from app.routes.nutrition_summary import (
 from app.routes.nutrition_targets import (
     router as nutrition_targets_router,
 )
+from app.routes.dashboard import (
+    router as dashboard_router,
+)
 
 app = FastAPI()
 
@@ -30,3 +33,4 @@ app.include_router(user_profile_router)
 app.include_router(food_entries_router)
 app.include_router(nutrition_summary_router)
 app.include_router(nutrition_targets_router)
+app.include_router(dashboard_router)

@@ -1,0 +1,173 @@
+from datetime import date
+
+from app.schemas.dashboard_schema import (
+    DashboardEntrySchema,
+    DashboardProgressSchema,
+    DashboardRemainingSchema,
+    DashboardResponseSchema,
+    DashboardSummarySchema,
+    DashboardTargetsSchema,
+)
+from app.services.food_entry_service import (
+    FoodEntryService,
+)
+from app.services.nutrition_summary_service import (
+    NutritionSummaryService,
+)
+from app.services.nutrition_target_service import (
+    NutritionTargetService,
+)
+from app.services.user_service import UserService
+
+
+class DashboardService:
+    def __init__(self):
+        self.user_service = UserService()
+
+        self.food_entry_service = FoodEntryService()
+
+        self.summary_service = NutritionSummaryService()
+
+        self.target_service = NutritionTargetService()
+
+    async def get_dashboard(
+        self,
+        user_id: str,
+        dashboard_date: date,
+    ) -> DashboardResponseSchema:
+        user = await self.user_service.get_user_by_id(user_id)
+
+        summary = await self.summary_service.get_daily_summary(
+            user_id=user_id,
+            summary_date=dashboard_date,
+        )
+
+        target = await self.target_service.get_target_by_user_id(
+            user_id,
+        )
+
+        entries = await self.food_entry_service.get_entries_for_user(
+            user_id,
+        )
+
+        filtered_entries = [
+            entry
+            for entry in entries
+            if entry.consumed_at.date() == dashboard_date
+        ]
+
+        dashboard_entries = [
+            DashboardEntrySchema(
+                id=entry.id,
+                food_id=entry.food_id,
+
+                quantity_g=entry.quantity_g,
+
+                calories=entry.calories,
+                protein_g=entry.protein_g,
+                carbs_g=entry.carbs_g,
+                fat_g=entry.fat_g,
+
+                consumed_at=entry.consumed_at,
+            )
+            for entry in filtered_entries
+        ]
+
+        summary_schema = DashboardSummarySchema(
+            total_calories=summary.total_calories,
+            total_protein_g=summary.total_protein_g,
+            total_carbs_g=summary.total_carbs_g,
+            total_fat_g=summary.total_fat_g,
+
+            entry_count=summary.entry_count,
+        )
+
+        targets_schema = None
+        remaining_schema = None
+        progress_schema = None
+
+        if target is not None:
+            targets_schema = DashboardTargetsSchema(
+                calorie_target=target.calorie_target,
+
+                protein_target_g=target.protein_target_g,
+                carbs_target_g=target.carbs_target_g,
+                fat_target_g=target.fat_target_g,
+            )
+
+            remaining_schema = DashboardRemainingSchema(
+                calories=(
+                    target.calorie_target
+                    - summary.total_calories
+                ),
+
+                protein_g=(
+                    target.protein_target_g
+                    - summary.total_protein_g
+                ),
+
+                carbs_g=(
+                    target.carbs_target_g
+                    - summary.total_carbs_g
+                ),
+
+                fat_g=(
+                    target.fat_target_g
+                    - summary.total_fat_g
+                ),
+            )
+
+            progress_schema = DashboardProgressSchema(
+                calories_percent=round(
+                    (
+                        summary.total_calories
+                        / target.calorie_target
+                    ) * 100,
+                    2,
+                ),
+
+                protein_percent=round(
+                    (
+                        summary.total_protein_g
+                        / target.protein_target_g
+                    ) * 100,
+                    2,
+                )
+                if target.protein_target_g > 0
+                else None,
+
+                carbs_percent=round(
+                    (
+                        summary.total_carbs_g
+                        / target.carbs_target_g
+                    ) * 100,
+                    2,
+                )
+                if target.carbs_target_g > 0
+                else None,
+
+                fat_percent=round(
+                    (
+                        summary.total_fat_g
+                        / target.fat_target_g
+                    ) * 100,
+                    2,
+                )
+                if target.fat_target_g > 0
+                else None,
+            )
+
+        return DashboardResponseSchema(
+            date=dashboard_date,
+
+            profile_completed=user.profile_completed,
+            has_nutrition_target=target is not None,
+
+            summary=summary_schema,
+
+            targets=targets_schema,
+            remaining=remaining_schema,
+            progress=progress_schema,
+
+            entries=dashboard_entries,
+        )
