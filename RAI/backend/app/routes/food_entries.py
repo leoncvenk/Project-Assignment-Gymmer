@@ -12,6 +12,8 @@ service = FoodEntryService()
     "/users/me/food-entries",
     response_model=FoodEntryResponseSchema,
     status_code=status.HTTP_201_CREATED,
+    summary="Create food entry",
+    description="Creates a food consumption entry for the authenticated user and snapshots nutrition values at creation time.",
 )
 async def create_food_entry(
     data: CreateFoodEntrySchema,
@@ -31,6 +33,8 @@ async def create_food_entry(
 @router.get(
     "/users/me/food-entries",
     response_model=list[FoodEntryResponseSchema],
+    summary="Get food entries",
+    description="Returns all food entries belonging to the authenticated user ordered by consumption time.",
 )
 async def get_my_food_entries(
     current_user_id: str = Depends(get_current_user_id),
@@ -41,6 +45,8 @@ async def get_my_food_entries(
 @router.get(
     "/users/me/food-entries/{entry_id}",
     response_model=FoodEntryResponseSchema,
+    summary="Get food entry by id",
+    description="Returns a specific food entry belonging to the authenticated user.",
 )
 async def get_my_food_entry(
     entry_id: str,
@@ -60,6 +66,8 @@ async def get_my_food_entry(
 @router.delete(
     "/users/me/food-entries/{entry_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete food entry",
+    description="Deletes a food entry belonging to the authenticated user.",
 )
 async def delete_my_food_entry(
     entry_id: str,

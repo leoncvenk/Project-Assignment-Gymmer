@@ -7,12 +7,22 @@ router = APIRouter()
 service = FoodService()
 
 
-@router.post("/foods", response_model=FoodResponseSchema)
+@router.post(
+    "/foods",
+    response_model=FoodResponseSchema,
+    summary="Create food",
+    description="Creates a food item with nutrition information that can later be used for food entry tracking.",
+)
 async def create_food(data: CreateFoodSchema):
     return await service.create_food(data)
 
 
-@router.get("/foods/{food_id}", response_model=FoodResponseSchema)
+@router.get(
+    "/foods/{food_id}",
+    response_model=FoodResponseSchema,
+    summary="Get food by id",
+    description="Returns a specific food item by its identifier.",
+)
 async def get_food(food_id: str):
     food = await service.get_food_by_id(food_id)
 
@@ -22,7 +32,12 @@ async def get_food(food_id: str):
     return food
 
 
-@router.patch("/foods/{food_id}", response_model=FoodResponseSchema)
+@router.patch(
+    "/foods/{food_id}",
+    response_model=FoodResponseSchema,
+    summary="Update food",
+    description="Partially updates a food item's information and nutrition values.",
+)
 async def update_food(food_id: str, data: UpdateFoodSchema):
     food = await service.update_food(food_id, data)
 

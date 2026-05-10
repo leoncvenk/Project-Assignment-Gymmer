@@ -37,7 +37,7 @@ async def register_and_login(client: AsyncClient) -> str:
     register = await client.post(
         "/auth/register",
         json={
-            "username": "luka",
+            "username": f"user-{uuid4().hex[:8]}",
             "email": email,
             "password": "password123",
         },

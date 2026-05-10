@@ -208,6 +208,8 @@ async def test_get_my_food_entry_by_id(client):
         },
     )
 
+    assert create_response.status_code == 201
+
     entry_id = create_response.json()["id"]
 
     response = await client.get(
@@ -234,6 +236,8 @@ async def test_user_cannot_get_other_users_food_entry(client):
         },
     )
 
+    assert create_response.status_code == 201
+
     entry_id = create_response.json()["id"]
 
     response = await client.get(
@@ -257,6 +261,8 @@ async def test_delete_my_food_entry(client):
             "quantity_g": 100,
         },
     )
+
+    assert create_response.status_code == 201
 
     entry_id = create_response.json()["id"]
 
@@ -289,6 +295,8 @@ async def test_user_cannot_delete_other_users_food_entry(client):
             "quantity_g": 100,
         },
     )
+
+    assert create_response.status_code == 201
 
     entry_id = create_response.json()["id"]
 
