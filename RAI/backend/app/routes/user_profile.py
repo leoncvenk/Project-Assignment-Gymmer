@@ -14,7 +14,12 @@ router = APIRouter(prefix="/users/me/profile", tags=["user-profile"])
 profile_service = UserProfileService()
 
 
-@router.get("", response_model=UserProfileResponseSchema)
+@router.get(
+    "",
+    response_model=UserProfileResponseSchema,
+    summary="Get current user's profile",
+    description="Returns the onboarding and fitness profile information of the authenticated user.",
+)
 async def get_my_profile(
     current_user: User = Depends(get_authenticated_user),
 ):
@@ -29,7 +34,12 @@ async def get_my_profile(
     return profile
 
 
-@router.put("", response_model=UserProfileResponseSchema)
+@router.put(
+    "",
+    response_model=UserProfileResponseSchema,
+    summary="Create or replace profile",
+    description="Creates or completely replaces the authenticated user's profile information.",
+)
 async def create_or_replace_my_profile(
     data: CreateUserProfileSchema,
     current_user: User = Depends(get_authenticated_user),
@@ -40,7 +50,12 @@ async def create_or_replace_my_profile(
     )
 
 
-@router.patch("", response_model=UserProfileResponseSchema)
+@router.patch(
+    "",
+    response_model=UserProfileResponseSchema,
+    summary="Update profile",
+    description="Partially updates the authenticated user's profile information.",
+)
 async def update_my_profile(
     data: UpdateUserProfileSchema,
     current_user: User = Depends(get_authenticated_user),
