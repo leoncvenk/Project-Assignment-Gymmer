@@ -15,6 +15,8 @@ auth_service = AuthService()
     "/register",
     response_model=UserResponseSchema,
     status_code=status.HTTP_201_CREATED,
+    summary="Register a new user",
+    description="Creates a new user account using username, email, and password.",
 )
 async def register(data: CreateUserSchema):
     user = await auth_service.register(data)
@@ -28,7 +30,12 @@ async def register(data: CreateUserSchema):
     return user
 
 
-@router.post("/login", response_model=TokenSchema)
+@router.post(
+    "/login",
+    response_model=TokenSchema,
+    summary="Authenticate user",
+    description="Authenticates a user and returns a JWT access token for authenticated requests.",
+)
 async def login(data: LoginSchema):
     user = await auth_service.authenticate_user(data)
 
@@ -45,6 +52,11 @@ async def login(data: LoginSchema):
         "token_type": "bearer",
     }
 
-@router.get("/me", response_model=UserResponseSchema)
+@router.get(
+    "/me",
+    response_model=UserResponseSchema,
+    summary="Get current authenticated user",
+    description="Returns the currently authenticated user's account information.",
+)
 async def get_me(current_user: User = Depends(get_authenticated_user)):
     return current_user
