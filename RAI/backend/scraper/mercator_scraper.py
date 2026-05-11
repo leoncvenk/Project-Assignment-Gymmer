@@ -2,6 +2,7 @@ import requests
 import json
 import time
 import os
+from bs4 import BeautifulSoup
 
 HEADERS = {
     "User-Agent": (
@@ -12,6 +13,54 @@ HEADERS = {
 }
 
 BASE_URL = "https://mercatoronline.si"
+
+def pridobi_hranilne_vrednosti(url_izdelka):
+    """
+    Iz strani posameznega izdelka pridobi hranilne vrednosti.
+    """
+
+    hranilne_vrednosti = {}
+
+    try:
+        odgovor = requests.get(url_izdelka, headers=HEADERS)
+
+        if odgovor.status_code != 200:
+            print(f"Napaka pri odpiranju izdelka: {odgovor.status_code}")
+            return hranilne_vrednosti
+
+        soup = BeautifulSoup(odgovor.text, "html.parser")
+        tekst = soup.get_text("\n", strip=True)
+
+        vrstice = tekst.split("\n")
+
+        for i, vrstica in enumerate(vrstice):
+
+            vrstica = vrstica.strip().lower()
+
+            try:
+                if vrstica == "energijska vrednost":
+                    hranilne_vrednosti["energijska_vrednost"] = vrstice[i + 1].strip()
+
+                elif vrstica == "maščobe":
+                    hranilne_vrednosti["mascobe"] = vrstice[i + 1].strip()
+
+                elif vrstica == "ogljikovi hidrati":
+                    hranilne_vrednosti["ogljikovi_hidrati"] = vrstice[i + 1].strip()
+
+                elif vrstica == "beljakovine":
+                    hranilne_vrednosti["beljakovine"] = vrstice[i + 1].strip()
+
+                elif vrstica == "sol":
+                    hranilne_vrednosti["sol"] = vrstice[i + 1].strip()
+
+            except IndexError:
+                pass
+
+        return hranilne_vrednosti
+
+    except Exception as e:
+        print(f"Napaka pri hranilnih vrednostih: {e}")
+        return hranilne_vrednosti
 
 def poisci_izdelke(iskalni_niz, limit=100, offset=0):
     """
@@ -68,6 +117,10 @@ def poisci_izdelke(iskalni_niz, limit=100, offset=0):
 
             offset += limit
             time.sleep(0.5)
+
+        if izdelki:
+            print("\nPridobivam hranilne vrednosti za prvi izdelek...")
+            izdelki[0]["hranilne_vrednosti"] = pridobi_hranilne_vrednosti(izdelki[0]["url"])
 
         return izdelki
 
