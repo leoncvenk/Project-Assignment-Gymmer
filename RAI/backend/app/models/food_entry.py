@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-
+from typing import Literal
 
 @dataclass(frozen=True)
 class FoodEntry:
@@ -15,6 +15,14 @@ class FoodEntry:
     protein_g: float
     carbs_g: float
     fat_g: float
+
+    meal_type: Literal[
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snack",
+        "unspecified",
+    ] = "unspecified"
 
     consumed_at: datetime
 
