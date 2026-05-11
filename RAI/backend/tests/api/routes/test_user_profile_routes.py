@@ -67,6 +67,8 @@ def valid_profile_payload() -> dict:
         "height_cm": 180,
         "weight_kg": 85,
         "goal_weight_kg": 79,
+        "age": 22,
+        "sex": "male",
         "activity_level": "moderate",
         "goal_type": "lose_weight",
     }
@@ -103,6 +105,8 @@ async def test_put_profile_creates_profile(client):
     assert data["goal_weight_kg"] == 79
     assert data["activity_level"] == "moderate"
     assert data["goal_type"] == "lose_weight"
+    assert data["age"] == 22
+    assert data["sex"] == "male"
 
 
 @pytest.mark.asyncio
@@ -129,6 +133,8 @@ async def test_get_profile_after_put_returns_profile(client):
     assert data["goal_weight_kg"] == 79
     assert data["activity_level"] == "moderate"
     assert data["goal_type"] == "lose_weight"
+    assert data["age"] == 22
+    assert data["sex"] == "male"
 
 
 @pytest.mark.asyncio
@@ -159,6 +165,8 @@ async def test_patch_profile_updates_partial_fields(client):
     assert data["goal_weight_kg"] == 79
     assert data["activity_level"] == "active"
     assert data["goal_type"] == "lose_weight"
+    assert data["age"] == 22
+    assert data["sex"] == "male"
 
 
 @pytest.mark.asyncio
@@ -195,3 +203,29 @@ async def test_put_profile_marks_auth_me_profile_completed_true(client):
 
     assert after.status_code == 200
     assert after.json()["profile_completed"] is True
+    
+
+@pytest.mark.asyncio
+async def test_patch_profile_updates_age_and_sex(client):
+    token = await register_and_login(client)
+
+    await client.put(
+        "/users/me/profile",
+        json=valid_profile_payload(),
+        headers=auth_headers(token),
+    )
+
+    response = await client.patch(
+        "/users/me/profile",
+        json={
+            "age": 23,
+            "sex": "female",
+        },
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["age"] == 23
+    assert data["sex"] == "female"
