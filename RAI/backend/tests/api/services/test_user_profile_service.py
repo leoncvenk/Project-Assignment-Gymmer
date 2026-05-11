@@ -6,11 +6,16 @@ from app.core.database import get_db
 from app.main import app
 from app.schemas.user_profile_schema import CreateUserProfileSchema, UpdateUserProfileSchema
 from app.schemas.user_schema import CreateUserSchema
+from app.schemas.nutrition_target_schema import CreateNutritionTargetSchema
 from app.services.user_profile_service import (
     USER_PROFILES_COLLECTION,
     UserProfileService,
 )
 from app.services.user_service import USERS_COLLECTION, UserService
+from app.services.nutrition_target_service import (
+    NUTRITION_TARGETS_COLLECTION,
+    NutritionTargetService
+)
 
 
 @pytest_asyncio.fixture
@@ -19,9 +24,11 @@ async def services():
         db = get_db()
         await db[USER_PROFILES_COLLECTION].delete_many({})
         await db[USERS_COLLECTION].delete_many({})
+        await db[NUTRITION_TARGETS_COLLECTION].delete_many({})
 
         user_service = UserService()
         profile_service = UserProfileService()
+        nutrition_target_service = NutritionTargetService()
 
         user = await user_service.create_user(
             CreateUserSchema(
@@ -31,10 +38,12 @@ async def services():
             )
         )
 
-        yield user, user_service, profile_service
+        yield user, user_service, profile_service, nutrition_target_service
 
         await db[USER_PROFILES_COLLECTION].delete_many({})
         await db[USERS_COLLECTION].delete_many({})
+        await db[NUTRITION_TARGETS_COLLECTION].delete_many({})
+
 
 
 def valid_profile_payload():
@@ -51,7 +60,7 @@ def valid_profile_payload():
 
 @pytest.mark.asyncio
 async def test_create_profile_stores_profile(services):
-    user, _, profile_service = services
+    user, _, profile_service, _ = services
 
     profile = await profile_service.create_or_replace_profile(
         user_id=user.id,
@@ -71,7 +80,7 @@ async def test_create_profile_stores_profile(services):
 
 @pytest.mark.asyncio
 async def test_get_profile_by_user_id_returns_existing_profile(services):
-    user, _, profile_service = services
+    user, _, profile_service, _ = services
 
     created = await profile_service.create_or_replace_profile(
         user_id=user.id,
@@ -88,7 +97,7 @@ async def test_get_profile_by_user_id_returns_existing_profile(services):
 
 @pytest.mark.asyncio
 async def test_get_profile_by_user_id_missing_returns_none(services):
-    _, _, profile_service = services
+    _, _, profile_service, _ = services
 
     result = await profile_service.get_profile_by_user_id("missing-user-id")
 
@@ -97,7 +106,7 @@ async def test_get_profile_by_user_id_missing_returns_none(services):
 
 @pytest.mark.asyncio
 async def test_create_profile_marks_user_profile_completed(services):
-    user, user_service, profile_service = services
+    user, user_service, profile_service, _ = services
 
     before = await user_service.get_user_by_id(user.id)
     assert before.profile_completed is False
@@ -115,7 +124,7 @@ async def test_create_profile_marks_user_profile_completed(services):
 
 @pytest.mark.asyncio
 async def test_create_profile_replaces_existing_profile(services):
-    user, _, profile_service = services
+    user, _, profile_service, _ = services
 
     first = await profile_service.create_or_replace_profile(
         user_id=user.id,
@@ -147,7 +156,7 @@ async def test_create_profile_replaces_existing_profile(services):
 
 @pytest.mark.asyncio
 async def test_update_profile_partial(services):
-    user, _, profile_service = services
+    user, _, profile_service, _ = services
 
     created = await profile_service.create_or_replace_profile(
         user_id=user.id,
@@ -170,7 +179,7 @@ async def test_update_profile_partial(services):
 
 @pytest.mark.asyncio
 async def test_update_missing_profile_returns_none(services):
-    _, _, profile_service = services
+    _, _, profile_service, _ = services
 
     result = await profile_service.update_profile(
         user_id="missing-user-id",
@@ -181,7 +190,7 @@ async def test_update_missing_profile_returns_none(services):
 
 @pytest.mark.asyncio
 async def test_update_profile_updates_age_and_sex(services):
-    user, _, profile_service = services
+    user, _, profile_service, _ = services
 
     created = await profile_service.create_or_replace_profile(
         user_id=user.id,
@@ -200,3 +209,81 @@ async def test_update_profile_updates_age_and_sex(services):
     assert updated.id == created.id
     assert updated.age == 23
     assert updated.sex == "female"
+
+@pytest.mark.asyncio
+async def test_create_profile_auto_creates_nutrition_target(services):
+    user, _, profile_service, target_service = services
+
+    await profile_service.create_or_replace_profile(
+        user_id=user.id,
+        data=valid_profile_payload(),
+    )
+
+    target = await target_service.get_target_by_user_id(user.id)
+
+    assert target is not None
+    assert target.source == "profile_estimate"
+    assert target.calorie_target == 2498
+    assert target.protein_target_g == 170
+    assert target.fat_target_g == 68
+    assert target.carbs_target_g == 301.5
+
+@pytest.mark.asyncio
+async def test_replace_profile_recalculates_profile_estimate_target(services):
+    user, _, profile_service, target_service = services
+
+    await profile_service.create_or_replace_profile(
+        user_id=user.id,
+        data=valid_profile_payload(),
+    )
+
+    first_target = await target_service.get_target_by_user_id(user.id)
+
+    await profile_service.create_or_replace_profile(
+        user_id=user.id,
+        data=CreateUserProfileSchema(
+            height_cm=180,
+            weight_kg=80,
+            goal_weight_kg=79,
+            age=22,
+            sex="male",
+            activity_level="moderate",
+            goal_type="lose_weight",
+        ),
+    )
+
+    second_target = await target_service.get_target_by_user_id(user.id)
+
+    assert second_target is not None
+    assert first_target is not None
+    assert second_target.id == first_target.id
+    assert second_target.source == "profile_estimate"
+    assert second_target.calorie_target != first_target.calorie_target
+
+@pytest.mark.asyncio
+async def test_create_profile_does_not_overwrite_manual_nutrition_target(services):
+    user, _, profile_service, target_service = services
+
+    manual_target = await target_service.create_or_replace_target(
+        user_id=user.id,
+        data=CreateNutritionTargetSchema(
+            calorie_target=3000,
+            protein_target_g=220,
+            carbs_target_g=350,
+            fat_target_g=90,
+            source="manual",
+        ),
+    )
+
+    await profile_service.create_or_replace_profile(
+        user_id=user.id,
+        data=valid_profile_payload(),
+    )
+
+    target = await target_service.get_target_by_user_id(user.id)
+
+    assert target is not None
+    assert target.id == manual_target.id
+    assert target.source == "manual"
+    assert target.calorie_target == 3000
+    assert target.protein_target_g == 220
