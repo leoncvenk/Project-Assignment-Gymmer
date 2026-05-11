@@ -3,6 +3,7 @@ import pytest_asyncio
 from asgi_lifespan import LifespanManager
 
 from app.core.database import get_db
+from app.models.user_profile import UserProfile
 from app.main import app
 from app.schemas.nutrition_target_schema import (
     CreateNutritionTargetSchema,
@@ -29,6 +30,19 @@ def assert_same_target(actual, expected):
 
     assert actual.created_at is not None
     assert actual.updated_at is not None
+
+def profile_for_estimation(weight_kg: float = 85) -> UserProfile:
+    return UserProfile(
+        id="profile-123",
+        user_id="user-123",
+        height_cm=180,
+        weight_kg=weight_kg,
+        goal_weight_kg=79,
+        age=22,
+        sex="male",
+        activity_level="moderate",
+        goal_type="lose_weight",
+    )
 
 
 @pytest_asyncio.fixture
@@ -166,3 +180,51 @@ async def test_update_missing_target_returns_none(service):
     )
 
     assert result is None
+
+@pytest.mark.asyncio
+async def test_create_from_profile_creates_profile_estimate_target(service):
+    target = await service.create_from_profile(
+        user_id="user-123",
+        profile=profile_for_estimation(),
+    )
+
+    assert target.user_id == "user-123"
+    assert target.source == "profile_estimate"
+
+    assert target.calorie_target == 2498
+    assert target.protein_target_g == 170
+    assert target.fat_target_g == 68
+    assert target.carbs_target_g == 301.5
+
+
+@pytest.mark.asyncio
+async def test_create_from_profile_stores_target(service):
+    target = await service.create_from_profile(
+        user_id="user-123",
+        profile=profile_for_estimation(),
+    )
+
+    result = await service.get_target_by_user_id("user-123")
+
+    assert result is not None
+    assert result.id == target.id
+    assert result.source == "profile_estimate"
+
+
+@pytest.mark.asyncio
+async def test_create_from_profile_replaces_existing_estimate(service):
+    first = await service.create_from_profile(
+        user_id="user-123",
+        profile=profile_for_estimation(),
+    )
+
+    updated_profile = profile_for_estimation(weight_kg=80)
+    updated_profile.weight_kg = 80
+
+    second = await service.create_from_profile(
+        user_id="user-123",
+        profile=updated_profile,
+    )
+
+    assert second.id == first.id
+    assert second.calorie_target != first.calorie_target
