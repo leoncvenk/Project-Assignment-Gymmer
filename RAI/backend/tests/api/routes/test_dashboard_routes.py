@@ -160,6 +160,54 @@ async def test_get_dashboard_without_target_returns_empty_state(client):
 
     assert data["entries"] == []
 
+    assert data["meals"] == [
+        {
+            "meal_type": "breakfast",
+            "total_calories": 0,
+            "total_protein_g": 0,
+            "total_carbs_g": 0,
+            "total_fat_g": 0,
+            "entry_count": 0,
+            "entries": [],
+        },
+        {
+            "meal_type": "lunch",
+            "total_calories": 0,
+            "total_protein_g": 0,
+            "total_carbs_g": 0,
+            "total_fat_g": 0,
+            "entry_count": 0,
+            "entries": [],
+        },
+        {
+            "meal_type": "dinner",
+            "total_calories": 0,
+            "total_protein_g": 0,
+            "total_carbs_g": 0,
+            "total_fat_g": 0,
+            "entry_count": 0,
+            "entries": [],
+        },
+        {
+            "meal_type": "snack",
+            "total_calories": 0,
+            "total_protein_g": 0,
+            "total_carbs_g": 0,
+            "total_fat_g": 0,
+            "entry_count": 0,
+            "entries": [],
+        },
+        {
+            "meal_type": "unspecified",
+            "total_calories": 0,
+            "total_protein_g": 0,
+            "total_carbs_g": 0,
+            "total_fat_g": 0,
+            "entry_count": 0,
+            "entries": [],
+        },
+    ]
+
 
 @pytest.mark.asyncio
 async def test_get_dashboard_with_target_and_entries(client):
@@ -173,6 +221,7 @@ async def test_get_dashboard_with_target_and_entries(client):
         json={
             "food_id": food_id,
             "quantity_g": 100,
+            "meal_type": "breakfast",
             "consumed_at": "2026-05-10T08:00:00Z",
         },
     )
@@ -210,6 +259,27 @@ async def test_get_dashboard_with_target_and_entries(client):
     assert len(data["entries"]) == 1
     assert data["entries"][0]["food_id"] == food_id
     assert data["entries"][0]["quantity_g"] == 100
+
+    assert data["entries"][0]["meal_type"] == "breakfast"
+
+    assert [meal["meal_type"] for meal in data["meals"]] == [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snack",
+        "unspecified",
+    ]
+
+    breakfast = data["meals"][0]
+
+    assert breakfast["meal_type"] == "breakfast"
+    assert breakfast["total_calories"] == 165
+    assert breakfast["total_protein_g"] == 31
+    assert breakfast["total_carbs_g"] == 0
+    assert breakfast["total_fat_g"] == 3.6
+    assert breakfast["entry_count"] == 1
+    assert len(breakfast["entries"]) == 1
+    assert breakfast["entries"][0]["meal_type"] == "breakfast"
 
 
 @pytest.mark.asyncio
@@ -255,3 +325,5 @@ async def test_get_dashboard_ignores_other_users_data(client):
 
     assert data["targets"]["calorie_target"] == 2200
     assert data["entries"] == []
+
+    assert [meal["entry_count"] for meal in data["meals"]] == [0, 0, 0, 0, 0]
