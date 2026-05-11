@@ -1,6 +1,7 @@
 import requests
 import json
 import time
+import os
 
 HEADERS = {
     "User-Agent": (
@@ -74,6 +75,20 @@ def poisci_izdelke(iskalni_niz, limit=100, offset=0):
         print(f"Napaka pri iskanju izdelkov: {e}")
         return []
 
+def shrani_v_json(izdelki, ime_datoteke):
+    """
+    Shrani izdelke v JSON datoteko.
+    """
+
+    os.makedirs("data", exist_ok=True)
+
+    pot = os.path.join("data", ime_datoteke)
+
+    with open(pot, "w", encoding="utf-8") as datoteka:
+        json.dump(izdelki, datoteka, indent=4, ensure_ascii=False)
+
+    print(f"\nJSON shranjen v: {pot}")
+
 def pridobi_povezane_izdelke(product_id):
     """
     Pridobi povezane/podobne izdelke za podan Mercator product ID.
@@ -121,6 +136,7 @@ def pridobi_povezane_izdelke(product_id):
 
 
 if __name__ == "__main__":
+
     rezultati = poisci_izdelke("mleko")
 
     print("\nScrapanje končano.")
@@ -129,5 +145,8 @@ if __name__ == "__main__":
     if rezultati:
         print("\nPrimer prvega izdelka:")
         print(json.dumps(rezultati[0], indent=4, ensure_ascii=False))
+
+        shrani_v_json(rezultati, "mercator_mleko.json")
+
     else:
         print("Ni najdenih izdelkov.")
