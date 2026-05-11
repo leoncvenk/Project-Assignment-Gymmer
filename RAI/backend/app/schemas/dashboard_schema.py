@@ -83,3 +83,5 @@ class DashboardResponseSchema(BaseModel):
     progress: DashboardProgressSchema | None
 
     entries: list[DashboardEntrySchema]
+
+    meals: list[DashboardMealSchema]
