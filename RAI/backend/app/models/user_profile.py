@@ -16,6 +16,7 @@ GoalType = Literal[
     "gain_weight",
 ]
 
+Sex = Literal["male", "female"]
 
 @dataclass
 class UserProfile:
@@ -26,8 +27,11 @@ class UserProfile:
     weight_kg: float
     goal_weight_kg: float
 
+    age: int
+    sex: Sex
+
     activity_level: ActivityLevel
     goal_type: GoalType
 
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime | None = None
+    updated_at: datetime | None = None

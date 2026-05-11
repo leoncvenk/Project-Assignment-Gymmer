@@ -11,6 +11,14 @@ from app.schemas.nutrition_target_schema import (
 
 NUTRITION_TARGETS_COLLECTION = "nutrition_targets"
 
+ACTIVITY_MULTIPLIERS = {
+    "sedentary": 1.2,
+    "light": 1.375,
+    "moderate": 1.55,
+    "active": 1.725,
+    "very_active": 1.9,
+}
+
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
@@ -34,6 +42,52 @@ def _nutrition_target_from_document(
         created_at=document.get("created_at"),
         updated_at=document.get("updated_at"),
     )
+
+def _calculate_bmr(
+    weight_kg: float,
+    height_cm: float,
+    age: int,
+    sex: str,
+) -> float:
+    base = 10 * weight_kg + 6.25 * height_cm - 5 * age
+
+    if sex == "male":
+        return base + 5
+
+    return base - 161
+
+
+def _adjust_calories_for_goal(
+    maintenance_calories: float,
+    goal_type: str,
+) -> int:
+    if goal_type == "lose_weight":
+        return round(maintenance_calories - 400)
+
+    if goal_type == "gain_weight":
+        return round(maintenance_calories + 300)
+
+    return round(maintenance_calories)
+
+
+def _calculate_macros(
+    calorie_target: int,
+    weight_kg: float,
+) -> tuple[float, float, float]:
+    protein_target_g = round(weight_kg * 2.0, 1)
+    fat_target_g = round(weight_kg * 0.8, 1)
+
+    protein_calories = protein_target_g * 4
+    fat_calories = fat_target_g * 9
+
+    remaining_calories = max(
+        calorie_target - protein_calories - fat_calories,
+        0,
+    )
+
+    carbs_target_g = round(remaining_calories / 4, 1)
+
+    return protein_target_g, carbs_target_g, fat_target_g
 
 
 class NutritionTargetService:
@@ -79,6 +133,43 @@ class NutritionTargetService:
         )
 
         return target
+    
+    async def create_from_profile(
+        self,
+        user_id: str,
+        profile,
+    ) -> NutritionTarget:
+        activity_multiplier = ACTIVITY_MULTIPLIERS[profile.activity_level]
+
+        bmr = _calculate_bmr(
+            weight_kg=profile.weight_kg,
+            height_cm=profile.height_cm,
+            age=profile.age,
+            sex=profile.sex,
+        )
+
+        maintenance_calories = bmr * activity_multiplier
+
+        calorie_target = _adjust_calories_for_goal(
+            maintenance_calories=maintenance_calories,
+            goal_type=profile.goal_type,
+        )
+
+        protein_target_g, carbs_target_g, fat_target_g = _calculate_macros(
+            calorie_target=calorie_target,
+            weight_kg=profile.weight_kg,
+        )
+
+        return await self.create_or_replace_target(
+            user_id=user_id,
+            data=CreateNutritionTargetSchema(
+                calorie_target=calorie_target,
+                protein_target_g=protein_target_g,
+                carbs_target_g=carbs_target_g,
+                fat_target_g=fat_target_g,
+                source="profile_estimate",
+            ),
+        )
 
     async def get_target_by_user_id(
         self,
