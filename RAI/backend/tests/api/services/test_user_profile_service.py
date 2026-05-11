@@ -42,6 +42,8 @@ def valid_profile_payload():
         height_cm=180,
         weight_kg=85,
         goal_weight_kg=79,
+        age=22,
+        sex="male",
         activity_level="moderate",
         goal_type="lose_weight",
     )
@@ -61,6 +63,8 @@ async def test_create_profile_stores_profile(services):
     assert profile.height_cm == 180
     assert profile.weight_kg == 85
     assert profile.goal_weight_kg == 79
+    assert profile.age == 22
+    assert profile.sex == "male"
     assert profile.activity_level == "moderate"
     assert profile.goal_type == "lose_weight"
 
@@ -124,6 +128,8 @@ async def test_create_profile_replaces_existing_profile(services):
             height_cm=181,
             weight_kg=84,
             goal_weight_kg=78,
+            age=23,
+            sex="male",
             activity_level="active",
             goal_type="lose_weight",
         ),
@@ -134,6 +140,8 @@ async def test_create_profile_replaces_existing_profile(services):
     assert second.height_cm == 181
     assert second.weight_kg == 84
     assert second.goal_weight_kg == 78
+    assert second.age == 23
+    assert second.sex == "male"
     assert second.activity_level == "active"
 
 
@@ -156,6 +164,8 @@ async def test_update_profile_partial(services):
     assert updated.height_cm == 180
     assert updated.weight_kg == 83
     assert updated.goal_weight_kg == 79
+    assert updated.age == 22
+    assert updated.sex == "male"
 
 
 @pytest.mark.asyncio
@@ -168,3 +178,25 @@ async def test_update_missing_profile_returns_none(services):
     )
 
     assert result is None
+
+@pytest.mark.asyncio
+async def test_update_profile_updates_age_and_sex(services):
+    user, _, profile_service = services
+
+    created = await profile_service.create_or_replace_profile(
+        user_id=user.id,
+        data=valid_profile_payload(),
+    )
+
+    updated = await profile_service.update_profile(
+        user_id=user.id,
+        data=UpdateUserProfileSchema(
+            age=23,
+            sex="female",
+        ),
+    )
+
+    assert updated is not None
+    assert updated.id == created.id
+    assert updated.age == 23
+    assert updated.sex == "female"
