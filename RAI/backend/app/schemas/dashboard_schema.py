@@ -1,7 +1,15 @@
 from datetime import date, datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
+MealType = Literal[
+    "breakfast",
+    "lunch",
+    "dinner",
+    "snack",
+    "unspecified",
+]
 
 class DashboardSummarySchema(BaseModel):
     total_calories: float = Field(..., ge=0)
@@ -47,8 +55,21 @@ class DashboardEntrySchema(BaseModel):
     carbs_g: float = Field(..., ge=0)
     fat_g: float = Field(..., ge=0)
 
+    meal_type: MealType
+
     consumed_at: datetime
 
+class DashboardMealSchema(BaseModel):
+    meal_type: MealType
+
+    total_calories: float = Field(..., ge=0)
+    total_protein_g: float = Field(..., ge=0)
+    total_carbs_g: float = Field(..., ge=0)
+    total_fat_g: float = Field(..., ge=0)
+
+    entry_count: int = Field(..., ge=0)
+
+    entries: list[DashboardEntrySchema]
 
 class DashboardResponseSchema(BaseModel):
     date: date
@@ -62,3 +83,5 @@ class DashboardResponseSchema(BaseModel):
     progress: DashboardProgressSchema | None
 
     entries: list[DashboardEntrySchema]
+
+    meals: list[DashboardMealSchema]

@@ -108,6 +108,7 @@ async def test_create_food_entry_route_authenticated(client):
     assert data["protein_g"] == 46.5
     assert data["carbs_g"] == 0
     assert data["fat_g"] == 5.4
+    assert data["meal_type"] == "unspecified"
 
 
 @pytest.mark.asyncio
@@ -313,3 +314,43 @@ async def test_user_cannot_delete_other_users_food_entry(client):
     )
 
     assert owner_get_response.status_code == 200
+    
+
+@pytest.mark.asyncio
+async def test_create_food_entry_with_meal_type(client):
+    token = await register_and_login(client)
+    food_id = await create_food(client)
+
+    response = await client.post(
+        "/users/me/food-entries",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "food_id": food_id,
+            "quantity_g": 150,
+            "meal_type": "dinner",
+        },
+    )
+
+    assert response.status_code == 201
+
+    data = response.json()
+
+    assert data["meal_type"] == "dinner"
+
+
+@pytest.mark.asyncio
+async def test_create_food_entry_rejects_invalid_meal_type(client):
+    token = await register_and_login(client)
+    food_id = await create_food(client)
+
+    response = await client.post(
+        "/users/me/food-entries",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "food_id": food_id,
+            "quantity_g": 150,
+            "meal_type": "midnight_feast",
+        },
+    )
+
+    assert response.status_code == 422

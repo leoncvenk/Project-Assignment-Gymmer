@@ -65,6 +65,7 @@ def test_food_entry_response_schema_valid():
         protein_g=46.5,
         carbs_g=0,
         fat_g=5.4,
+        meal_type="lunch",
         consumed_at=now,
         created_at=now,
         updated_at=now,
@@ -96,4 +97,31 @@ def test_food_entry_response_rejects_negative_nutrition():
             consumed_at=now,
             created_at=now,
             updated_at=now,
+        )
+
+def test_create_food_entry_defaults_meal_type_to_unspecified():
+    schema = CreateFoodEntrySchema(
+        food_id="food-123",
+        quantity_g=150,
+    )
+
+    assert schema.meal_type == "unspecified"
+
+
+def test_create_food_entry_accepts_meal_type():
+    schema = CreateFoodEntrySchema(
+        food_id="food-123",
+        quantity_g=150,
+        meal_type="lunch",
+    )
+
+    assert schema.meal_type == "lunch"
+
+
+def test_create_food_entry_rejects_invalid_meal_type():
+    with pytest.raises(ValidationError):
+        CreateFoodEntrySchema(
+            food_id="food-123",
+            quantity_g=150,
+            meal_type="midnight_feast",
         )

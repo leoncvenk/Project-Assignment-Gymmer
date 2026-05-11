@@ -20,6 +20,7 @@ def assert_same_entry(actual, expected):
     assert actual.protein_g == expected.protein_g
     assert actual.carbs_g == expected.carbs_g
     assert actual.fat_g == expected.fat_g
+    assert actual.meal_type == expected.meal_type
 
     assert actual.consumed_at is not None
     assert actual.created_at is not None
@@ -227,3 +228,48 @@ async def test_delete_entry_does_not_remove_other_users_entry(services):
 
     assert deleted is False
     assert result is not None
+
+@pytest.mark.asyncio
+async def test_create_entry_defaults_meal_type_to_unspecified(services):
+    food_service, entry_service = services
+
+    food = await food_service.create_food(
+        CreateFoodSchema(name="Apple")
+    )
+
+    entry = await entry_service.create_entry(
+        user_id="user-123",
+        data=CreateFoodEntrySchema(
+            food_id=food.id,
+            quantity_g=100,
+        ),
+    )
+
+    assert entry is not None
+    assert entry.meal_type == "unspecified"
+
+
+@pytest.mark.asyncio
+async def test_create_entry_stores_meal_type(services):
+    food_service, entry_service = services
+
+    food = await food_service.create_food(
+        CreateFoodSchema(name="Rice")
+    )
+
+    entry = await entry_service.create_entry(
+        user_id="user-123",
+        data=CreateFoodEntrySchema(
+            food_id=food.id,
+            quantity_g=100,
+            meal_type="lunch",
+        ),
+    )
+
+    result = await entry_service.get_entry_by_id(
+        entry_id=entry.id,
+        user_id="user-123",
+    )
+
+    assert result is not None
+    assert result.meal_type == "lunch"
