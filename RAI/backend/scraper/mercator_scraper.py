@@ -137,7 +137,9 @@ def pridobi_povezane_izdelke(product_id):
 
 if __name__ == "__main__":
 
-    rezultati = poisci_izdelke("mleko")
+    iskanje = input("Vnesi iskalni niz: ")
+
+    rezultati = poisci_izdelke(iskanje)
 
     print("\nScrapanje končano.")
     print(f"Najdenih izdelkov: {len(rezultati)}")
