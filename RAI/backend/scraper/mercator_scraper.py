@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 
 HEADERS = {
     "User-Agent": (
@@ -11,6 +12,52 @@ HEADERS = {
 
 BASE_URL = "https://mercatoronline.si"
 
+def poisci_izdelke(iskalni_niz, limit=100, offset=0):
+    """
+    Poišče Mercator izdelke glede na iskalni niz.
+    """
+
+    url = f"{BASE_URL}/products/browseProducts/getProducts"
+
+    params = {
+        "limit": limit,
+        "offset": offset,
+        "filterData[search]": iskalni_niz,
+        "from": offset,
+        "_": int(time.time() * 1000)
+    }
+
+    print("=== MERCATOR SEARCH SCRAPER ===")
+    print(f"Iščem izdelke za: {iskalni_niz}")
+
+    try:
+        odgovor = requests.get(url, headers=HEADERS, params=params)
+
+        if odgovor.status_code != 200:
+            print(f"Napaka pri GET requestu: {odgovor.status_code}")
+            return []
+
+        podatki = odgovor.json()
+        izdelki = []
+
+        for item in podatki.get("products", []):
+            data = item.get("data", {})
+
+            izdelek = {
+                "trgovina": "Mercator",
+                "url": BASE_URL + item.get("url", ""),
+                "ime_izdelka": data.get("name", ""),
+                "cena": data.get("current_price", ""),
+                "hranilne_vrednosti": {}
+            }
+
+            izdelki.append(izdelek)
+
+        return izdelki
+
+    except Exception as e:
+        print(f"Napaka pri iskanju izdelkov: {e}")
+        return []
 
 def pridobi_povezane_izdelke(product_id):
     """
@@ -59,9 +106,10 @@ def pridobi_povezane_izdelke(product_id):
 
 
 if __name__ == "__main__":
-    rezultati = pridobi_povezane_izdelke("17931243")
+    rezultati = poisci_izdelke("mleko")
 
     print("\nScrapanje končano.")
+    print(f"Najdenih izdelkov: {len(rezultati)}")
 
     if rezultati:
         print("\nPrimer prvega izdelka:")
