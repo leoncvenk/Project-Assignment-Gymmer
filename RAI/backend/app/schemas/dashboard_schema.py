@@ -59,6 +59,17 @@ class DashboardEntrySchema(BaseModel):
 
     consumed_at: datetime
 
+class DashboardMealSchema(BaseModel):
+    meal_type: MealType
+
+    total_calories: float = Field(..., ge=0)
+    total_protein_g: float = Field(..., ge=0)
+    total_carbs_g: float = Field(..., ge=0)
+    total_fat_g: float = Field(..., ge=0)
+
+    entry_count: int = Field(..., ge=0)
+
+    entries: list[DashboardEntrySchema]
 
 class DashboardResponseSchema(BaseModel):
     date: date
