@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.models.user_profile import UserProfile
 from app.schemas.user_profile_schema import CreateUserProfileSchema, UpdateUserProfileSchema
 from app.services.user_service import UserService
+from app.services.nutrition_target_service import NutritionTargetService
 
 USER_PROFILES_COLLECTION = "user_profiles"
 
@@ -33,6 +34,7 @@ def _profile_from_document(document: dict) -> UserProfile:
 class UserProfileService:
     def __init__(self):
         self.user_service = UserService()
+        self.nutrition_target_service = NutritionTargetService()
 
     @property
     def collection(self):
@@ -83,6 +85,16 @@ class UserProfileService:
             await self.collection.insert_one(asdict(profile))
 
         await self.user_service.mark_profile_completed(user_id)
+
+        existing_target = await self.nutrition_target_service.get_target_by_user_id(
+            user_id
+        )
+
+        if existing_target is None or existing_target.source == "profile_estimate":
+            await self.nutrition_target_service.create_from_profile(
+                user_id=user_id,
+                profile=profile,
+            )
 
         return profile
 
