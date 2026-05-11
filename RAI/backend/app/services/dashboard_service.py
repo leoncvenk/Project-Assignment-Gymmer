@@ -7,6 +7,7 @@ from app.schemas.dashboard_schema import (
     DashboardResponseSchema,
     DashboardSummarySchema,
     DashboardTargetsSchema,
+    DashboardMealSchema,
 )
 from app.services.food_entry_service import (
     FoodEntryService,
@@ -18,6 +19,14 @@ from app.services.nutrition_target_service import (
     NutritionTargetService,
 )
 from app.services.user_service import UserService
+
+MEAL_ORDER = [
+    "breakfast",
+    "lunch",
+    "dinner",
+    "snack",
+    "unspecified",
+]
 
 
 class DashboardService:
@@ -68,10 +77,48 @@ class DashboardService:
                 carbs_g=entry.carbs_g,
                 fat_g=entry.fat_g,
 
+                meal_type=entry.meal_type,
+
                 consumed_at=entry.consumed_at,
             )
             for entry in filtered_entries
         ]
+
+        meals = []
+
+        for meal_type in MEAL_ORDER:
+            meal_entries = [
+                entry
+                for entry in dashboard_entries
+                if entry.meal_type == meal_type
+            ]
+
+            meals.append(
+                DashboardMealSchema(
+                    meal_type=meal_type,
+
+                    total_calories=round(
+                        sum(entry.calories for entry in meal_entries),
+                        2,
+                    ),
+                    total_protein_g=round(
+                        sum(entry.protein_g for entry in meal_entries),
+                        2,
+                    ),
+                    total_carbs_g=round(
+                        sum(entry.carbs_g for entry in meal_entries),
+                        2,
+                    ),
+                    total_fat_g=round(
+                        sum(entry.fat_g for entry in meal_entries),
+                        2,
+                    ),
+
+                    entry_count=len(meal_entries),
+
+                    entries=meal_entries,
+                )
+            )
 
         summary_schema = DashboardSummarySchema(
             total_calories=summary.total_calories,
@@ -170,4 +217,6 @@ class DashboardService:
             progress=progress_schema,
 
             entries=dashboard_entries,
+
+            meals=meals,
         )
