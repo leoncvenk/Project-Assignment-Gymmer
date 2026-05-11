@@ -1,6 +1,4 @@
 import requests
-from bs4 import BeautifulSoup
-import time
 import json
 
 HEADERS = {
@@ -14,67 +12,59 @@ HEADERS = {
 BASE_URL = "https://mercatoronline.si"
 
 
-def pridobi_povezavo_strani():
+def pridobi_povezane_izdelke(product_id):
     """
-    Vrne URL glavne strani z izdelki.
-    """
-
-    return f"{BASE_URL}/brskaj"
-
-
-def pridobi_izdelke():
-    """
-    Pridobi vse izdelke iz Mercator spletne trgovine.
+    Pridobi povezane/podobne izdelke za podan Mercator product ID.
     """
 
-    url = pridobi_povezavo_strani()
+    url = f"{BASE_URL}/products/products/getAjaxRelatedProducts"
+
+    payload = {
+        "productIds[]": product_id,
+        "type": "crossale"
+    }
 
     print("=== MERCATOR SCRAPER ===")
-    print(f"Odpiram stran: {url}")
-
-    vsi_izdelki = []
+    print(f"Odpiram endpoint: {url}")
+    print(f"Product ID: {product_id}")
 
     try:
-        odgovor = requests.get(url, headers=HEADERS)
+        odgovor = requests.post(url, headers=HEADERS, data=payload)
 
         if odgovor.status_code != 200:
-            print(f"Napaka pri dostopu do strani: {odgovor.status_code}")
+            print(f"Napaka pri POST requestu: {odgovor.status_code}")
             return []
 
-        soup = BeautifulSoup(odgovor.text, "html.parser")
+        podatki = odgovor.json()
+        izdelki = []
 
-        produkti = soup.find_all(
-            "div",
-            class_="box item product rotation size11"
-        )
-
-        print(f"Najdenih produktov: {len(produkti)}")
-
-        for produkt in produkti:
+        for item in podatki.get("products", []):
+            data = item.get("data", {})
 
             izdelek = {
                 "trgovina": "Mercator",
-                "url": "",
-                "ime_izdelka": "",
-                "cena": "",
+                "url": BASE_URL + item.get("url", ""),
+                "ime_izdelka": data.get("name", ""),
+                "cena": data.get("current_price", ""),
                 "hranilne_vrednosti": {}
             }
 
-            vsi_izdelki.append(izdelek)
+            izdelki.append(izdelek)
 
-        return vsi_izdelki
+        return izdelki
 
     except Exception as e:
-        print(f"Napaka pri scrapanju: {e}")
+        print(f"Napaka pri pridobivanju izdelkov: {e}")
         return []
 
 
 if __name__ == "__main__":
-
-    rezultati = pridobi_izdelke()
+    rezultati = pridobi_povezane_izdelke("17931243")
 
     print("\nScrapanje končano.")
 
     if rezultati:
         print("\nPrimer prvega izdelka:")
         print(json.dumps(rezultati[0], indent=4, ensure_ascii=False))
+    else:
+        print("Ni najdenih izdelkov.")
