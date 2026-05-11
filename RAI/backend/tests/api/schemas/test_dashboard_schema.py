@@ -10,6 +10,7 @@ from app.schemas.dashboard_schema import (
     DashboardResponseSchema,
     DashboardSummarySchema,
     DashboardTargetsSchema,
+    DashboardMealSchema,
 )
 
 
@@ -108,6 +109,7 @@ def test_dashboard_entry_schema_valid():
         carbs_g=0,
         fat_g=5.4,
         consumed_at=now,
+        meal_type="lunch",
     )
 
     assert entry.id == "entry-123"
@@ -128,6 +130,7 @@ def test_dashboard_entry_rejects_invalid_quantity():
             carbs_g=0,
             fat_g=5.4,
             consumed_at=now,
+            meal_type="lunch",
         )
 
 
@@ -179,6 +182,31 @@ def test_dashboard_response_schema_valid():
                 carbs_g=0,
                 fat_g=5.4,
                 consumed_at=now,
+                meal_type="lunch",
+            )
+        ],
+
+        meals=[
+            DashboardMealSchema(
+                meal_type="lunch",
+                total_calories=247.5,
+                total_protein_g=46.5,
+                total_carbs_g=0,
+                total_fat_g=5.4,
+                entry_count=1,
+                entries=[
+                    DashboardEntrySchema(
+                        id="entry-123",
+                        food_id="food-123",
+                        quantity_g=150,
+                        calories=247.5,
+                        protein_g=46.5,
+                        carbs_g=0,
+                        fat_g=5.4,
+                        meal_type="lunch",
+                        consumed_at=now,
+                    )
+                ],
             )
         ],
     )
@@ -191,6 +219,8 @@ def test_dashboard_response_schema_valid():
 
 
 def test_dashboard_response_allows_missing_targets():
+    now = datetime.now(timezone.utc)
+
     dashboard = DashboardResponseSchema(
         date=date(2026, 5, 10),
 
@@ -210,8 +240,73 @@ def test_dashboard_response_allows_missing_targets():
         progress=None,
 
         entries=[],
+
+        meals=[
+            DashboardMealSchema(
+                meal_type="lunch",
+                total_calories=247.5,
+                total_protein_g=46.5,
+                total_carbs_g=0,
+                total_fat_g=5.4,
+                entry_count=1,
+                entries=[
+                    DashboardEntrySchema(
+                        id="entry-123",
+                        food_id="food-123",
+                        quantity_g=150,
+                        calories=247.5,
+                        protein_g=46.5,
+                        carbs_g=0,
+                        fat_g=5.4,
+                        meal_type="lunch",
+                        consumed_at=now,
+                    )
+                ],
+            )
+        ],
     )
 
     assert dashboard.targets is None
     assert dashboard.remaining is None
     assert dashboard.progress is None
+
+def test_dashboard_meal_schema_valid():
+    now = datetime.now(timezone.utc)
+
+    entry = DashboardEntrySchema(
+        id="entry-123",
+        food_id="food-123",
+        quantity_g=150,
+        calories=247.5,
+        protein_g=46.5,
+        carbs_g=0,
+        fat_g=5.4,
+        meal_type="lunch",
+        consumed_at=now,
+    )
+
+    meal = DashboardMealSchema(
+        meal_type="lunch",
+        total_calories=247.5,
+        total_protein_g=46.5,
+        total_carbs_g=0,
+        total_fat_g=5.4,
+        entry_count=1,
+        entries=[entry],
+    )
+
+    assert meal.meal_type == "lunch"
+    assert meal.entry_count == 1
+    assert meal.entries[0].id == "entry-123"
+
+def test_dashboard_meal_schema_rejects_invalid_meal_type():
+    with pytest.raises(ValidationError):
+        DashboardMealSchema(
+            meal_type="midnight_feast",
+            total_calories=0,
+            total_protein_g=0,
+            total_carbs_g=0,
+            total_fat_g=0,
+            entry_count=0,
+            entries=[],
+        )
