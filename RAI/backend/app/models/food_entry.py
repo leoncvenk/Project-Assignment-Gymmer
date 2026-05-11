@@ -16,6 +16,9 @@ class FoodEntry:
     carbs_g: float
     fat_g: float
 
+
+    consumed_at: datetime
+    
     meal_type: Literal[
         "breakfast",
         "lunch",
@@ -23,8 +26,6 @@ class FoodEntry:
         "snack",
         "unspecified",
     ] = "unspecified"
-
-    consumed_at: datetime
 
     created_at: datetime | None = None
     updated_at: datetime | None = None
