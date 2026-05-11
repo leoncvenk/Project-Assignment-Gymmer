@@ -19,39 +19,54 @@ def poisci_izdelke(iskalni_niz, limit=100, offset=0):
 
     url = f"{BASE_URL}/products/browseProducts/getProducts"
 
-    params = {
-        "limit": limit,
-        "offset": offset,
-        "filterData[search]": iskalni_niz,
-        "from": offset,
-        "_": int(time.time() * 1000)
-    }
-
     print("=== MERCATOR SEARCH SCRAPER ===")
     print(f"Iščem izdelke za: {iskalni_niz}")
 
+    izdelki = []
+    offset = 0
+
     try:
-        odgovor = requests.get(url, headers=HEADERS, params=params)
-
-        if odgovor.status_code != 200:
-            print(f"Napaka pri GET requestu: {odgovor.status_code}")
-            return []
-
-        podatki = odgovor.json()
-        izdelki = []
-
-        for item in podatki.get("products", []):
-            data = item.get("data", {})
-
-            izdelek = {
-                "trgovina": "Mercator",
-                "url": BASE_URL + item.get("url", ""),
-                "ime_izdelka": data.get("name", ""),
-                "cena": data.get("current_price", ""),
-                "hranilne_vrednosti": {}
+        while True:
+            params = {
+                "limit": limit,
+                "offset": offset,
+                "filterData[search]": iskalni_niz,
+                "from": offset,
+                "_": int(time.time() * 1000)
             }
 
-            izdelki.append(izdelek)
+            print(f"\nPridobivam izdelke od offseta: {offset}")
+
+            odgovor = requests.get(url, headers=HEADERS, params=params)
+
+            if odgovor.status_code != 200:
+                print(f"Napaka pri GET requestu: {odgovor.status_code}")
+                break
+
+            podatki = odgovor.json()
+            products = podatki.get("products", [])
+
+            if not products:
+                print("Ni več izdelkov.")
+                break
+
+            for item in products:
+                data = item.get("data", {})
+
+                izdelek = {
+                    "trgovina": "Mercator",
+                    "url": BASE_URL + item.get("url", ""),
+                    "ime_izdelka": data.get("name", ""),
+                    "cena": data.get("current_price", ""),
+                    "hranilne_vrednosti": {}
+                }
+
+                izdelki.append(izdelek)
+
+            print(f"Dodanih izdelkov: {len(products)}")
+
+            offset += limit
+            time.sleep(0.5)
 
         return izdelki
 
