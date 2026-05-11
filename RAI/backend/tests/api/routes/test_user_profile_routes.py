@@ -8,6 +8,7 @@ from app.core.database import get_db
 from app.main import app
 from app.services.user_profile_service import USER_PROFILES_COLLECTION
 from app.services.user_service import USERS_COLLECTION
+from app.services.nutrition_target_service import NUTRITION_TARGETS_COLLECTION
 
 def unique_email() -> str:
     return f"test-{uuid4().hex}@example.com"
@@ -18,6 +19,7 @@ async def client():
         db = get_db()
         await db[USER_PROFILES_COLLECTION].delete_many({})
         await db[USERS_COLLECTION].delete_many({})
+        await db[NUTRITION_TARGETS_COLLECTION].delete_many({})
 
         transport = ASGITransport(app=app)
 
@@ -29,6 +31,7 @@ async def client():
 
         await db[USER_PROFILES_COLLECTION].delete_many({})
         await db[USERS_COLLECTION].delete_many({})
+        await db[NUTRITION_TARGETS_COLLECTION].delete_many({})
 
 
 async def register_and_login(client: AsyncClient) -> str:
@@ -203,7 +206,7 @@ async def test_put_profile_marks_auth_me_profile_completed_true(client):
 
     assert after.status_code == 200
     assert after.json()["profile_completed"] is True
-    
+
 
 @pytest.mark.asyncio
 async def test_patch_profile_updates_age_and_sex(client):
@@ -229,3 +232,59 @@ async def test_patch_profile_updates_age_and_sex(client):
     data = response.json()
     assert data["age"] == 23
     assert data["sex"] == "female"
+
+@pytest.mark.asyncio
+async def test_put_profile_auto_creates_nutrition_target(client):
+    token = await register_and_login(client)
+
+    response = await client.put(
+        "/users/me/profile",
+        json=valid_profile_payload(),
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 200
+
+    target_response = await client.get(
+        "/users/me/nutrition-target",
+        headers=auth_headers(token),
+    )
+
+    assert target_response.status_code == 200
+
+    target = target_response.json()
+
+    assert target["source"] == "profile_estimate"
+    assert target["calorie_target"] == 2498
+    assert target["protein_target_g"] == 170
+    assert target["fat_target_g"] == 68
+    assert target["carbs_target_g"] == 301.5
+
+@pytest.mark.asyncio
+async def test_put_profile_makes_dashboard_show_nutrition_target(client):
+    token = await register_and_login(client)
+
+    response = await client.put(
+        "/users/me/profile",
+        json=valid_profile_payload(),
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 200
+
+    dashboard_response = await client.get(
+        "/users/me/dashboard?date=2026-05-10",
+        headers=auth_headers(token),
+    )
+
+    assert dashboard_response.status_code == 200
+
+    dashboard = dashboard_response.json()
+
+    assert dashboard["profile_completed"] is True
+    assert dashboard["has_nutrition_target"] is True
+
+    assert dashboard["targets"]["calorie_target"] == 2498
+    assert dashboard["targets"]["protein_target_g"] == 170
+    assert dashboard["targets"]["fat_target_g"] == 68
+    assert dashboard["targets"]["carbs_target_g"] == 301.5
