@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.security import get_current_user_id
-from app.schemas.food_entry_schema import CreateFoodEntrySchema, FoodEntryResponseSchema
+from app.schemas.food_entry_schema import CreateFoodEntrySchema, FoodEntryResponseSchema, UpdateFoodEntrySchema
 from app.services.food_entry_service import FoodEntryService
 
 router = APIRouter()
@@ -62,6 +62,28 @@ async def get_my_food_entry(
 
     return entry
 
+
+@router.patch(
+    "/users/me/food-entries/{entry_id}",
+    response_model=FoodEntryResponseSchema,
+    summary="Update food entry",
+    description="Partially updates a food entry belonging to the authenticated user. Recalculates nutrition values when quantity changes.",
+)
+async def update_my_food_entry(
+    entry_id: str,
+    data: UpdateFoodEntrySchema,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    entry = await service.update_entry(
+        entry_id=entry_id,
+        user_id=current_user_id,
+        data=data,
+    )
+
+    if entry is None:
+        raise HTTPException(status_code=404, detail="Food entry not found")
+
+    return entry
 
 @router.delete(
     "/users/me/food-entries/{entry_id}",
