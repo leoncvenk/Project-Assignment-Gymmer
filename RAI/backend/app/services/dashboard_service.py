@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from app.schemas.dashboard_schema import (
     DashboardEntrySchema,
@@ -8,6 +8,8 @@ from app.schemas.dashboard_schema import (
     DashboardSummarySchema,
     DashboardTargetsSchema,
     DashboardMealSchema,
+    WeeklyDashboardDaySchema,
+    WeeklyDashboardResponseSchema,
 )
 from app.services.food_entry_service import (
     FoodEntryService,
@@ -219,4 +221,61 @@ class DashboardService:
             entries=dashboard_entries,
 
             meals=meals,
+        )
+    
+    async def get_weekly_dashboard(
+        self,
+        user_id: str,
+        target_date: date,
+    ) -> WeeklyDashboardResponseSchema:
+        week_start = target_date - timedelta(days=target_date.weekday())
+        week_end = week_start + timedelta(days=6)
+
+        target = await self.target_service.get_target_by_user_id(user_id)
+
+        days = []
+
+        for offset in range(7):
+            current_date = week_start + timedelta(days=offset)
+
+            summary = await self.summary_service.get_daily_summary(
+                user_id=user_id,
+                summary_date=current_date,
+            )
+
+            calorie_target = None
+            calories_remaining = None
+            calories_percent = None
+
+            if target is not None:
+                calorie_target = target.calorie_target
+                calories_remaining = (
+                    target.calorie_target - summary.total_calories
+                )
+                calories_percent = round(
+                    (summary.total_calories / target.calorie_target) * 100,
+                    2,
+                )
+
+            days.append(
+                WeeklyDashboardDaySchema(
+                    date=current_date,
+
+                    total_calories=summary.total_calories,
+                    total_protein_g=summary.total_protein_g,
+                    total_carbs_g=summary.total_carbs_g,
+                    total_fat_g=summary.total_fat_g,
+
+                    entry_count=summary.entry_count,
+
+                    calorie_target=calorie_target,
+                    calories_remaining=calories_remaining,
+                    calories_percent=calories_percent,
+                )
+            )
+
+        return WeeklyDashboardResponseSchema(
+            week_start=week_start,
+            week_end=week_end,
+            days=days,
         )

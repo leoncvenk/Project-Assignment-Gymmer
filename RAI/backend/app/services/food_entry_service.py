@@ -1,5 +1,5 @@
 from dataclasses import asdict, replace
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timezone
 from uuid import uuid4
 
 from app.core.database import get_db
@@ -158,6 +158,37 @@ class FoodEntryService:
 
     async def get_entries_for_user(self, user_id: str) -> list[FoodEntry]:
         cursor = self.collection.find({"user_id": user_id}).sort("consumed_at", -1)
+
+        documents = await cursor.to_list(length=None)
+
+        return [_entry_from_document(document) for document in documents]
+    
+    async def get_entries_for_user_by_date(
+        self,
+        user_id: str,
+        target_date: date,
+    ) -> list[FoodEntry]:
+        start_of_day = datetime.combine(
+            target_date,
+            time.min,
+            tzinfo=timezone.utc,
+        )
+
+        end_of_day = datetime.combine(
+            target_date,
+            time.max,
+            tzinfo=timezone.utc,
+        )
+
+        cursor = self.collection.find(
+            {
+                "user_id": user_id,
+                "consumed_at": {
+                    "$gte": start_of_day,
+                    "$lte": end_of_day,
+                },
+            }
+        ).sort("consumed_at", -1)
 
         documents = await cursor.to_list(length=None)
 
