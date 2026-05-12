@@ -64,6 +64,20 @@ def poisci_izdelek(url):
 
                 produkt_soup = BeautifulSoup(produkt_odgovor.text, "html.parser")
 
+                tekst = produkt_soup.get_text("\n", strip=True)
+
+                if "Hranil" in tekst or "Energijska" in tekst or "Beljakovine" in tekst:
+                    print("\n=== MOŽNE HRANILNE VREDNOSTI ===")
+
+                    vrstice = tekst.split("\n")
+
+                    for i, vrstica in enumerate(vrstice):
+                        if "energijska" in vrstica.lower() or "beljakovine" in vrstica.lower():
+                            for okolica in vrstice[max(0, i - 5): i + 20]:
+                                print(okolica)
+                            print("=== KONEC ===")
+                            break
+
                 # naslov
                 naslov = produkt_soup.find("h1")
 
