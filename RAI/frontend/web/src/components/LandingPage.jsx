@@ -40,23 +40,24 @@ export default function LandingPage() {
       {/* Center Text Area */}
       <div className="flex flex-col items-center justify-center flex-1 w-full px-4">
         
-        {/* We apply the glow and hover scale to this wrapper, NOT the text directly! */}
         <motion.div 
           initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
-          className="cursor-pointer group flex flex-col items-center justify-center text-center select-none transition-all duration-500 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+          className="group flex flex-col items-center justify-center text-center select-none transition-all duration-500 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]"
         >
           <h1 
-            className="text-7xl sm:text-8xl md:text-[130px] leading-none text-metallic"
+            className="text-7xl sm:text-8xl md:text-[130px] leading-none tracking-wide m-0 text-metallic"
             style={{ fontFamily: 'Chopsic, sans-serif' }}
           >
             GYMMER
           </h1>
 
-          <p className="text-sm sm:text-xl md:text-2xl uppercase tracking-[0.3em] text-[#a6a6a6] mt-4 font-medium transition-colors duration-500 group-hover:text-white">
+          <p className="text-sm sm:text-xl md:text-1xl uppercase tracking-[0.3em] text-[#FFFFFF] font-medium transition-colors duration-100 group-hover:text-white"
+             style={{ fontFamily: 'Chopsic, sans-serif' }}
+          >
             
             Everything you need in one app
           </p>
@@ -68,7 +69,7 @@ export default function LandingPage() {
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1.2 }}
+        transition={{ duration: 0.5}}
         className="absolute bottom-8 flex flex-col items-center justify-center text-gray-400 animate-bounce"
       >
         <svg 
