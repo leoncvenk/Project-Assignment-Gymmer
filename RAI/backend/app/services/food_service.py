@@ -151,3 +151,35 @@ class FoodService:
             return False
 
         return True
+    
+    async def search_foods(
+        self,
+        query: str,
+    ) -> list[Food]:
+        normalized_query = query.strip()
+
+        cursor = self.collection.find(
+            {
+                "$or": [
+                    {
+                        "name": {
+                            "$regex": normalized_query,
+                            "$options": "i",
+                        }
+                    },
+                    {
+                        "brand": {
+                            "$regex": normalized_query,
+                            "$options": "i",
+                        }
+                    },
+                ]
+            }
+        )
+
+        documents = await cursor.to_list(length=50)
+
+        return [
+            _food_from_document(document)
+            for document in documents
+        ]
