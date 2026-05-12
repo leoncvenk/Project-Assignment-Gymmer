@@ -18,13 +18,13 @@ export default function LandingPage() {
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-        className="absolute top-8 px-6 py-3 bg-[#2a2a2a]/90 backdrop-blur-sm rounded-2xl flex items-center gap-7 shadow-[0_4px_30px_rgba(0,0,0,0.5)] border border-white/5"
+        className="absolute top-5 px-10 py-5 bg-[#2a2a2a]/90 backdrop-blur-sm rounded-2xl flex items-center gap-12 shadow-[0_4px_30px_rgba(0,0,0,0.5)] border border-white/5"
       >
         {dockItems.map((item, index) => (
           <Link
             key={index}
             to={item.path}
-            className="text-gray-300 transition-all duration-200 hover:text-white hover:scale-125 active:scale-95 flex items-center justify-center"
+            className="text-gray-300 transition-all duration-200 hover:text-white hover:scale-200 active:scale-95 flex items-center justify-center"
           >
             <i className={`${item.icon} text-xl flex items-center h-full leading-none`} />
           </Link>
