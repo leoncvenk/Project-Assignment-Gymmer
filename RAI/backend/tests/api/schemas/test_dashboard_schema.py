@@ -11,6 +11,8 @@ from app.schemas.dashboard_schema import (
     DashboardSummarySchema,
     DashboardTargetsSchema,
     DashboardMealSchema,
+    WeeklyDashboardDaySchema,
+    WeeklyDashboardResponseSchema,
 )
 
 
@@ -310,3 +312,77 @@ def test_dashboard_meal_schema_rejects_invalid_meal_type():
             entry_count=0,
             entries=[],
         )
+
+def test_weekly_dashboard_day_schema_valid():
+    day = WeeklyDashboardDaySchema(
+        date=date(2026, 5, 11),
+        total_calories=1800,
+        total_protein_g=130,
+        total_carbs_g=200,
+        total_fat_g=55,
+        entry_count=4,
+        calorie_target=2200,
+        calories_remaining=400,
+        calories_percent=81.82,
+    )
+
+    assert day.date == date(2026, 5, 11)
+    assert day.total_calories == 1800
+    assert day.calorie_target == 2200
+    assert day.calories_percent == 81.82
+
+
+def test_weekly_dashboard_day_allows_missing_target_data():
+    day = WeeklyDashboardDaySchema(
+        date=date(2026, 5, 11),
+        total_calories=0,
+        total_protein_g=0,
+        total_carbs_g=0,
+        total_fat_g=0,
+        entry_count=0,
+        calorie_target=None,
+        calories_remaining=None,
+        calories_percent=None,
+    )
+
+    assert day.calorie_target is None
+    assert day.calories_remaining is None
+    assert day.calories_percent is None
+
+
+def test_weekly_dashboard_day_rejects_negative_totals():
+    with pytest.raises(ValidationError):
+        WeeklyDashboardDaySchema(
+            date=date(2026, 5, 11),
+            total_calories=-1,
+            total_protein_g=0,
+            total_carbs_g=0,
+            total_fat_g=0,
+            entry_count=0,
+        )
+
+
+def test_weekly_dashboard_response_schema_valid():
+    days = [
+        WeeklyDashboardDaySchema(
+            date=date(2026, 5, 11),
+            total_calories=0,
+            total_protein_g=0,
+            total_carbs_g=0,
+            total_fat_g=0,
+            entry_count=0,
+            calorie_target=None,
+            calories_remaining=None,
+            calories_percent=None,
+        )
+    ]
+
+    response = WeeklyDashboardResponseSchema(
+        week_start=date(2026, 5, 11),
+        week_end=date(2026, 5, 17),
+        days=days,
+    )
+
+    assert response.week_start == date(2026, 5, 11)
+    assert response.week_end == date(2026, 5, 17)
+    assert len(response.days) == 1
