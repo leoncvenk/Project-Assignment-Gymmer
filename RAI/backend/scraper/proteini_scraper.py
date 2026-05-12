@@ -11,7 +11,7 @@ HEADERS = {
 
 def poisci_izdelek(url):
     """
-    Pridobi podatke o enem Proteini.si izdelku.
+    Pridobi podatke o Proteini.si izdelkih.
     """
 
     izdelki = []
@@ -25,43 +25,73 @@ def poisci_izdelek(url):
 
         soup = BeautifulSoup(odgovor.text, "html.parser")
 
-        print("\n=== VSI LINKI ===")
+        print("\n=== ISKANJE PRODUKTOV ===")
 
         linki = soup.find_all("a")
 
-        print("Število linkov:", len(linki))
+        produkt_linki = []
 
-        for link in linki[:30]:
+        for link in linki:
             href = link.get("href")
 
-            if href:
-                print(href)
+            if not href:
+                continue
 
-        # naslov
-        naslov = soup.find("h1")
+            if "/sl/energijska-hrana/energijske-ploscice/" in href:
 
-        if naslov:
-            naslov = naslov.text.strip()
-        else:
-            naslov = "Ni naslova"
+                # odstrani query parameterje
+                href = href.split("?")[0]
 
-        # cena
-        cena_element = soup.find("div", class_="price")
+                # odstrani duplicate
+                if href not in produkt_linki:
+                    produkt_linki.append(href)
 
-        if cena_element:
-            cena = cena_element.text.strip()
-        else:
-            cena = "Ni cene"
+        print("Najdenih produkt linkov:", len(produkt_linki))
 
-        izdelek = {
-            "trgovina": "Proteini.si",
-            "url": url,
-            "ime_izdelka": naslov,
-            "cena": cena,
-            "hranilne_vrednosti": {}
-        }
+        for link in produkt_linki[:10]:
+            print(link)
 
-        izdelki.append(izdelek)
+        # loop čez vse produkte
+        for produkt_url in produkt_linki:
+
+            poln_url = BASE_URL + produkt_url
+
+            try:
+                produkt_odgovor = requests.get(poln_url, headers=HEADERS)
+
+                if produkt_odgovor.status_code != 200:
+                    continue
+
+                produkt_soup = BeautifulSoup(produkt_odgovor.text, "html.parser")
+
+                # naslov
+                naslov = produkt_soup.find("h1")
+
+                if naslov:
+                    naslov = naslov.text.strip()
+                else:
+                    naslov = "Ni naslova"
+
+                # cena
+                cena_element = produkt_soup.find("div", class_="price")
+
+                if cena_element:
+                    cena = cena_element.text.strip()
+                else:
+                    cena = "Ni cene"
+
+                izdelek = {
+                    "trgovina": "Proteini.si",
+                    "url": poln_url,
+                    "ime_izdelka": naslov,
+                    "cena": cena,
+                    "hranilne_vrednosti": {}
+                }
+
+                izdelki.append(izdelek)
+
+            except Exception as e:
+                print("Napaka pri produktu:", e)
 
         return izdelki
 
@@ -79,8 +109,9 @@ rezultati = poisci_izdelek(url)
 
 print("\nNajdenih izdelkov:", len(rezultati))
 
-print("\nPrimer prvega izdelka:")
-print(json.dumps(rezultati[0], indent=4, ensure_ascii=False))
+if rezultati:
+    print("\nPrimer prvega izdelka:")
+    print(json.dumps(rezultati[0], indent=4, ensure_ascii=False))
 
 with open("proteini_honey_bar.json", "w", encoding="utf-8") as file:
     json.dump(rezultati, file, indent=4, ensure_ascii=False)
