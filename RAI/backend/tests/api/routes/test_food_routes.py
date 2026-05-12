@@ -215,3 +215,70 @@ async def test_search_foods_rejects_missing_query(client):
     response = await client.get("/foods")
 
     assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_search_foods_respects_limit(client):
+    unique = uuid4().hex[:8]
+
+    for index in range(3):
+        await client.post(
+            "/foods",
+            json={
+                "name": f"SearchChickenLimit-{unique}-{index}",
+            },
+        )
+
+    response = await client.get(
+        f"/foods?query=SearchChickenLimit-{unique}&limit=2"
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+@pytest.mark.asyncio
+async def test_search_foods_respects_skip(client):
+    unique = uuid4().hex[:8]
+
+    await client.post(
+        "/foods",
+        json={
+            "name": f"SearchChickenSkip-{unique}-1",
+        },
+    )
+
+    await client.post(
+        "/foods",
+        json={
+            "name": f"SearchChickenSkip-{unique}-2",
+        },
+    )
+
+    without_skip_response = await client.get(
+        f"/foods?query=SearchChickenSkip-{unique}&limit=10&skip=0"
+    )
+
+    with_skip_response = await client.get(
+        f"/foods?query=SearchChickenSkip-{unique}&limit=10&skip=1"
+    )
+
+    assert without_skip_response.status_code == 200
+    assert with_skip_response.status_code == 200
+
+    assert len(without_skip_response.json()) == 2
+    assert len(with_skip_response.json()) == 1
+
+@pytest.mark.asyncio
+async def test_search_foods_rejects_invalid_limit(client):
+    response = await client.get(
+        "/foods?query=chicken&limit=0"
+    )
+
+    assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_search_foods_rejects_invalid_skip(client):
+    response = await client.get(
+        "/foods?query=chicken&skip=-1"
+    )
+
+    assert response.status_code == 422
