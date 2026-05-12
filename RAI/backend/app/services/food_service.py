@@ -5,6 +5,7 @@ from uuid import uuid4
 from app.core.database import get_db
 from app.models.food import Food
 from app.schemas.food_schema import CreateFoodSchema, UpdateFoodSchema
+from app.services.open_food_fact_service import OpenFoodFactsService
 
 UNKNOWN_BRAND = None
 FOODS_COLLECTION = "foods"
@@ -45,8 +46,19 @@ def _food_from_document(document: dict) -> Food:
         updated_at=document.get("updated_at"),
     )
 
+def _get_nutriment(product: dict, key: str) -> float | None:
+    value = product.get("nutriments", {}).get(key)
+
+    if value is None:
+        return None
+
+    return float(value)
+
 
 class FoodService:
+    def __init__(self):
+        self.open_food_facts_service = OpenFoodFactsService()
+
     @property
     def collection(self):
         return get_db()[FOODS_COLLECTION]
@@ -189,3 +201,48 @@ class FoodService:
             _food_from_document(document)
             for document in documents
         ]
+    
+    async def import_food_by_barcode(
+        self,
+        barcode: str,
+    ) -> Food | None:
+        normalized_barcode = barcode.strip()
+
+        if normalized_barcode == "":
+            return None
+
+        existing = await self.get_food_by_barcode(normalized_barcode)
+
+        if existing is not None:
+            return existing
+
+        product = await self.open_food_facts_service.get_product_by_barcode(
+            normalized_barcode
+        )
+
+        if product is None:
+            return None
+
+        name = product.get("product_name")
+
+        if not name:
+            return None
+
+        return await self.create_food(
+            CreateFoodSchema(
+                name=name,
+                brand=product.get("brands"),
+                barcode=normalized_barcode,
+                category=product.get("categories"),
+                calories_per_100g=_get_nutriment(product, "energy-kcal_100g"),
+                protein_g_per_100g=_get_nutriment(product, "proteins_100g"),
+                carbs_g_per_100g=_get_nutriment(product, "carbohydrates_100g"),
+                fat_g_per_100g=_get_nutriment(product, "fat_100g"),
+                fiber_g_per_100g=_get_nutriment(product, "fiber_100g"),
+                sugar_g_per_100g=_get_nutriment(product, "sugars_100g"),
+                salt_g_per_100g=_get_nutriment(product, "salt_100g"),
+                source="open_food_facts",
+                source_id=normalized_barcode,
+                image_url=product.get("image_front_url"),
+            )
+        )

@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
+from unittest.mock import AsyncMock
 
 from app.core.database import get_db
 from app.main import app
@@ -353,3 +354,79 @@ async def test_search_foods_respects_skip(service):
 
     assert len(results_without_skip) == 2
     assert len(results_with_skip) == 1
+    
+@pytest.mark.asyncio
+async def test_import_food_by_barcode_returns_existing_food(service):
+    existing = await service.create_food(
+        CreateFoodSchema(
+            name="Milk",
+            barcode="123456",
+        )
+    )
+
+    result = await service.import_food_by_barcode("123456")
+
+    assert_same_food(result, existing)
+
+@pytest.mark.asyncio
+async def test_import_food_by_barcode_creates_food_from_open_food_facts(service):
+    service.open_food_facts_service.get_product_by_barcode = AsyncMock(
+        return_value={
+            "product_name": "Protein bar",
+            "brands": "Test Brand",
+            "categories": "Snacks",
+            "image_front_url": "https://example.com/image.jpg",
+            "nutriments": {
+                "energy-kcal_100g": 350,
+                "proteins_100g": 30,
+                "carbohydrates_100g": 40,
+                "fat_100g": 10,
+                "fiber_100g": 5,
+                "sugars_100g": 12,
+                "salt_100g": 0.4,
+            },
+        }
+    )
+
+    result = await service.import_food_by_barcode("987654")
+
+    assert result is not None
+    assert result.name == "Protein bar"
+    assert result.brand == "Test Brand"
+    assert result.barcode == "987654"
+    assert result.category == "Snacks"
+    assert result.image_url == "https://example.com/image.jpg"
+
+    assert result.calories_per_100g == 350
+    assert result.protein_g_per_100g == 30
+    assert result.carbs_g_per_100g == 40
+    assert result.fat_g_per_100g == 10
+    assert result.fiber_g_per_100g == 5
+    assert result.sugar_g_per_100g == 12
+    assert result.salt_g_per_100g == 0.4
+
+    assert result.source == "open_food_facts"
+    assert result.source_id == "987654"
+
+@pytest.mark.asyncio
+async def test_import_food_by_barcode_returns_none_when_open_food_facts_missing(service):
+    service.open_food_facts_service.get_product_by_barcode = AsyncMock(
+        return_value=None
+    )
+
+    result = await service.import_food_by_barcode("missing-barcode")
+
+    assert result is None
+
+@pytest.mark.asyncio
+async def test_import_food_by_barcode_returns_none_when_product_has_no_name(service):
+    service.open_food_facts_service.get_product_by_barcode = AsyncMock(
+        return_value={
+            "brands": "Test Brand",
+            "nutriments": {},
+        }
+    )
+
+    result = await service.import_food_by_barcode("987654")
+
+    assert result is None
