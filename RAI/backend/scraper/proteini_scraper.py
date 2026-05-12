@@ -42,10 +42,7 @@ def poisci_izdelek(url):
                 if href not in produkt_linki:
                     produkt_linki.append(href)
 
-        print("Najdenih produkt linkov:", len(produkt_linki))
-
-        for link in produkt_linki[:10]:
-            print(link)
+        print(f"Najdenih produkt linkov: {len(produkt_linki)}")
 
         for produkt_url in produkt_linki:
             poln_url = BASE_URL + produkt_url
@@ -126,7 +123,7 @@ if rezultati:
     print("\nPrimer prvega izdelka:")
     print(json.dumps(rezultati[0], indent=4, ensure_ascii=False))
 
-with open("proteini_honey_bar.json", "w", encoding="utf-8") as file:
+with open("proteini_energijske_ploscice.json", "w", encoding="utf-8") as file:
     json.dump(rezultati, file, indent=4, ensure_ascii=False)
 
-print("\nJSON shranjen v proteini_honey_bar.json")
+print("\nJSON shranjen v proteini_energijske_ploscice.json")
