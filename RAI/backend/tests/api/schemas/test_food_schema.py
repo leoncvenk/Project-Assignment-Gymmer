@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.food_schema import CreateFoodSchema, FoodResponseSchema, UpdateFoodSchema
+from app.schemas.food_schema import CreateFoodSchema, FoodResponseSchema, UpdateFoodSchema, FoodSearchQuerySchema
 
 def test_create_food_valid():
     food = CreateFoodSchema(
@@ -126,3 +126,24 @@ def test_food_response_schema():
 
     assert food.id == "123"
     assert food.source == "manual"
+
+def test_food_search_query_valid():
+    schema = FoodSearchQuerySchema(query="chicken")
+
+    assert schema.query == "chicken"
+
+
+def test_food_search_query_strips_whitespace():
+    schema = FoodSearchQuerySchema(query="  chicken  ")
+
+    assert schema.query == "chicken"
+
+
+def test_food_search_query_rejects_empty_query():
+    with pytest.raises(ValidationError):
+        FoodSearchQuerySchema(query="")
+
+
+def test_food_search_query_rejects_too_long_query():
+    with pytest.raises(ValidationError):
+        FoodSearchQuerySchema(query="a" * 101)
