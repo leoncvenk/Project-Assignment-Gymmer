@@ -1,10 +1,12 @@
+from datetime import datetime, timezone
+
 import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
 
 from app.core.database import get_db
 from app.main import app
-from app.schemas.food_entry_schema import CreateFoodEntrySchema
+from app.schemas.food_entry_schema import CreateFoodEntrySchema, UpdateFoodEntrySchema
 from app.schemas.food_schema import CreateFoodSchema
 from app.services.food_entry_service import FOOD_ENTRIES_COLLECTION, FoodEntryService
 from app.services.food_service import FOODS_COLLECTION, FoodService
@@ -273,3 +275,126 @@ async def test_create_entry_stores_meal_type(services):
 
     assert result is not None
     assert result.meal_type == "lunch"
+
+@pytest.mark.asyncio
+async def test_update_entry_quantity_recalculates_nutrition(services):
+    food_service, entry_service = services
+
+    food = await food_service.create_food(
+        CreateFoodSchema(
+            name="Chicken breast",
+            calories_per_100g=165,
+            protein_g_per_100g=31,
+            carbs_g_per_100g=0,
+            fat_g_per_100g=3.6,
+        )
+    )
+
+    entry = await entry_service.create_entry(
+        user_id="user-123",
+        data=CreateFoodEntrySchema(food_id=food.id, quantity_g=100),
+    )
+
+    updated = await entry_service.update_entry(
+        entry_id=entry.id,
+        user_id="user-123",
+        data=UpdateFoodEntrySchema(quantity_g=200),
+    )
+
+    assert updated is not None
+    assert updated.id == entry.id
+    assert updated.quantity_g == 200
+    assert updated.calories == 330
+    assert updated.protein_g == 62
+    assert updated.carbs_g == 0
+    assert updated.fat_g == 7.2
+
+@pytest.mark.asyncio
+async def test_update_entry_meal_type_only_preserves_nutrition(services):
+    food_service, entry_service = services
+
+    food = await food_service.create_food(
+        CreateFoodSchema(
+            name="Rice",
+            calories_per_100g=130,
+            protein_g_per_100g=2.7,
+            carbs_g_per_100g=28,
+            fat_g_per_100g=0.3,
+        )
+    )
+
+    entry = await entry_service.create_entry(
+        user_id="user-123",
+        data=CreateFoodEntrySchema(
+            food_id=food.id,
+            quantity_g=100,
+            meal_type="lunch",
+        ),
+    )
+
+    updated = await entry_service.update_entry(
+        entry_id=entry.id,
+        user_id="user-123",
+        data=UpdateFoodEntrySchema(meal_type="dinner"),
+    )
+
+    assert updated is not None
+    assert updated.quantity_g == 100
+    assert updated.calories == 130
+    assert updated.protein_g == 2.7
+    assert updated.carbs_g == 28
+    assert updated.fat_g == 0.3
+    assert updated.meal_type == "dinner"
+
+@pytest.mark.asyncio
+async def test_update_entry_consumed_at_only(services):
+    food_service, entry_service = services
+
+    food = await food_service.create_food(CreateFoodSchema(name="Apple"))
+
+    entry = await entry_service.create_entry(
+        user_id="user-123",
+        data=CreateFoodEntrySchema(food_id=food.id, quantity_g=100),
+    )
+
+    new_consumed_at = datetime(2026, 5, 10, 12, 0, tzinfo=timezone.utc)
+
+    updated = await entry_service.update_entry(
+        entry_id=entry.id,
+        user_id="user-123",
+        data=UpdateFoodEntrySchema(consumed_at=new_consumed_at),
+    )
+
+    assert updated is not None
+    assert updated.consumed_at == new_consumed_at
+
+@pytest.mark.asyncio
+async def test_update_entry_does_not_update_other_users_entry(services):
+    food_service, entry_service = services
+
+    food = await food_service.create_food(CreateFoodSchema(name="Apple"))
+
+    entry = await entry_service.create_entry(
+        user_id="other-user",
+        data=CreateFoodEntrySchema(food_id=food.id, quantity_g=100),
+    )
+
+    updated = await entry_service.update_entry(
+        entry_id=entry.id,
+        user_id="user-123",
+        data=UpdateFoodEntrySchema(quantity_g=200),
+    )
+
+    assert updated is None
+
+@pytest.mark.asyncio
+async def test_update_missing_entry_returns_none(services):
+    _, entry_service = services
+
+    updated = await entry_service.update_entry(
+        entry_id="missing-entry",
+        user_id="user-123",
+        data=UpdateFoodEntrySchema(quantity_g=200),
+    )
+
+    assert updated is None

@@ -1,10 +1,13 @@
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from datetime import datetime, timezone
 from uuid import uuid4
 
 from app.core.database import get_db
 from app.models.food_entry import FoodEntry
-from app.schemas.food_entry_schema import CreateFoodEntrySchema
+from app.schemas.food_entry_schema import (
+    CreateFoodEntrySchema,
+    UpdateFoodEntrySchema,
+)
 from app.services.food_service import FOODS_COLLECTION
 
 FOOD_ENTRIES_COLLECTION = "food_entries"
@@ -78,6 +81,80 @@ class FoodEntryService:
         await self.collection.insert_one(asdict(entry))
 
         return entry
+    
+    async def update_entry(
+        self,
+        entry_id: str,
+        user_id: str,
+        data: UpdateFoodEntrySchema,
+    ) -> FoodEntry | None:
+        existing = await self.get_entry_by_id(
+            entry_id=entry_id,
+            user_id=user_id,
+        )
+
+        if existing is None:
+            return None
+
+        food = await self.foods_collection.find_one(
+            {"id": existing.food_id}
+        )
+
+        if food is None:
+            return None
+
+        quantity_g = (
+            data.quantity_g
+            if data.quantity_g is not None
+            else existing.quantity_g
+        )
+
+        calories = _calculate_per_quantity(
+            food.get("calories_per_100g"),
+            quantity_g,
+        )
+
+        protein_g = _calculate_per_quantity(
+            food.get("protein_g_per_100g"),
+            quantity_g,
+        )
+
+        carbs_g = _calculate_per_quantity(
+            food.get("carbs_g_per_100g"),
+            quantity_g,
+        )
+
+        fat_g = _calculate_per_quantity(
+            food.get("fat_g_per_100g"),
+            quantity_g,
+        )
+
+        updated = replace(
+            existing,
+            quantity_g=quantity_g,
+            calories=calories,
+            protein_g=protein_g,
+            carbs_g=carbs_g,
+            fat_g=fat_g,
+            meal_type=(
+                data.meal_type
+                if data.meal_type is not None
+                else existing.meal_type
+            ),
+            consumed_at=(
+                data.consumed_at
+                if data.consumed_at is not None
+                else existing.consumed_at
+            ),
+            updated_at=_now(),
+        )
+
+        await self.collection.update_one(
+            {"id": entry_id, "user_id": user_id},
+            {"$set": asdict(updated)},
+        )
+
+        return updated
 
     async def get_entries_for_user(self, user_id: str) -> list[FoodEntry]:
         cursor = self.collection.find({"user_id": user_id}).sort("consumed_at", -1)

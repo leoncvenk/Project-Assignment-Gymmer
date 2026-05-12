@@ -17,6 +17,10 @@ class CreateFoodEntrySchema(BaseModel):
     meal_type: MealType = "unspecified"
     consumed_at: datetime | None = None
 
+class UpdateFoodEntrySchema(BaseModel):
+    quantity_g: float | None = Field(default=None, gt=0)
+    meal_type: MealType | None = None
+    consumed_at: datetime | None = None
 
 class FoodEntryResponseSchema(BaseModel):
     id: str

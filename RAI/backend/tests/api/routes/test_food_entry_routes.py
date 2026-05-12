@@ -14,6 +14,9 @@ from app.services.food_service import FOODS_COLLECTION
 def unique_email() -> str:
     return f"test-{uuid4().hex}@example.com"
 
+def auth_headers(token: str) -> dict[str, str]:
+    return {"Authorization": f"Bearer {token}"}
+
 
 @pytest_asyncio.fixture
 async def client():
@@ -354,3 +357,119 @@ async def test_create_food_entry_rejects_invalid_meal_type(client):
     )
 
     assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_update_food_entry_route_authenticated(client):
+    token = await register_and_login(client)
+    food_id = await create_food(client)
+
+    create_response = await client.post(
+        "/users/me/food-entries",
+        headers=auth_headers(token),
+        json={
+            "food_id": food_id,
+            "quantity_g": 100,
+        },
+    )
+
+    assert create_response.status_code == 201
+    entry_id = create_response.json()["id"]
+
+    response = await client.patch(
+        f"/users/me/food-entries/{entry_id}",
+        headers=auth_headers(token),
+        json={
+            "quantity_g": 200,
+            "meal_type": "dinner",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["id"] == entry_id
+    assert data["quantity_g"] == 200
+    assert data["meal_type"] == "dinner"
+    assert data["calories"] == 330
+    assert data["protein_g"] == 62
+    assert data["fat_g"] == 7.2
+
+@pytest.mark.asyncio
+async def test_update_food_entry_requires_auth(client):
+    response = await client.patch(
+        "/users/me/food-entries/some-entry-id",
+        json={
+            "quantity_g": 200,
+        },
+    )
+
+    assert response.status_code in [401, 403]
+
+@pytest.mark.asyncio
+async def test_update_food_entry_rejects_invalid_quantity(client):
+    token = await register_and_login(client)
+    food_id = await create_food(client)
+
+    create_response = await client.post(
+        "/users/me/food-entries",
+        headers=auth_headers(token),
+        json={
+            "food_id": food_id,
+            "quantity_g": 100,
+        },
+    )
+
+    assert create_response.status_code == 201
+    entry_id = create_response.json()["id"]
+
+    response = await client.patch(
+        f"/users/me/food-entries/{entry_id}",
+        headers=auth_headers(token),
+        json={
+            "quantity_g": 0,
+        },
+    )
+
+    assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_update_food_entry_missing_returns_404(client):
+    token = await register_and_login(client)
+
+    response = await client.patch(
+        "/users/me/food-entries/missing-entry",
+        headers=auth_headers(token),
+        json={
+            "quantity_g": 200,
+        },
+    )
+
+    assert response.status_code == 404
+
+@pytest.mark.asyncio
+async def test_user_cannot_update_other_users_food_entry(client):
+    first_token = await register_and_login(client)
+    second_token = await register_and_login(client)
+    food_id = await create_food(client)
+
+    create_response = await client.post(
+        "/users/me/food-entries",
+        headers=auth_headers(second_token),
+        json={
+            "food_id": food_id,
+            "quantity_g": 100,
+        },
+    )
+
+    assert create_response.status_code == 201
+    entry_id = create_response.json()["id"]
+
+    response = await client.patch(
+        f"/users/me/food-entries/{entry_id}",
+        headers=auth_headers(first_token),
+        json={
+            "quantity_g": 200,
+        },
+    )
+
+    assert response.status_code == 404
