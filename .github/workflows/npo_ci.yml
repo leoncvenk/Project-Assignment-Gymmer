@@ -35,6 +35,9 @@ jobs:
         working-directory: NPO
         run: docker compose up -d
 
+      - name: Make test scripts executable
+        run: chmod +x NPO/tests/mqtt/*.sh
+
       - name: Run MQTT smoke test
         run: ./NPO/tests/mqtt/smoke-test.sh
 
