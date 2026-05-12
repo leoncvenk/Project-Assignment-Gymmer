@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
@@ -106,5 +108,110 @@ async def test_create_food_route_rejects_negative_nutrition(client):
             "calories_per_100g": -10,
         },
     )
+
+    assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_search_foods_by_name(client):
+    unique = uuid4().hex[:8]
+    food_name = f"SearchChicken-{unique}"
+
+    await client.post(
+        "/foods",
+        json={
+            "name": food_name,
+        },
+    )
+
+    await client.post(
+        "/foods",
+        json={
+            "name": f"SearchRice-{unique}",
+        },
+    )
+
+    response = await client.get(
+        f"/foods?query={food_name}"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 1
+    assert data[0]["name"] == food_name
+
+@pytest.mark.asyncio
+async def test_search_foods_by_brand(client):
+    unique = uuid4().hex[:8]
+    brand = f"SearchBrand-{unique}"
+
+    await client.post(
+        "/foods",
+        json={
+            "name": f"SearchChicken-{unique}",
+            "brand": brand,
+        },
+    )
+
+    await client.post(
+        "/foods",
+        json={
+            "name": f"SearchYogurt-{unique}",
+            "brand": f"OtherBrand-{unique}",
+        },
+    )
+
+    response = await client.get(
+        f"/foods?query={brand}"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 1
+    assert data[0]["brand"] == brand
+
+@pytest.mark.asyncio
+async def test_search_foods_case_insensitive(client):
+    unique = uuid4().hex[:8]
+    food_name = f"SearchChicken-{unique}"
+
+    await client.post(
+        "/foods",
+        json={
+            "name": food_name,
+        },
+    )
+
+    response = await client.get(
+        f"/foods?query={food_name.upper()}"
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+
+@pytest.mark.asyncio
+async def test_search_foods_returns_empty_list_when_no_match(client):
+    unique = uuid4().hex[:8]
+
+    await client.post(
+        "/foods",
+        json={
+            "name": f"SearchChicken-{unique}",
+        },
+    )
+
+    response = await client.get(
+        f"/foods?query=no-match-{unique}"
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+@pytest.mark.asyncio
+async def test_search_foods_rejects_missing_query(client):
+    response = await client.get("/foods")
 
     assert response.status_code == 422
