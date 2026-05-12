@@ -2,3 +2,18 @@
 @import url('https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-straight/css/uicons-regular-straight.css');
 
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'Chopsic';
+  src: url('/Chopsic.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.text-metallic {
+  background: linear-gradient(to bottom, #ffffff 0%, #d9d9d9 30%, #a6a6a6 48%, #9e9e9e 50%, #8c8c8c 75%, #4d4d4d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}

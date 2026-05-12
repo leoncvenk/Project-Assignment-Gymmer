@@ -13,7 +13,7 @@ export default function LandingPage() {
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-hidden">
       
-      {/* Floating Dock - Slides down and fades in */}
+      {/* Floating Dock */}
       <motion.nav 
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -31,29 +31,33 @@ export default function LandingPage() {
         ))}
       </motion.nav>
 
-      {/* Center Logo Area - Outer wrapper strictly for layout/centering */}
+      {/* Center Text Area */}
       <div className="flex flex-col items-center justify-center flex-1 w-full px-4">
         
-        {/* Inner animated container tightly wrapping the image */}
+        {/* We apply the glow and hover scale to this wrapper, NOT the text directly! */}
         <motion.div 
           initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
-          className="cursor-pointer group inline-block"
+          className="cursor-pointer group flex flex-col items-center justify-center text-center select-none transition-all duration-500 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]"
         >
-          <img 
-            src="/landingText.svg" 
-            alt="GYMMER - Everything you need in one app" 
-            className="w-full max-w-[1200px] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.15)] select-none"
-            draggable="false"
-          />
+          <h1 
+            className="text-7xl sm:text-8xl md:text-[130px] leading-none text-metallic"
+            style={{ fontFamily: 'Chopsic, sans-serif' }}
+          >
+            GYMMER
+          </h1>
+
+          <p className="text-sm sm:text-xl md:text-2xl uppercase tracking-[0.3em] text-[#a6a6a6] mt-4 font-medium transition-colors duration-500 group-hover:text-white">
+            Everything you need in one app
+          </p>
         </motion.div>
 
       </div>
 
-      {/* Bottom Scroll Indicator - Delayed fade in */}
+      {/* Bottom Scroll Indicator */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
