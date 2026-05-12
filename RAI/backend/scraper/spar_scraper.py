@@ -19,7 +19,7 @@ def shrani_v_json(izdelki, ime_datoteke):
 
     print(f"\nJSON shranjen v: {pot}")
 
-    def pridobi_hranilne_vrednosti(page, url_izdelka):
+def pridobi_hranilne_vrednosti(page, url_izdelka):
     """
     Iz strani posameznega izdelka pridobi hranilne vrednosti.
     """
@@ -44,8 +44,8 @@ def shrani_v_json(izdelki, ime_datoteke):
     except Exception as e:
         print(f"Napaka pri hranilnih vrednostih za {url_izdelka}: {e}")
         return hranilne_vrednosti
-    
-    def poisci_izdelke(page, iskalni_niz, limit=3):
+
+def poisci_izdelke(page, iskalni_niz, limit=3):
     """
     Poišče Spar izdelke glede na iskalni niz.
     """
@@ -107,8 +107,8 @@ def shrani_v_json(izdelki, ime_datoteke):
     except Exception as e:
         print(f"Napaka pri iskanju izdelkov: {e}")
         return []
-    
-    if __name__ == "__main__":
+
+if __name__ == "__main__":
     iskanje = input("Vnesi iskalni niz (npr. testenine): ")
 
     with sync_playwright() as p:
