@@ -3,7 +3,11 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.food_entry_schema import CreateFoodEntrySchema, FoodEntryResponseSchema
+from app.schemas.food_entry_schema import (
+    CreateFoodEntrySchema, 
+    FoodEntryResponseSchema, 
+    UpdateFoodEntrySchema
+)
 
 
 def test_create_food_entry_valid():
@@ -125,3 +129,40 @@ def test_create_food_entry_rejects_invalid_meal_type():
             quantity_g=150,
             meal_type="midnight_feast",
         )
+
+def test_update_food_entry_valid_quantity():
+    schema = UpdateFoodEntrySchema(quantity_g=200)
+
+    assert schema.quantity_g == 200
+
+
+def test_update_food_entry_valid_meal_type():
+    schema = UpdateFoodEntrySchema(meal_type="dinner")
+
+    assert schema.meal_type == "dinner"
+
+
+def test_update_food_entry_valid_consumed_at():
+    consumed_at = datetime.now(timezone.utc)
+
+    schema = UpdateFoodEntrySchema(consumed_at=consumed_at)
+
+    assert schema.consumed_at == consumed_at
+
+
+def test_update_food_entry_allows_empty_update():
+    schema = UpdateFoodEntrySchema()
+
+    assert schema.quantity_g is None
+    assert schema.meal_type is None
+    assert schema.consumed_at is None
+
+
+def test_update_food_entry_rejects_zero_quantity():
+    with pytest.raises(ValidationError):
+        UpdateFoodEntrySchema(quantity_g=0)
+
+
+def test_update_food_entry_rejects_invalid_meal_type():
+    with pytest.raises(ValidationError):
+        UpdateFoodEntrySchema(meal_type="midnight_feast")
