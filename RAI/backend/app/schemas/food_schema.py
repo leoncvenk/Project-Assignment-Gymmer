@@ -108,3 +108,11 @@ class FoodResponseSchema(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+
+class FoodSearchQuerySchema(BaseModel):
+    query: str = Field(..., min_length=1, max_length=100)
+
+    @field_validator("query")
+    @classmethod
+    def strip_query(cls, value: str) -> str:
+        return value.strip()

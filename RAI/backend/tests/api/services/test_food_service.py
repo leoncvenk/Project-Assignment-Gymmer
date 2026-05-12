@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
@@ -241,3 +243,113 @@ async def test_update_food_updates_nutrition_fields(service):
     assert updated.carbs_g_per_100g == 28
     assert updated.protein_g_per_100g == 2.7
     assert updated.fat_g_per_100g == 0.3
+
+@pytest.mark.asyncio
+async def test_search_foods_by_name_partial_match(service):
+    chicken = await service.create_food(
+        CreateFoodSchema(name="Chicken breast")
+    )
+
+    await service.create_food(
+        CreateFoodSchema(name="Rice")
+    )
+
+    results = await service.search_foods("chick")
+
+    assert len(results) == 1
+    assert results[0].id == chicken.id
+
+
+@pytest.mark.asyncio
+async def test_search_foods_by_brand_partial_match(service):
+    chicken = await service.create_food(
+        CreateFoodSchema(
+            name="Chicken breast",
+            brand="Perutnina Ptuj",
+        )
+    )
+
+    await service.create_food(
+        CreateFoodSchema(
+            name="Greek yogurt",
+            brand="Dukat",
+        )
+    )
+
+    results = await service.search_foods("perutnina")
+
+    assert len(results) == 1
+    assert results[0].id == chicken.id
+
+
+@pytest.mark.asyncio
+async def test_search_foods_is_case_insensitive(service):
+    food = await service.create_food(
+        CreateFoodSchema(name="Chicken breast")
+    )
+
+    results = await service.search_foods("CHICKEN")
+
+    assert len(results) == 1
+    assert results[0].id == food.id
+
+
+@pytest.mark.asyncio
+async def test_search_foods_returns_empty_list_when_no_match(service):
+    await service.create_food(
+        CreateFoodSchema(name="Chicken breast")
+    )
+
+    results = await service.search_foods("banana")
+
+    assert results == []
+
+@pytest.mark.asyncio
+async def test_search_foods_respects_limit(service):
+    unique = uuid4().hex[:8]
+
+    for index in range(3):
+        await service.create_food(
+            CreateFoodSchema(
+                name=f"SearchChickenLimit-{unique}-{index}"
+            )
+        )
+
+    results = await service.search_foods(
+        query=f"SearchChickenLimit-{unique}",
+        limit=2,
+    )
+
+    assert len(results) == 2
+
+
+@pytest.mark.asyncio
+async def test_search_foods_respects_skip(service):
+    unique = uuid4().hex[:8]
+
+    await service.create_food(
+        CreateFoodSchema(
+            name=f"SearchChickenSkip-{unique}-1"
+        )
+    )
+
+    await service.create_food(
+        CreateFoodSchema(
+            name=f"SearchChickenSkip-{unique}-2"
+        )
+    )
+
+    results_without_skip = await service.search_foods(
+        query=f"SearchChickenSkip-{unique}",
+        limit=10,
+        skip=0,
+    )
+
+    results_with_skip = await service.search_foods(
+        query=f"SearchChickenSkip-{unique}",
+        limit=10,
+        skip=1,
+    )
+
+    assert len(results_without_skip) == 2
+    assert len(results_with_skip) == 1

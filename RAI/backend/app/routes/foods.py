@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
 from app.schemas.food_schema import CreateFoodSchema, FoodResponseSchema, UpdateFoodSchema
 from app.services.food_service import FoodService
@@ -16,6 +16,22 @@ service = FoodService()
 async def create_food(data: CreateFoodSchema):
     return await service.create_food(data)
 
+@router.get(
+    "/foods",
+    response_model=list[FoodResponseSchema],
+    summary="Search foods",
+    description="Searches foods by name or brand using a case-insensitive partial match.",
+)
+async def search_foods(
+    query: str = Query(..., min_length=1, max_length=100),
+    limit: int = Query(20, ge=1, le=50),
+    skip: int = Query(0, ge=0),
+):
+    return await service.search_foods(
+        query=query,
+        limit=limit,
+        skip=skip
+    )
 
 @router.get(
     "/foods/{food_id}",
