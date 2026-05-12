@@ -3,21 +3,23 @@ import requests
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.proteini.si"
+KATEGORIJA_URL = "https://www.proteini.si/sl/vsi-izdelki/?product_group=2"
+KATEGORIJA_IME = "beljakovine"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
 
 
-def poisci_izdelek(url):
+def poisci_izdelke_kategorije(kategorija_url):
     """
-    Pridobi podatke o Proteini.si izdelkih.
+    Pridobi izdelke iz izbrane Proteini.si kategorije.
     """
 
     izdelki = []
 
     try:
-        odgovor = requests.get(url, headers=HEADERS)
+        odgovor = requests.get(kategorija_url, headers=HEADERS)
 
         if odgovor.status_code != 200:
             print("Napaka:", odgovor.status_code)
@@ -36,11 +38,28 @@ def poisci_izdelek(url):
             if not href:
                 continue
 
-            if "/sl/energijska-hrana/energijske-ploscice/" in href:
-                href = href.split("?")[0]
+            href = href.split("?")[0]
 
-                if href not in produkt_linki:
-                    produkt_linki.append(href)
+            if not href.startswith("/sl/"):
+                continue
+
+            neproduktni_linki = [
+                "/sl/",
+                "/sl/vsi-izdelki/",
+                "/sl/nasi-junaki",
+                "/sl/prodajna-mesta",
+                "/sl/profil",
+                "/sl/kosarica",
+                "/sl/cilji",
+                "/sl/sporti",
+                "/sl/nasveti",
+            ]
+
+            if href in neproduktni_linki:
+                continue
+
+            if href not in produkt_linki:
+                produkt_linki.append(href)
 
         print(f"Najdenih produkt linkov: {len(produkt_linki)}")
 
@@ -111,19 +130,27 @@ def poisci_izdelek(url):
         return izdelki
 
 
-print("=== PROTEINI SCRAPER ===")
+def shrani_v_json(izdelki, ime_datoteke):
+    """
+    Shrani izdelke v JSON datoteko.
+    """
 
-url = "https://www.proteini.si/sl/energijska-hrana/energijske-ploscice"
+    with open(ime_datoteke, "w", encoding="utf-8") as file:
+        json.dump(izdelki, file, indent=4, ensure_ascii=False)
 
-rezultati = poisci_izdelek(url)
+    print(f"\nJSON shranjen v {ime_datoteke}")
 
-print("\nNajdenih izdelkov:", len(rezultati))
 
-if rezultati:
-    print("\nPrimer prvega izdelka:")
-    print(json.dumps(rezultati[0], indent=4, ensure_ascii=False))
+if __name__ == "__main__":
 
-with open("proteini_energijske_ploscice.json", "w", encoding="utf-8") as file:
-    json.dump(rezultati, file, indent=4, ensure_ascii=False)
+    print("=== PROTEINI SCRAPER ===")
 
-print("\nJSON shranjen v proteini_energijske_ploscice.json")
+    rezultati = poisci_izdelke_kategorije(KATEGORIJA_URL)
+
+    print("\nNajdenih izdelkov:", len(rezultati))
+
+    if rezultati:
+        print("\nPrimer prvega izdelka:")
+        print(json.dumps(rezultati[0], indent=4, ensure_ascii=False))
+
+    shrani_v_json(rezultati, f"proteini_{KATEGORIJA_IME}.json")
