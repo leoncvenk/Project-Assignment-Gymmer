@@ -4,8 +4,10 @@ import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
+from unittest.mock import AsyncMock
 
 from app.main import app
+from app.routes.foods import service
 
 
 @pytest_asyncio.fixture
@@ -282,3 +284,67 @@ async def test_search_foods_rejects_invalid_skip(client):
     )
 
     assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_import_food_by_barcode_existing_food(client):
+    create_response = await client.post(
+        "/foods",
+        json={
+            "name": "Milk",
+            "barcode": "123456",
+        },
+    )
+
+    assert create_response.status_code in [200, 201]
+
+    response = await client.get("/foods/import/barcode/123456")
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["name"] == "Milk"
+    assert data["barcode"] == "123456"
+
+@pytest.mark.asyncio
+async def test_import_food_by_barcode_from_open_food_facts(client):
+    service.open_food_facts_service.get_product_by_barcode = AsyncMock(
+        return_value={
+            "product_name": "Protein bar",
+            "brands": "Test Brand",
+            "categories": "Snacks",
+            "image_front_url": "https://example.com/image.jpg",
+            "nutriments": {
+                "energy-kcal_100g": 350,
+                "proteins_100g": 30,
+                "carbohydrates_100g": 40,
+                "fat_100g": 10,
+                "fiber_100g": 5,
+                "sugars_100g": 12,
+                "salt_100g": 0.4,
+            },
+        }
+    )
+
+    response = await client.get("/foods/import/barcode/987654")
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["name"] == "Protein bar"
+    assert data["brand"] == "Test Brand"
+    assert data["barcode"] == "987654"
+    assert data["category"] == "Snacks"
+    assert data["source"] == "open_food_facts"
+    assert data["source_id"] == "987654"
+    assert data["calories_per_100g"] == 350
+    assert data["protein_g_per_100g"] == 30
+
+@pytest.mark.asyncio
+async def test_import_food_by_barcode_missing_returns_404(client):
+    service.open_food_facts_service.get_product_by_barcode = AsyncMock(
+        return_value=None
+    )
+
+    response = await client.get("/foods/import/barcode/missing-barcode")
+
+    assert response.status_code == 404
