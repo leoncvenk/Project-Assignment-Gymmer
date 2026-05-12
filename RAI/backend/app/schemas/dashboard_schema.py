@@ -85,3 +85,24 @@ class DashboardResponseSchema(BaseModel):
     entries: list[DashboardEntrySchema]
 
     meals: list[DashboardMealSchema]
+
+class WeeklyDashboardDaySchema(BaseModel):
+    date: date
+
+    total_calories: float = Field(..., ge=0)
+    total_protein_g: float = Field(..., ge=0)
+    total_carbs_g: float = Field(..., ge=0)
+    total_fat_g: float = Field(..., ge=0)
+
+    entry_count: int = Field(..., ge=0)
+
+    calorie_target: int | None = Field(default=None, gt=0)
+    calories_remaining: float | None = None
+    calories_percent: float | None = Field(default=None, ge=0)
+
+
+class WeeklyDashboardResponseSchema(BaseModel):
+    week_start: date
+    week_end: date
+
+    days: list[WeeklyDashboardDaySchema]
