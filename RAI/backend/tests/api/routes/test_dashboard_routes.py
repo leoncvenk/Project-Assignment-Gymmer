@@ -327,3 +327,116 @@ async def test_get_dashboard_ignores_other_users_data(client):
     assert data["entries"] == []
 
     assert [meal["entry_count"] for meal in data["meals"]] == [0, 0, 0, 0, 0]
+
+@pytest.mark.asyncio
+async def test_get_weekly_dashboard_requires_auth(client):
+    response = await client.get(
+        "/users/me/dashboard/weekly?date=2026-05-14"
+    )
+
+    assert response.status_code in [401, 403]
+
+@pytest.mark.asyncio
+async def test_get_weekly_dashboard_rejects_invalid_date(client):
+    token = await register_and_login(client)
+
+    response = await client.get(
+        "/users/me/dashboard/weekly?date=invalid-date",
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_get_weekly_dashboard_returns_monday_to_sunday_week(client):
+    token = await register_and_login(client)
+
+    response = await client.get(
+        "/users/me/dashboard/weekly?date=2026-05-14",
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["week_start"] == "2026-05-11"
+    assert data["week_end"] == "2026-05-17"
+    assert len(data["days"]) == 7
+    assert data["days"][0]["date"] == "2026-05-11"
+    assert data["days"][-1]["date"] == "2026-05-17"
+
+@pytest.mark.asyncio
+async def test_get_weekly_dashboard_includes_entries_and_target_comparison(client):
+    token = await register_and_login(client)
+    food_id = await create_food(client)
+
+    await create_target(client, token)
+
+    create_entry_response = await client.post(
+        "/users/me/food-entries",
+        headers=auth_headers(token),
+        json={
+            "food_id": food_id,
+            "quantity_g": 100,
+            "consumed_at": "2026-05-11T08:00:00Z",
+        },
+    )
+
+    assert create_entry_response.status_code == 201
+
+    response = await client.get(
+        "/users/me/dashboard/weekly?date=2026-05-14",
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    monday = data["days"][0]
+    tuesday = data["days"][1]
+
+    assert monday["date"] == "2026-05-11"
+    assert monday["total_calories"] == 165
+    assert monday["total_protein_g"] == 31
+    assert monday["entry_count"] == 1
+    assert monday["calorie_target"] == 2200
+    assert monday["calories_remaining"] == 2035
+    assert monday["calories_percent"] == 7.5
+
+    assert tuesday["date"] == "2026-05-12"
+    assert tuesday["total_calories"] == 0
+    assert tuesday["entry_count"] == 0
+    assert tuesday["calorie_target"] == 2200
+    assert tuesday["calories_remaining"] == 2200
+    assert tuesday["calories_percent"] == 0
+
+@pytest.mark.asyncio
+async def test_get_weekly_dashboard_ignores_other_users_entries(client):
+    first_token = await register_and_login(client)
+    second_token = await register_and_login(client)
+    food_id = await create_food(client)
+
+    await client.post(
+        "/users/me/food-entries",
+        headers=auth_headers(second_token),
+        json={
+            "food_id": food_id,
+            "quantity_g": 300,
+            "consumed_at": "2026-05-11T08:00:00Z",
+        },
+    )
+
+    response = await client.get(
+        "/users/me/dashboard/weekly?date=2026-05-14",
+        headers=auth_headers(first_token),
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    for day in data["days"]:
+        assert day["total_calories"] == 0
+        assert day["entry_count"] == 0
