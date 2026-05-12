@@ -11,9 +11,10 @@ HEADERS = {
 }
 
 
-def poisci_vse_izdelke(url):
+def poisci_vse_izdelke(url, iskani_niz=None):
     """
-    Pridobi vse izdelke iz Proteini.si z ajax pagination.
+    Pridobi izdelke iz Proteini.si z ajax pagination.
+    Če je podan iskani niz, shrani samo izdelke, ki vsebujejo ta niz v imenu.
     """
 
     izdelki = []
@@ -21,7 +22,7 @@ def poisci_vse_izdelke(url):
     page = 1
 
     try:
-        #while True: (za vse izdelke)
+        # while True:  # za vse izdelke
         while page <= 3:
             ajax_url = f"{url}?sorti=5&sort=5&page={page}&ajax=1"
 
@@ -43,7 +44,6 @@ def poisci_vse_izdelke(url):
             soup = BeautifulSoup(html, "html.parser")
 
             novi_linki = []
-
             produkti = soup.find_all("a", class_="product-box")
 
             for produkt in produkti:
@@ -86,6 +86,10 @@ def poisci_vse_izdelke(url):
                     naslov = naslov.text.strip()
                 else:
                     naslov = "Ni naslova"
+
+                if iskani_niz:
+                    if iskani_niz.lower() not in naslov.lower():
+                        continue
 
                 cena_element = produkt_soup.find("div", class_="price")
 
@@ -151,7 +155,12 @@ if __name__ == "__main__":
 
     print("=== PROTEINI SCRAPER ===")
 
-    rezultati = poisci_vse_izdelke(VSI_IZDELKI_URL)
+    iskani_niz = input("Vnesi iskani izdelek (pusti prazno za vse): ").strip()
+
+    if iskani_niz == "":
+        iskani_niz = None
+
+    rezultati = poisci_vse_izdelke(VSI_IZDELKI_URL, iskani_niz)
 
     print("\nNajdenih izdelkov:", len(rezultati))
 
