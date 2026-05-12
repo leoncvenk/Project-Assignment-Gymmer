@@ -107,3 +107,26 @@ def shrani_v_json(izdelki, ime_datoteke):
     except Exception as e:
         print(f"Napaka pri iskanju izdelkov: {e}")
         return []
+    
+    if __name__ == "__main__":
+    iskanje = input("Vnesi iskalni niz (npr. testenine): ")
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+
+        rezultati = poisci_izdelke(page, iskanje, limit=3)
+
+        browser.close()
+
+    print("\nScrapanje končano.")
+    print(f"Najdenih in obdelanih izdelkov: {len(rezultati)}")
+
+    if rezultati:
+        print("\nPrimer prvega izdelka:")
+        print(json.dumps(rezultati[0], indent=4, ensure_ascii=False))
+
+        cisto_ime = iskanje.replace(" ", "_").lower()
+        shrani_v_json(rezultati, f"spar_{cisto_ime}.json")
+    else:
+        print("Ni najdenih izdelkov.")
