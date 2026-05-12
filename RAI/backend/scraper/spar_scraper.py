@@ -44,3 +44,66 @@ def shrani_v_json(izdelki, ime_datoteke):
     except Exception as e:
         print(f"Napaka pri hranilnih vrednostih za {url_izdelka}: {e}")
         return hranilne_vrednosti
+    
+    def poisci_izdelke(page, iskalni_niz, limit=3):
+    """
+    Poišče Spar izdelke glede na iskalni niz.
+    """
+    varni_niz = urllib.parse.quote(iskalni_niz)
+    url = f"{BASE_URL}/search?name={varni_niz}"
+
+    print("=== SPAR SEARCH SCRAPER ===")
+    print(f"Iščem izdelke za: {iskalni_niz}")
+
+    izdelki = []
+
+    try:
+        page.goto(url, wait_until="networkidle")
+
+        try:
+            page.locator('button:has-text("Sprejmi")').first.click(timeout=2000)
+        except:
+            pass
+            
+        try:
+            page.wait_for_selector('a[href*="/p/"]', timeout=10000)
+        except Exception:
+            pass
+
+        soup = BeautifulSoup(page.content(), "html.parser")
+        povezave_izdelkov = []
+
+        for a in soup.find_all('a', href=True):
+            href = a['href']
+            if '/p/' in href:
+                poln_url = f"{BASE_URL}{href}" if href.startswith('/') else href
+                if poln_url not in povezave_izdelkov:
+                    povezave_izdelkov.append(poln_url)
+
+        print(f"Najdenih unikatnih povezav: {len(povezave_izdelkov)}")
+
+        for url_izdelka in povezave_izdelkov[:limit]:
+            izdelek = {
+                "trgovina": "Spar",
+                "url": url_izdelka,
+                "ime_izdelka": "Neznano",
+                "hranilne_vrednosti": {}
+            }
+            izdelki.append(izdelek)
+
+        if izdelki:
+            print(f"\nPridobivam hranilne vrednosti za izbrane izdelke...")
+            for izdelek in izdelki:
+                print(f"Odpiram: {izdelek['url']}")
+                izdelek["hranilne_vrednosti"] = pridobi_hranilne_vrednosti(page, izdelek["url"])
+                
+                soup_izd = BeautifulSoup(page.content(), "html.parser")
+                h1 = soup_izd.find('h1')
+                if h1:
+                    izdelek["ime_izdelka"] = h1.text.strip()
+
+        return izdelki
+
+    except Exception as e:
+        print(f"Napaka pri iskanju izdelkov: {e}")
+        return []
