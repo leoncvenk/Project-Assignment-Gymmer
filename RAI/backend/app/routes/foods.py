@@ -24,8 +24,14 @@ async def create_food(data: CreateFoodSchema):
 )
 async def search_foods(
     query: str = Query(..., min_length=1, max_length=100),
+    limit: int = Query(20, ge=1, le=50),
+    skip: int = Query(0, ge=0),
 ):
-    return await service.search_foods(query)
+    return await service.search_foods(
+        query=query,
+        limit=limit,
+        skip=skip
+    )
 
 @router.get(
     "/foods/{food_id}",
