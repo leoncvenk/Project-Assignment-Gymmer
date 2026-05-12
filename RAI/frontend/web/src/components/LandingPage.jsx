@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
 export default function LandingPage() {
+  const location = useLocation();
   const dockItems = [
     { path: "/", icon: "fi fi-rr-home" },
     { path: "/profile", icon: "fi fi-rs-user" },
@@ -15,20 +16,25 @@ export default function LandingPage() {
       
       {/* Floating Dock */}
       <motion.nav 
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-        className="absolute top-5 px-10 py-5 bg-[#2a2a2a]/90 backdrop-blur-sm rounded-2xl flex items-center gap-12 shadow-[0_4px_30px_rgba(0,0,0,0.5)] border border-white/5"
+        className="absolute top-5 px-10 py-4 bg-[#2a2a2a]/90 backdrop-blur-sm rounded-2xl flex items-center gap-12 shadow-[0_4px_30px_rgba(0,0,0,0.5)] border border-white/5 z-50"
       >
-        {dockItems.map((item, index) => (
-          <Link
-            key={index}
-            to={item.path}
-            className="text-gray-300 transition-all duration-200 hover:text-white hover:scale-200 active:scale-95 flex items-center justify-center"
-          >
-            <i className={`${item.icon} text-xl flex items-center h-full leading-none`} />
-          </Link>
-        ))}
+        {dockItems.map((item, index) => {
+          const isActive = location.pathname === item.path;
+
+          return (
+            <Link
+              key={index}
+              to={item.path}
+              className={`transition-all duration-200 flex items-center justify-center p-3 rounded-xl active:scale-95 ${
+                isActive 
+                  ? "bg-[#484848] text-white shadow-[0_0_20px_rgba(75,75,75,0.4)] hover:scale-120" 
+                  : "text-gray-300 hover:text-white hover:scale-200"
+              }`}
+            >
+              <i className={`${item.icon} text-xl flex items-center h-full leading-none`} />
+            </Link>
+          );
+        })}
       </motion.nav>
 
       {/* Center Text Area */}
