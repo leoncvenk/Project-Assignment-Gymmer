@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
@@ -301,3 +303,53 @@ async def test_search_foods_returns_empty_list_when_no_match(service):
     results = await service.search_foods("banana")
 
     assert results == []
+
+@pytest.mark.asyncio
+async def test_search_foods_respects_limit(service):
+    unique = uuid4().hex[:8]
+
+    for index in range(3):
+        await service.create_food(
+            CreateFoodSchema(
+                name=f"SearchChickenLimit-{unique}-{index}"
+            )
+        )
+
+    results = await service.search_foods(
+        query=f"SearchChickenLimit-{unique}",
+        limit=2,
+    )
+
+    assert len(results) == 2
+
+
+@pytest.mark.asyncio
+async def test_search_foods_respects_skip(service):
+    unique = uuid4().hex[:8]
+
+    await service.create_food(
+        CreateFoodSchema(
+            name=f"SearchChickenSkip-{unique}-1"
+        )
+    )
+
+    await service.create_food(
+        CreateFoodSchema(
+            name=f"SearchChickenSkip-{unique}-2"
+        )
+    )
+
+    results_without_skip = await service.search_foods(
+        query=f"SearchChickenSkip-{unique}",
+        limit=10,
+        skip=0,
+    )
+
+    results_with_skip = await service.search_foods(
+        query=f"SearchChickenSkip-{unique}",
+        limit=10,
+        skip=1,
+    )
+
+    assert len(results_without_skip) == 2
+    assert len(results_with_skip) == 1
