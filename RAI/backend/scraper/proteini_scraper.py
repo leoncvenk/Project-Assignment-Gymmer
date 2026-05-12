@@ -28,7 +28,6 @@ def poisci_izdelek(url):
         print("\n=== ISKANJE PRODUKTOV ===")
 
         linki = soup.find_all("a")
-
         produkt_linki = []
 
         for link in linki:
@@ -38,11 +37,8 @@ def poisci_izdelek(url):
                 continue
 
             if "/sl/energijska-hrana/energijske-ploscice/" in href:
-
-                # odstrani query parameterje
                 href = href.split("?")[0]
 
-                # odstrani duplicate
                 if href not in produkt_linki:
                     produkt_linki.append(href)
 
@@ -51,9 +47,7 @@ def poisci_izdelek(url):
         for link in produkt_linki[:10]:
             print(link)
 
-        # loop čez vse produkte
         for produkt_url in produkt_linki:
-
             poln_url = BASE_URL + produkt_url
 
             try:
@@ -64,21 +58,6 @@ def poisci_izdelek(url):
 
                 produkt_soup = BeautifulSoup(produkt_odgovor.text, "html.parser")
 
-                tekst = produkt_soup.get_text("\n", strip=True)
-
-                if "Hranil" in tekst or "Energijska" in tekst or "Beljakovine" in tekst:
-                    print("\n=== MOŽNE HRANILNE VREDNOSTI ===")
-
-                    vrstice = tekst.split("\n")
-
-                    for i, vrstica in enumerate(vrstice):
-                        if "energijska" in vrstica.lower() or "beljakovine" in vrstica.lower():
-                            for okolica in vrstice[max(0, i - 5): i + 20]:
-                                print(okolica)
-                            print("=== KONEC ===")
-                            break
-
-                # naslov
                 naslov = produkt_soup.find("h1")
 
                 if naslov:
@@ -86,7 +65,6 @@ def poisci_izdelek(url):
                 else:
                     naslov = "Ni naslova"
 
-                # cena
                 cena_element = produkt_soup.find("div", class_="price")
 
                 if cena_element:
@@ -94,12 +72,34 @@ def poisci_izdelek(url):
                 else:
                     cena = "Ni cene"
 
+                hranilne_vrednosti = {}
+
+                tabela = produkt_soup.find("table")
+
+                if tabela:
+                    vrstice = tabela.find_all("tr")
+
+                    for vrstica in vrstice:
+                        stolpci = vrstica.find_all(["td", "th"])
+
+                        podatki = [
+                            stolpec.get_text(strip=True)
+                            for stolpec in stolpci
+                        ]
+
+                        if len(podatki) >= 2:
+                            kljuc = podatki[0]
+                            vrednost = podatki[1]
+
+                            if kljuc != "":
+                                hranilne_vrednosti[kljuc] = vrednost
+
                 izdelek = {
                     "trgovina": "Proteini.si",
                     "url": poln_url,
                     "ime_izdelka": naslov,
                     "cena": cena,
-                    "hranilne_vrednosti": {}
+                    "hranilne_vrednosti": hranilne_vrednosti
                 }
 
                 izdelki.append(izdelek)
@@ -114,7 +114,6 @@ def poisci_izdelek(url):
         return izdelki
 
 
-# TEST
 print("=== PROTEINI SCRAPER ===")
 
 url = "https://www.proteini.si/sl/energijska-hrana/energijske-ploscice"
