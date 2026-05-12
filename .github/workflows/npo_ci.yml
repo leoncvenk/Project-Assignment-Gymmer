@@ -1,0 +1,44 @@
+name: NPO CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "NPO/**"
+      - ".github/workflows/npo_ci.yml"
+
+  pull_request:
+    branches: [main]
+    paths:
+      - "NPO/**"
+      - ".github/workflows/npo_ci.yml"
+
+jobs:
+  npo-tests:
+    name: NPO tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Mosquitto clients
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mosquitto-clients
+
+      - name: Validate Docker Compose config
+        working-directory: NPO
+        run: docker compose config
+
+      - name: Start Mosquitto broker
+        working-directory: NPO
+        run: docker compose up -d
+
+      - name: Run MQTT smoke test
+        run: ./NPO/tests/mqtt/smoke-test.sh
+
+      - name: Stop Mosquitto broker
+        if: always()
+        working-directory: NPO
+        run: docker compose down
