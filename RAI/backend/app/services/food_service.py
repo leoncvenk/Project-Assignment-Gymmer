@@ -155,29 +155,35 @@ class FoodService:
     async def search_foods(
         self,
         query: str,
+        limit: int = 20,
+        skip: int = 0,
     ) -> list[Food]:
         normalized_query = query.strip()
 
-        cursor = self.collection.find(
-            {
-                "$or": [
-                    {
-                        "name": {
-                            "$regex": normalized_query,
-                            "$options": "i",
-                        }
-                    },
-                    {
-                        "brand": {
-                            "$regex": normalized_query,
-                            "$options": "i",
-                        }
-                    },
-                ]
-            }
+        cursor = (
+            self.collection.find(
+                {
+                    "$or": [
+                        {
+                            "name": {
+                                "$regex": normalized_query,
+                                "$options": "i",
+                            }
+                        },
+                        {
+                            "brand": {
+                                "$regex": normalized_query,
+                                "$options": "i",
+                            }
+                        },
+                    ]
+                }
+            )
+            .skip(skip)
+            .limit(limit)
         )
 
-        documents = await cursor.to_list(length=50)
+        documents = await cursor.to_list(length=limit)
 
         return [
             _food_from_document(document)
