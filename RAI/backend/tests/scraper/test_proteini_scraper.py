@@ -1,18 +1,30 @@
 from unittest.mock import patch, Mock
 
-from scraper.proteini_scraper import poisci_izdelke_kategorije
+from scraper.proteini_scraper import poisci_vse_izdelke
 
 
-def test_poisci_izdelke_kategorije_vrne_pravilno_strukturo():
-    category_response = Mock()
-    category_response.status_code = 200
-    category_response.text = """
-    <html>
-        <body>
-            <a href="/sl/beljakovine/test-product">Test product</a>
-        </body>
-    </html>
-    """
+def test_poisci_vse_izdelke_vrne_pravilno_strukturo():
+    ajax_response = Mock()
+    ajax_response.status_code = 200
+    ajax_response.json.return_value = {
+        "status": "OK",
+        "content": """
+        <html>
+            <body>
+                <a href="/sl/beljakovine/test-product" class="product-box">
+                    Test product
+                </a>
+            </body>
+        </html>
+        """
+    }
+
+    empty_ajax_response = Mock()
+    empty_ajax_response.status_code = 200
+    empty_ajax_response.json.return_value = {
+        "status": "OK",
+        "content": ""
+    }
 
     product_response = Mock()
     product_response.status_code = 200
@@ -36,12 +48,13 @@ def test_poisci_izdelke_kategorije_vrne_pravilno_strukturo():
     """
 
     with patch(
+        "scraper.proteini_scraper.requests.post",
+        side_effect=[ajax_response, empty_ajax_response]
+    ), patch(
         "scraper.proteini_scraper.requests.get",
-        side_effect=[category_response, product_response]
+        side_effect=[product_response]
     ):
-        rezultat = poisci_izdelke_kategorije(
-            "https://www.proteini.si/sl/vsi-izdelki/?product_group=2"
-        )
+        rezultat = poisci_vse_izdelke("https://www.proteini.si/sl/vsi-izdelki/")
 
     assert len(rezultat) == 1
     assert rezultat[0]["trgovina"] == "Proteini.si"
