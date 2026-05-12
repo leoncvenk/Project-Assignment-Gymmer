@@ -51,6 +51,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-sm sm:text-xl md:text-2xl uppercase tracking-[0.3em] text-[#a6a6a6] mt-4 font-medium transition-colors duration-500 group-hover:text-white">
+            
             Everything you need in one app
           </p>
         </motion.div>
