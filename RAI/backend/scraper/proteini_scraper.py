@@ -1,67 +1,73 @@
 import json
 import requests
+import time
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.proteini.si"
-KATEGORIJA_URL = "https://www.proteini.si/sl/vsi-izdelki/?product_group=2"
-KATEGORIJA_IME = "beljakovine"
+VSI_IZDELKI_URL = "https://www.proteini.si/sl/vsi-izdelki/"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
 
 
-def poisci_izdelke_kategorije(kategorija_url):
+def poisci_vse_izdelke(url):
     """
-    Pridobi izdelke iz izbrane Proteini.si kategorije.
+    Pridobi vse izdelke iz Proteini.si z ajax pagination.
     """
 
     izdelki = []
+    produkt_linki = []
+    page = 1
 
     try:
-        odgovor = requests.get(kategorija_url, headers=HEADERS)
+        #while True: (za vse izdelke)
+        while page <= 3:
+            ajax_url = f"{url}?sorti=5&sort=5&page={page}&ajax=1"
 
-        if odgovor.status_code != 200:
-            print("Napaka:", odgovor.status_code)
-            return izdelki
+            print(f"\nPridobivam stran: {page}")
 
-        soup = BeautifulSoup(odgovor.text, "html.parser")
+            odgovor = requests.post(ajax_url, headers=HEADERS)
 
-        print("\n=== ISKANJE PRODUKTOV ===")
+            if odgovor.status_code != 200:
+                print("Napaka:", odgovor.status_code)
+                break
 
-        linki = soup.find_all("a")
-        produkt_linki = []
+            podatki = odgovor.json()
+            html = podatki.get("content", "")
 
-        for link in linki:
-            href = link.get("href")
+            if not html:
+                print("Ni več vsebine.")
+                break
 
-            if not href:
-                continue
+            soup = BeautifulSoup(html, "html.parser")
 
-            href = href.split("?")[0]
+            novi_linki = []
 
-            if not href.startswith("/sl/"):
-                continue
+            produkti = soup.find_all("a", class_="product-box")
 
-            neproduktni_linki = [
-                "/sl/",
-                "/sl/vsi-izdelki/",
-                "/sl/nasi-junaki",
-                "/sl/prodajna-mesta",
-                "/sl/profil",
-                "/sl/kosarica",
-                "/sl/cilji",
-                "/sl/sporti",
-                "/sl/nasveti",
-            ]
+            for produkt in produkti:
+                href = produkt.get("href")
 
-            if href in neproduktni_linki:
-                continue
+                if not href:
+                    continue
 
-            if href not in produkt_linki:
-                produkt_linki.append(href)
+                href = href.split("?")[0]
 
-        print(f"Najdenih produkt linkov: {len(produkt_linki)}")
+                if href not in produkt_linki:
+                    produkt_linki.append(href)
+                    novi_linki.append(href)
+
+            print(f"Novi produkti na strani: {len(novi_linki)}")
+            print(f"Skupaj produkt linkov: {len(produkt_linki)}")
+
+            if len(novi_linki) == 0:
+                break
+
+            page += 1
+            time.sleep(0.3)
+
+        print(f"\nSkupaj najdenih produkt linkov: {len(produkt_linki)}")
 
         for produkt_url in produkt_linki:
             poln_url = BASE_URL + produkt_url
@@ -145,7 +151,7 @@ if __name__ == "__main__":
 
     print("=== PROTEINI SCRAPER ===")
 
-    rezultati = poisci_izdelke_kategorije(KATEGORIJA_URL)
+    rezultati = poisci_vse_izdelke(VSI_IZDELKI_URL)
 
     print("\nNajdenih izdelkov:", len(rezultati))
 
@@ -153,4 +159,4 @@ if __name__ == "__main__":
         print("\nPrimer prvega izdelka:")
         print(json.dumps(rezultati[0], indent=4, ensure_ascii=False))
 
-    shrani_v_json(rezultati, f"proteini_{KATEGORIJA_IME}.json")
+    shrani_v_json(rezultati, "proteini_vsi_izdelki.json")
