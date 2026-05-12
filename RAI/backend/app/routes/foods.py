@@ -61,3 +61,22 @@ async def update_food(food_id: str, data: UpdateFoodSchema):
         raise HTTPException(status_code=404, detail="Food not found")
 
     return food
+
+@router.get(
+    "/foods/import/barcode/{barcode}",
+    response_model=FoodResponseSchema,
+    summary="Import food by barcode",
+    description="Returns existing food if barcode already exists locally, otherwise imports from Open Food Facts.",
+)
+async def import_food_by_barcode(
+    barcode: str,
+):
+    food = await service.import_food_by_barcode(barcode)
+
+    if food is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Food not found",
+        )
+
+    return food
