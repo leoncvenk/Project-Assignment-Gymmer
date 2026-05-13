@@ -21,7 +21,7 @@ function App() {
         <Route path="/workout" element={<BottomPage />} />
       </Routes>
     </div>
-  );1
+  );
 }
 
 export default App;
