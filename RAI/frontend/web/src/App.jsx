@@ -5,6 +5,7 @@ import AuthPage from './components/AuthPage';
 import RunningPage from './components/RunningPage';
 import BottomPage from './components/BottomPage';
 import ScrollManager from './components/ScrollManager';
+import RegisterPage from './components/RegisterPage';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/profile" element={<AuthPage />} /> 
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/food" element={<CaloriesPage />} /> 
         <Route path="/running" element={<RunningPage />} />
         <Route path="/workout" element={<BottomPage />} />
