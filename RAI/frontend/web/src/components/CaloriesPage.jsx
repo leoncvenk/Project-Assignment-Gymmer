@@ -105,7 +105,7 @@ export default function CaloriesPage() {
           className="w-full flex justify-center lg:justify-end flex-1 pb-16 lg:pb-0"
         >
           <img 
-            src="/phoneCalories.svg" 
+            src="/images/phoneCalories.svg" 
             alt="Calories App Interface" 
             className="w-full max-w-[650px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
             draggable="false"
