@@ -152,7 +152,7 @@ export default function AuthPage() {
           <div className="mt-8 flex flex-col items-center gap-4">
             <button className="flex items-center text-gray-400 hover:text-white transition-colors text-sm">
               <Sparkles className="mr-2 h-4 w-4 text-blue-400" />
-              Or email me a magic link
+              Or create an account
             </button>
             <p className="text-xs text-gray-500 text-center mt-2 leading-relaxed">
               By logging in, you agree to our{' '}
