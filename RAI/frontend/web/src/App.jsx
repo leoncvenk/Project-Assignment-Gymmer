@@ -4,10 +4,13 @@ import CaloriesPage from './components/CaloriesPage';
 import AuthPage from './components/AuthPage';
 import RunningPage from './components/RunningPage';
 import BottomPage from './components/BottomPage';
+import ScrollManager from './components/ScrollManager';
 
 function App() {
   return (
     <div className="App">
+      <ScrollManager />
+
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/profile" element={<AuthPage />} /> 
@@ -16,7 +19,7 @@ function App() {
         <Route path="/workout" element={<BottomPage />} />
       </Routes>
     </div>
-  );
+  );1
 }
 
 export default App;
