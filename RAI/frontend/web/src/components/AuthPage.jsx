@@ -77,10 +77,10 @@ export default function AuthPage() {
             <div className="space-y-3">
               <label className="text-xs text-gray-400 uppercase tracking-wider">Sign in with</label>
               <div className="grid grid-cols-2 gap-5">
-                <button className="flex items-center justify-center p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
+                <button className="cursor-pointer flex items-center justify-center p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
                   <GoogleIcon className="w-5 h-5" />
                 </button>
-                <button className="flex items-center justify-center p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
+                <button className="cursor-pointer flex items-center justify-center p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
                   <AppleIcon className="w-5 h-5" />
                 </button>
               </div>
@@ -150,7 +150,7 @@ export default function AuthPage() {
 
           {/* Footer */}
           <div className="mt-8 flex flex-col items-center gap-4">
-            <button className="flex items-center text-gray-400 hover:text-white transition-colors text-sm">
+            <button className="cursor-pointer flex items-center text-gray-400 hover:text-white transition-colors text-sm">
               <Sparkles className="mr-2 h-4 w-4 text-blue-400" />
               Or create an account
             </button>
