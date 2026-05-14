@@ -63,7 +63,7 @@ export default function AuthPage() {
       }
 
       if (meData.profile_completed) {
-        navigate("/food");
+        navigate("/dashboard");
       } else {
         navigate("/profile-setup");
       }
