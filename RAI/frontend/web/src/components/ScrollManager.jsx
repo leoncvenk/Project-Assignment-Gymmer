@@ -1,15 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-// Page order for scroll navigation
-const PAGE_ORDER = [
-  "/",         // Landing
-  "/profile",  // Auth/Profile
-  "/food",     // Calories
-  "/running",  // Running
-  "/workout"    // Workout/Bottom
-];
-
 export default function ScrollManager() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,18 +8,32 @@ export default function ScrollManager() {
   const touchStartY = useRef(0);
 
   useEffect(() => {
+    const getPageOrder = () => {
+      const isLoggedIn = !!localStorage.getItem("access_token");
+      
+      return [
+        "/",                                      
+        isLoggedIn ? "/dashboard" : "/profile",   
+        "/food",                                 
+        "/running",                              
+        "/workout"                                
+      ];
+    };
+
     // Core navigation logic
     const handleNavigate = (direction) => {
       if (isThrottled.current) return;
 
-      const currentIndex = PAGE_ORDER.indexOf(location.pathname);
+      const currentPageOrder = getPageOrder(); // Vedno vzame svež vrstni red
+      const currentIndex = currentPageOrder.indexOf(location.pathname);
+      
       if (currentIndex === -1) return;
 
-      if (direction === "down" && currentIndex < PAGE_ORDER.length - 1) {
-        navigate(PAGE_ORDER[currentIndex + 1]);
+      if (direction === "down" && currentIndex < currentPageOrder.length - 1) {
+        navigate(currentPageOrder[currentIndex + 1]);
         triggerCooldown();
       } else if (direction === "up" && currentIndex > 0) {
-        navigate(PAGE_ORDER[currentIndex - 1]);
+        navigate(currentPageOrder[currentIndex - 1]);
         triggerCooldown();
       }
     };
@@ -77,5 +82,5 @@ export default function ScrollManager() {
     };
   }, [location.pathname, navigate]);
 
-  return null; // This component is invisible
+  return null; 
 }
