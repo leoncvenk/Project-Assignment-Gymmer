@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Ruler, Weight, Target, Activity } from 'lucide-react';
+import { Ruler, Weight, Target, Activity, User, Heart, Settings } from 'lucide-react';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -9,7 +9,10 @@ export default function ProfilePage() {
     height: '',
     weight: '',
     targetWeight: '',
+    age: '',
+    sex: 'male',
     activityLevel: 'sedentary',
+    goalType: 'maintain_weight',
   });
   const [loading, setLoading] = useState(false);
 
@@ -21,34 +24,53 @@ export default function ProfilePage() {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      // API klic za kasneje 
-      /*
-      const response = await fetch('http://127.0.0.1:8000/auth/profile', {
-        method: 'PUT', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      if (!response.ok) throw new Error('Napaka pri shranjevanju profila');
-      */
+    // TOČNO TAKO, KOT ZAHTEVA user_profile_schema.py
+    const payload = {
+      height_cm: parseFloat(formData.height),
+      weight_kg: parseFloat(formData.weight),
+      goal_weight_kg: parseFloat(formData.targetWeight),
+      age: parseInt(formData.age),
+      sex: formData.sex,
+      activity_level: formData.activityLevel,
+      goal_type: formData.goalType
+    };
 
-      console.log('Profile setup complete:', formData);
+    try {
+      // Uporabimo PUT in naslov iz user_profile.py
+      const response = await fetch("http://127.0.0.1:8000/users/me/profile", {
+        method: "PUT", 
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('access_token')}` 
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        alert(
+          `API ERROR ${response.status}: ` +
+          (typeof responseData.detail === "string" 
+            ? responseData.detail 
+            : JSON.stringify(responseData.detail, null, 2))
+        );
+        setLoading(false);
+        return;
+      }
+
+      alert("Profile setup completed successfully!");
       navigate('/food'); 
       
     } catch (error) {
-      console.error('Error setting up profile:', error);
+      alert(`Network error: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    // Uporabljeno natanko enako ozadje kot na RegisterPage
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden pt-24 pb-6">
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden pt-24 pb-12">
       
       <motion.div 
         initial={{ y: 30, opacity: 0 }}
@@ -61,102 +83,95 @@ export default function ProfilePage() {
           
           <div className="text-left mb-6">
             <h2 className="text-2xl text-white font-bold tracking-wide mb-1">Complete Profile</h2>
-            <p className="text-gray-400 text-xs leading-relaxed">
-              Tell us a bit more about yourself to personalize your Gymmer experience and set your daily goals.
-            </p>
+            <p className="text-gray-400 text-xs leading-relaxed">Fill in all details to sync with Gymmer's backend.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Height */}
+            {/* Height & Weight */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label htmlFor="height" className="text-xs text-gray-300">Height (cm)</label>
+                <label className="text-xs text-gray-300">Height (cm)</label>
                 <div className="relative">
                   <Ruler className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <input
-                    type="number"
-                    id="height"
-                    name="height"
-                    value={formData.height}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors"
-                    placeholder="180"
-                  />
+                  <input type="number" name="height" value={formData.height} onChange={handleChange} required className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white" placeholder="180" />
                 </div>
               </div>
-
-              {/* Weight */}
               <div className="space-y-1.5">
-                <label htmlFor="weight" className="text-xs text-gray-300">Weight (kg)</label>
+                <label className="text-xs text-gray-300">Weight (kg)</label>
                 <div className="relative">
                   <Weight className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <input
-                    type="number"
-                    id="weight"
-                    name="weight"
-                    value={formData.weight}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors"
-                    placeholder="75"
-                  />
+                  <input type="number" name="weight" value={formData.weight} onChange={handleChange} required className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white" placeholder="75" />
                 </div>
               </div>
             </div>
 
-            {/* Target Weight */}
+            {/* Target Weight & Age */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-300">Goal Weight (kg)</label>
+                <div className="relative">
+                  <Target className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                  <input type="number" name="targetWeight" value={formData.targetWeight} onChange={handleChange} required className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white" placeholder="70" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-300">Age</label>
+                <div className="relative">
+                  <Heart className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                  <input type="number" name="age" value={formData.age} onChange={handleChange} required className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white" placeholder="25" />
+                </div>
+              </div>
+            </div>
+
+            {/* Sex Selection */}
             <div className="space-y-1.5">
-              <label htmlFor="targetWeight" className="text-xs text-gray-300">Target Weight (kg)</label>
+              <label className="text-xs text-gray-300">Sex</label>
               <div className="relative">
-                <Target className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                <input
-                  type="number"
-                  id="targetWeight"
-                  name="targetWeight"
-                  value={formData.targetWeight}
-                  onChange={handleChange}
-                  required
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors"
-                  placeholder="70"
-                />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <select name="sex" value={formData.sex} onChange={handleChange} className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white appearance-none [color-scheme:dark]">
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
               </div>
             </div>
 
             {/* Activity Level */}
             <div className="space-y-1.5">
-              <label htmlFor="activityLevel" className="text-xs text-gray-300">Activity Level</label>
+              <label className="text-xs text-gray-300">Activity Level</label>
               <div className="relative">
                 <Activity className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                <select
-                  id="activityLevel"
-                  name="activityLevel"
-                  value={formData.activityLevel}
-                  onChange={handleChange}
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors appearance-none [color-scheme:dark]"
-                >
-                  <option value="sedentary">Sedentary (Little or no exercise)</option>
-                  <option value="light">Lightly active (1-3 days/week)</option>
-                  <option value="moderate">Moderately active (3-5 days/week)</option>
-                  <option value="active">Very active (6-7 days/week)</option>
-                  <option value="extra">Extra active (Physical job)</option>
+                <select name="activityLevel" value={formData.activityLevel} onChange={handleChange} className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white appearance-none [color-scheme:dark]">
+                  <option value="sedentary">Sedentary</option>
+                  <option value="light">Lightly Active</option>
+                  <option value="moderate">Moderately Active</option>
+                  <option value="active">Active</option>
+                  <option value="very_active">Very Active</option>
                 </select>
               </div>
             </div>
 
-            {/* Submit gumb iz Register stran */}
+            {/* Goal Type */}
+            <div className="space-y-1.5">
+              <label className="text-xs text-gray-300">Primary Goal</label>
+              <div className="relative">
+                <Settings className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <select name="goalType" value={formData.goalType} onChange={handleChange} className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white appearance-none [color-scheme:dark]">
+                  <option value="lose_weight">Lose Weight</option>
+                  <option value="maintain_weight">Maintain Weight</option>
+                  <option value="gain_weight">Gain Weight</option>
+                </select>
+              </div>
+            </div>
+
             <motion.button 
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-bold tracking-wide mt-4 shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] transition-all cursor-pointer flex justify-center items-center"
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              type="submit" disabled={loading}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-bold mt-4 shadow-[0_0_15px_rgba(37,99,235,0.4)] cursor-pointer"
             >
               {loading ? 'SAVING...' : 'COMPLETE SETUP'}
             </motion.button>
           </form>
-
         </div>
       </motion.div>
     </div>
