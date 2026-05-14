@@ -8,6 +8,8 @@ import ScrollManager from './components/ScrollManager';
 import RegisterPage from './components/RegisterPage';
 import ProfilePage from './components/ProfilePage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
+import PrivacyPolicyPage from './components/PrivacyPolicyPage';
+import TermsOfServicePage from './components/TermsOfServicePage';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <Route path="/profile" element={<AuthPage />} /> 
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/tos" element={<TermsOfServicePage />} />
         <Route path="/profile-setup" element={<ProfilePage />} />
         <Route path="/food" element={<CaloriesPage />} /> 
         <Route path="/running" element={<RunningPage />} />
