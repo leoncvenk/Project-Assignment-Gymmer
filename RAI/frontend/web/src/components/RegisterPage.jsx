@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Dodal useNavigate za preusmeritev po uspehu
-import { motion, AnimatePresence } from "framer-motion"; // Dodal AnimatePresence za lepši izginotje napake
+import { Link, useNavigate } from "react-router-dom"; 
+import { motion, AnimatePresence } from "framer-motion"; 
 import { Eye, EyeOff, KeyRound, Mail, Sparkles, User, Calendar, Phone, AtSign, AlertCircle } from "lucide-react";
 
 const GoogleIcon = (props) => (
@@ -15,11 +15,9 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   
-  // NOVO: Stanja za napake in nalaganje
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // NOVO: Funkcija za čiščenje FastAPI napak
   const parseError = (data) => {
     if (typeof data.detail === "string") return data.detail;
     if (Array.isArray(data.detail)) {
@@ -45,7 +43,7 @@ export default function RegisterPage() {
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
-    setError(null); // Ponastavi napako pred novim poskusom
+    setError(null);
     setLoading(true);
 
     const formData = new FormData(event.currentTarget);
@@ -58,11 +56,10 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/auth/register", {
+      // 1. KORAK: Registracija
+      const registerResponse = await fetch("http://127.0.0.1:8000/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: data.username,
           email: data.email,
@@ -70,16 +67,36 @@ export default function RegisterPage() {
         }),
       });
 
-      const responseData = await response.json();
+      const registerData = await registerResponse.json();
 
-      if (!response.ok) {
-        setError(parseError(responseData));
+      if (!registerResponse.ok) {
+        setError(parseError(registerData));
         setLoading(false);
         return;
       }
 
-      // Uspešna registracija - preusmeritev na login
-      navigate('/profile'); // Ali kamorkoli imaš nastavljen login
+      // 2. KORAK: Avtomatska prijava (če je bila registracija uspešna)
+      const loginResponse = await fetch("http://127.0.0.1:8000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password, 
+        }),
+      });
+
+      const loginData = await loginResponse.json();
+
+      if (loginResponse.ok) {
+        // Shranimo žeton v brskalnik
+        localStorage.setItem("access_token", loginData.access_token);
+        
+        // Ker gre za novega uporabnika, ga vržemo direktno na izpolnjevanje profila
+        navigate('/profile-setup'); 
+      } else {
+        // Če bi se pri avtomatski prijavi karkoli zalomilo, ga pošljemo na ročno prijavo
+        navigate('/profile'); 
+      }
 
     } catch (error) {
       setError("Ni povezave z zaledjem. Preveri, če tvoj uvicorn teče!");
@@ -107,7 +124,6 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {/* NOVO: Prikaz napake nad obrazcem */}
           <AnimatePresence>
             {error && (
               <motion.div 
@@ -222,7 +238,7 @@ export default function RegisterPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit" 
-                disabled={loading} // NOVO: Gumb onemogočen med nalaganjem
+                disabled={loading} 
                 className={`w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-bold tracking-wide mt-2 shadow-[0_0_15px_rgba(37,99,235,0.4)] transition-all ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] cursor-pointer'}`}
               >
                 {loading ? "CREATING ACCOUNT..." : "CREATE ACCOUNT"}
