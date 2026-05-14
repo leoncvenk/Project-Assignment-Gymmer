@@ -1,27 +1,22 @@
 import pytest_asyncio
 
-from app.core.database import get_db
-from app.services.user_service import USERS_COLLECTION
-from app.services.user_profile_service import USER_PROFILES_COLLECTION
-from app.services.food_service import FOODS_COLLECTION
-from app.services.food_entry_service import FOOD_ENTRIES_COLLECTION
-from app.services.nutrition_target_service import NUTRITION_TARGETS_COLLECTION
+from app.core.database import close_mongo_connection, connect_to_mongo, get_db
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def init_test_db():
+    await connect_to_mongo()
+    yield
+    await close_mongo_connection()
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def clean_test_database():
+async def clean_database():
     db = get_db()
 
-    await db[USERS_COLLECTION].delete_many({})
-    await db[USER_PROFILES_COLLECTION].delete_many({})
-    await db[FOODS_COLLECTION].delete_many({})
-    await db[FOOD_ENTRIES_COLLECTION].delete_many({})
-    await db[NUTRITION_TARGETS_COLLECTION].delete_many({})
+    collections = await db.list_collection_names()
+
+    for collection in collections:
+        await db[collection].delete_many({})
 
     yield
-
-    await db[USERS_COLLECTION].delete_many({})
-    await db[USER_PROFILES_COLLECTION].delete_many({})
-    await db[FOODS_COLLECTION].delete_many({})
-    await db[FOOD_ENTRIES_COLLECTION].delete_many({})
-    await db[NUTRITION_TARGETS_COLLECTION].delete_many({})
