@@ -116,7 +116,7 @@ export default function ProfileScreen() {
           </DashboardSectionCard>
         </View>
 
-        <PrimaryButton title="Log out" onPress={handleLogout} />
+        <PrimaryButton title="Log out" onPress={handleLogout} variant="danger" />
       </ScrollView>
     </SafeAreaView>
   );

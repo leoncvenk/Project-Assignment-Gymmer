@@ -17,6 +17,8 @@ module.exports = {
         text: '#2b2b2b',
         textOnDark: '#f2f2f2',
         muted: '#c5c5c5',
+        danger: '#ef4444',
+        dangerHover: '#dc2626',
       },
     },
   },
