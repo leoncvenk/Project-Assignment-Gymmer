@@ -27,20 +27,12 @@ export default function RegisterPage() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
+    const data = Object.fromEntries(formData.entries());
 
-    const password = formData.get("password");
-    const repeatPassword = formData.get("repeatPassword");
-
-    if (password !== repeatPassword) {
+    if (data.password !== data.repeatPassword) {
       alert("Passwords do not match");
       return;
     }
-
-    const registerData = {
-      username: formData.get("username"),
-      email: formData.get("email"),
-      password: password,
-    };
 
     try {
       const response = await fetch("http://127.0.0.1:8000/auth/register", {
@@ -48,27 +40,28 @@ export default function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(registerData),
+        body: JSON.stringify({
+          username: data.username,
+          email: data.email,
+          password: data.password,
+        }),
       });
 
-      const data = await response.json();
-
-      console.log("POST /auth/register", response.status, data);
+      const responseData = await response.json();
 
       if (!response.ok) {
         alert(
-          `POST /auth/register ${response.status}: ` +
-            (typeof data.detail === "string"
-              ? data.detail
-              : JSON.stringify(data.detail))
+          `POST /auth/register ${response.status}: ${
+            responseData.detail || JSON.stringify(responseData)
+          }`
         );
         return;
       }
 
       alert("Account created successfully");
+
     } catch (error) {
-      console.error("POST /auth/register error:", error);
-      alert(`POST /auth/register error: ${error.message}`);
+      alert(`Network error: ${error.message}`);
     }
   };
 
