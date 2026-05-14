@@ -1,12 +1,12 @@
 import { isAxiosError } from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { Alert, ScrollView, Text, View, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AuthTextInput from 'components/forms/AuthTextInput';
 import PrimaryButton from 'components/ui/PrimaryButton';
-import { getAuthToken } from 'lib/auth';
+import { getAuthToken, getCurrentUser } from 'lib/auth';
 import { createProfile } from 'lib/profile';
 import { ActivityLevel, GoalType, Sex } from 'types/profile';
 
@@ -67,6 +67,24 @@ export default function ProfileSetupScreen() {
       Alert.alert('Profile setup failed', 'Unknown error.');
     }
   }
+
+  useEffect(() => {
+    async function redirectCompletedUser() {
+      const token = await getAuthToken();
+
+      if (!token) {
+        return;
+      }
+
+      const user = await getCurrentUser(token);
+
+      if (user.profile_completed) {
+        router.replace('/(app)/dashboard');
+      }
+    }
+
+    redirectCompletedUser();
+  });
 
   return (
     <SafeAreaView className="flex-1 bg-background">
