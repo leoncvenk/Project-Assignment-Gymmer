@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, KeyRound, Mail, Sparkles } from "lucide-react";
 
@@ -12,6 +12,7 @@ const AppleIcon = (props) => (
 
 export default function AuthPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const dockItems = [
@@ -55,7 +56,26 @@ export default function AuthPage() {
 
       localStorage.setItem("access_token", data.access_token);
 
-      alert("Login successful");
+      const meResponse = await fetch("http://127.0.0.1:8000/auth/me", {
+        headers: {
+          Authorization: `Bearer ${data.access_token}`,
+        },
+      });
+
+      const meData = await meResponse.json();
+
+      console.log("GET /auth/me", meResponse.status, meData);
+
+      if (!meResponse.ok) {
+        alert("Failed to fetch current user");
+        return;
+      }
+
+      if (meData.profile_completed) {
+        navigate("/food");
+      } else {
+        navigate("/profile-setup");
+      }
     } catch (error) {
       console.error("POST /auth/login error:", error);
       alert(`POST /auth/login error: ${error.message}`);
