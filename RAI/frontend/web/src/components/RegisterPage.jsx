@@ -23,11 +23,46 @@ export default function RegisterPage() {
     { path: "/workout", icon: "fi fi-rr-gym" },
   ];
 
-  const handleFormSubmit = (event) => {
+  const handleFormSubmit = async (event) => {
     event.preventDefault();
+
     const formData = new FormData(event.currentTarget);
     const data = Object.fromEntries(formData.entries());
-    console.log("Registration Data:", data);
+
+    if (data.password !== data.repeatPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: data.username,
+          email: data.email,
+          password: data.password,
+        }),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        alert(
+          `POST /auth/register ${response.status}: ${
+            responseData.detail || JSON.stringify(responseData)
+          }`
+        );
+        return;
+      }
+
+      alert("Account created successfully");
+
+    } catch (error) {
+      alert(`Network error: ${error.message}`);
+    }
   };
 
   return (
