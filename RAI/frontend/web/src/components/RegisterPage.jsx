@@ -23,11 +23,53 @@ export default function RegisterPage() {
     { path: "/workout", icon: "fi fi-rr-gym" },
   ];
 
-  const handleFormSubmit = (event) => {
+  const handleFormSubmit = async (event) => {
     event.preventDefault();
+
     const formData = new FormData(event.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-    console.log("Registration Data:", data);
+
+    const password = formData.get("password");
+    const repeatPassword = formData.get("repeatPassword");
+
+    if (password !== repeatPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    const registerData = {
+      username: formData.get("username"),
+      email: formData.get("email"),
+      password: password,
+    };
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(registerData),
+      });
+
+      const data = await response.json();
+
+      console.log("POST /auth/register", response.status, data);
+
+      if (!response.ok) {
+        alert(
+          `POST /auth/register ${response.status}: ` +
+            (typeof data.detail === "string"
+              ? data.detail
+              : JSON.stringify(data.detail))
+        );
+        return;
+      }
+
+      alert("Account created successfully");
+    } catch (error) {
+      console.error("POST /auth/register error:", error);
+      alert(`POST /auth/register error: ${error.message}`);
+    }
   };
 
   return (
