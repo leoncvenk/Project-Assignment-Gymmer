@@ -5,7 +5,6 @@ import { api } from "./api";
 import {
     CurrentUserResponse,
     LoginRequest,
-    LoginResponse,
     RegisterRequest
 } from "../types/auth";
 
