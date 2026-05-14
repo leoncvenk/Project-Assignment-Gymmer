@@ -7,6 +7,7 @@ import BottomPage from './components/BottomPage';
 import ScrollManager from './components/ScrollManager';
 import RegisterPage from './components/RegisterPage';
 import ProfilePage from './components/ProfilePage';
+import ForgotPasswordPage from './components/ForgotPasswordPage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/profile" element={<AuthPage />} /> 
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/profile-setup" element={<ProfilePage />} />
         <Route path="/food" element={<CaloriesPage />} /> 
         <Route path="/running" element={<RunningPage />} />

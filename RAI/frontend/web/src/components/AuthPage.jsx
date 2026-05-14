@@ -133,9 +133,9 @@ export default function AuthPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label htmlFor="password" className="text-sm text-gray-300">Password</label>
-                  <a href="#" className="text-sm text-blue-500 hover:text-blue-400 hover:underline transition-colors">
+                  <Link to="/forgot-password" className="text-sm text-blue-500 hover:text-blue-400 hover:underline transition-colors">
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <div className="relative">
                   <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -170,7 +170,6 @@ export default function AuthPage() {
 
           {/* Footer */}
           <div className="mt-8 flex flex-col items-center gap-4">
-            {/* Changed from <button> to <Link> and added the 'to' prop */}
             <Link 
               to="/register" 
               className="cursor-pointer flex items-center text-gray-400 hover:text-white transition-colors text-sm"
