@@ -1,7 +1,9 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, Text, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getCurrentUser, login, saveAuthToken } from 'lib/auth';
+import { isAxiosError } from 'axios';
 
 import AuthTextInput from 'components/forms/AuthTextInput';
 import PrimaryButton from 'components/ui/PrimaryButton';
@@ -10,19 +12,45 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  function handleLogin() {
-    // API integration comes in next branch.
+  async function handleLogin() {
+    try {
+      const loginResponse = await login({
+        email,
+        password,
+      });
+
+      await saveAuthToken(loginResponse.access_token);
+
+      const user = await getCurrentUser(loginResponse.access_token);
+
+      console.log('CURRENT USER:', user);
+      console.log('PROFILE COMPLETED:', user.profile_completed);
+
+      if (user.profile_completed) {
+        router.replace('/(app)/dashboard');
+        return;
+      }
+
+      router.replace('/(auth)/profile-setup');
+    } catch (error) {
+      if (isAxiosError(error)) {
+        Alert.alert('Login failed', JSON.stringify(error.response?.data ?? error.message));
+        return;
+      }
+
+      Alert.alert('Login failed', 'Unknown error.');
+    }
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background px-6">
+    <SafeAreaView className="bg-background flex-1 px-6">
       <View className="flex-1 justify-center">
         <View className="mb-10 items-center">
           <Image source={require('../../assets/icon.png')} className="mb-6 h-20 w-20 rounded-2xl" />
 
-          <Text className="text-4xl font-bold text-text">Welcome back</Text>
+          <Text className="text-text text-4xl font-bold">Welcome back</Text>
 
-          <Text className="mt-3 text-center text-base text-muted">
+          <Text className="text-muted mt-3 text-center text-base">
             Sign in to continue tracking your nutrition and live activities.
           </Text>
         </View>
@@ -49,7 +77,7 @@ export default function LoginScreen() {
           <View className="mt-6 flex-row justify-center">
             <Text className="text-muted">Don&apos;t have an account? </Text>
 
-            <Link href="/(auth)/register" className="font-semibold text-accent">
+            <Link href="/(auth)/register" className="text-accent font-semibold">
               Register
             </Link>
           </View>
