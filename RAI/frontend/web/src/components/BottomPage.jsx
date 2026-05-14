@@ -21,29 +21,6 @@ export default function BottomPage() {
 
   return (
     <div className="relative min-h-screen w-full flex flex-col bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden text-white">
-      
-      {/* Floating Dock */}
-      <motion.nav 
-        className="fixed top-5 left-1/2 -translate-x-1/2 px-10 py-4 bg-[#2a2a2a]/90 backdrop-blur-sm rounded-2xl flex items-center gap-12 shadow-[0_4px_30px_rgba(0,0,0,0.5)] border border-white/5 z-50"
-      >
-        {dockItems.map((item, index) => {
-          const isActive = location.pathname === item.path;
-
-          return (
-            <Link
-              key={index}
-              to={item.path}
-              className={`transition-all duration-200 flex items-center justify-center p-3 rounded-xl active:scale-95 ${
-                isActive 
-                  ? "bg-[#484848] text-white shadow-[0_0_20px_rgba(75,75,75,0.4)] hover:scale-120" 
-                  : "text-gray-300 hover:text-white hover:scale-200"
-              }`}
-            >
-              <i className={`${item.icon} text-xl flex items-center h-full leading-none`} />
-            </Link>
-          );
-        })}
-      </motion.nav>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col justify-center w-full max-w-[1500px] mx-auto px-8 lg:px-16 pt-32 pb-16">
