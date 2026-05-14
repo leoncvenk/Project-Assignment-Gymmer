@@ -21,10 +21,10 @@ export default function AuthTextInput({
 }: AuthTextInputProps) {
   return (
     <View className="mb-4">
-      <Text className="text-text mb-2 text-sm font-medium">{label}</Text>
+      <Text className="mb-2 text-sm font-medium text-text">{label}</Text>
 
       <TextInput
-        className="border-muted text-text rounded-xl border bg-white px-4 py-4"
+        className="rounded-xl border border-muted bg-white px-4 py-4 text-text"
         placeholder={placeholder}
         placeholderTextColor="#c5c5c5"
         value={value}

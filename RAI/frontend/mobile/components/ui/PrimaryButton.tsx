@@ -9,8 +9,8 @@ export default function PrimaryButton({ title, onPress }: PrimaryButtonProps) {
   return (
     <Pressable
       onPress={onPress}
-      className="bg-accent active:bg-accentHover items-center rounded-xl py-4">
-      <Text className="text-textOnDark text-base font-semibold">{title}</Text>
+      className="items-center rounded-xl bg-accent py-4 active:bg-accentHover">
+      <Text className="text-base font-semibold text-textOnDark">{title}</Text>
     </Pressable>
   );
 }
