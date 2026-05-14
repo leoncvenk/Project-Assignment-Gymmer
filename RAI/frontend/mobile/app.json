@@ -10,6 +10,7 @@
       "tsconfigPaths": true
     },
     "plugins": ["expo-router"],
+    "scheme": "gymmer",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
