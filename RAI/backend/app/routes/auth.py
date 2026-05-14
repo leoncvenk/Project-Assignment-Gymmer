@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
-from app.schemas.auth_schema import LoginSchema, TokenSchema
+from app.schemas.auth_schema import LoginSchema, TokenSchema, ChangePasswordSchema
 from app.schemas.user_schema import CreateUserSchema, UserResponseSchema
 from app.services.auth_service import AuthService
 from app.models.user import User
@@ -60,3 +60,22 @@ async def login(data: LoginSchema):
 )
 async def get_me(current_user: User = Depends(get_authenticated_user)):
     return current_user
+
+@router.put(
+    "/change-password",
+    summary="Change user password",
+    description="Updates the password for the currently authenticated user.",
+)
+async def change_password(
+    data: ChangePasswordSchema,
+    current_user: User = Depends(get_authenticated_user)
+):
+    success = await auth_service.change_password(current_user, data.current_password, data.new_password)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect current password",
+        )
+
+    return {"detail": "Password updated successfully"}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'; // Dodan useCallback
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -22,6 +22,12 @@ export default function DashboardPage() {
   const [editSuccess, setEditSuccess] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
+  // Stanja za spremembo gesla
+  const [securityFormData, setSecurityFormData] = useState({ currentPassword: '', newPassword: '' });
+  const [securityError, setSecurityError] = useState(null);
+  const [securitySuccess, setSecuritySuccess] = useState(false);
+  const [securityLoading, setSecurityLoading] = useState(false);
+
   const logoutTimerRef = useRef(null);
   const handleLogout = useCallback(() => {
     localStorage.removeItem('access_token');
@@ -43,7 +49,6 @@ export default function DashboardPage() {
       return;
     }
 
-    
     window.addEventListener('mousemove', resetLogoutTimer);
     window.addEventListener('keydown', resetLogoutTimer);
     window.addEventListener('click', resetLogoutTimer);
@@ -167,7 +172,57 @@ export default function DashboardPage() {
     }
   };
 
-  // --- UI ZAVIHKI ---
+  // --- LOGIKA ZA SPREMEMBO GESLA ---
+  const handleSecurityChange = (e) => {
+    setSecurityFormData({ ...securityFormData, [e.target.name]: e.target.value });
+    setSecuritySuccess(false);
+    setSecurityError(null);
+  };
+
+  const handleSecuritySubmit = async (e) => {
+    e.preventDefault();
+    setSecurityError(null);
+    setSecuritySuccess(false);
+
+    if (securityFormData.newPassword.length < 8) {
+      setSecurityError("New password must be at least 8 characters long.");
+      return;
+    }
+
+    setSecurityLoading(true);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/auth/change-password", {
+        method: "PUT", 
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify({
+          current_password: securityFormData.currentPassword,
+          new_password: securityFormData.newPassword
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setSecurityError(data.detail || "Failed to update password. Check your current password.");
+        setSecurityLoading(false);
+        return;
+      }
+
+      setSecuritySuccess(true);
+      setSecurityFormData({ currentPassword: '', newPassword: '' }); 
+      setTimeout(() => setSecuritySuccess(false), 3000);
+
+    } catch (err) {
+      console.error(err);
+      setSecurityError("Network error. Is your backend running?");
+    } finally {
+      setSecurityLoading(false);
+    }
+  };
+
   const renderOverview = () => (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <h3 className="text-xl text-white font-bold tracking-wide">My Overview</h3>
@@ -297,17 +352,61 @@ export default function DashboardPage() {
 
   const renderSecurity = () => (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <h3 className="text-xl text-white font-bold tracking-wide">Security & Password</h3>
-      <form className="space-y-4 max-w-md" onSubmit={(e) => e.preventDefault()}>
+      <div className="text-left">
+        <h3 className="text-xl text-white font-bold tracking-wide">Security & Password</h3>
+        <p className="text-gray-400 text-sm mt-1">Update your password to keep your account secure.</p>
+      </div>
+
+      <AnimatePresence>
+        {securityError && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+            <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-xl text-sm flex items-center gap-3">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" /><span>{securityError}</span>
+            </div>
+          </motion.div>
+        )}
+        {securitySuccess && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+            <div className="bg-green-500/10 border border-green-500/50 text-green-500 p-3 rounded-xl text-sm flex items-center gap-3">
+              <CheckCircle className="h-4 w-4 flex-shrink-0" /><span>Password updated successfully!</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <form className="space-y-4 max-w-md" onSubmit={handleSecuritySubmit}>
         <div>
           <label className="text-xs text-gray-400">Current Password</label>
-          <input type="password" placeholder="••••••••" className="w-full mt-1 bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 px-4 text-sm text-white focus:border-blue-500 transition-colors" />
+          <input 
+            type="password" 
+            name="currentPassword"
+            value={securityFormData.currentPassword}
+            onChange={handleSecurityChange}
+            placeholder="••••••••" 
+            required
+            className="w-full mt-1 bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 px-4 text-sm text-white focus:border-blue-500 transition-colors" 
+          />
         </div>
         <div>
           <label className="text-xs text-gray-400">New Password</label>
-          <input type="password" placeholder="••••••••" className="w-full mt-1 bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 px-4 text-sm text-white focus:border-blue-500 transition-colors" />
+          <input 
+            type="password" 
+            name="newPassword"
+            value={securityFormData.newPassword}
+            onChange={handleSecurityChange}
+            placeholder="••••••••" 
+            required
+            className="w-full mt-1 bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 px-4 text-sm text-white focus:border-blue-500 transition-colors" 
+          />
         </div>
-        <button className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-blue-700 transition cursor-pointer">Update Password</button>
+        <motion.button 
+          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+          type="submit" 
+          disabled={securityLoading}
+          className={`bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold mt-4 shadow-lg transition-all ${securityLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700 cursor-pointer'}`}
+        >
+          {securityLoading ? 'UPDATING...' : 'Update Password'}
+        </motion.button>
       </form>
     </motion.div>
   );

@@ -79,3 +79,9 @@ class UserService:
             {"id": user_id},
             {"$set": {"profile_completed": True, "updated_at": _now()}},
         )
+
+    async def update_password(self, user_id: str, new_hashed_password: str) -> None:
+        await self.collection.update_one(
+            {"id": user_id},
+            {"$set": {"hashed_password": new_hashed_password, "updated_at": _now()}},
+        )
