@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ScrollText } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function TermsOfServicePage() {
   return (
