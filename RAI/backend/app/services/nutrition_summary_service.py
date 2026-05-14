@@ -1,4 +1,4 @@
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time, timedelta
 
 from app.core.database import get_db
 from app.schemas.nutrition_summary_schema import (
@@ -20,21 +20,16 @@ class NutritionSummaryService:
         start_of_day = datetime.combine(
             summary_date,
             time.min,
-            tzinfo=timezone.utc,
         )
 
-        end_of_day = datetime.combine(
-            summary_date,
-            time.max,
-            tzinfo=timezone.utc,
-        )
+        end_of_day = start_of_day + timedelta(days=1)
 
         cursor = self.collection.find(
             {
                 "user_id": user_id,
                 "consumed_at": {
                     "$gte": start_of_day,
-                    "$lte": end_of_day,
+                    "$lt": end_of_day,
                 },
             }
         )

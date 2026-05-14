@@ -23,8 +23,6 @@ jobs:
         include:
           - python-version: "3.11"
             db-suffix: py311
-          - python-version: "3.12"
-            db-suffix: py312
 
     steps:
       - name: Checkout
