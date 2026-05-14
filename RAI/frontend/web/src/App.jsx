@@ -10,6 +10,7 @@ import ProfilePage from './components/ProfilePage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
 import PrivacyPolicyPage from './components/PrivacyPolicyPage';
 import TermsOfServicePage from './components/TermsOfServicePage';
+import DashboardPage from './components/DashboardPage'; 
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/food" element={<CaloriesPage />} /> 
         <Route path="/running" element={<RunningPage />} />
         <Route path="/workout" element={<BottomPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} /> 
       </Routes>
     </div>
   );
