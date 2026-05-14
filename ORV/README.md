@@ -27,6 +27,10 @@ Opomba: Ko je okolje aktivirano, se bo v terminalu pred tvojim uporabniškim ime
 Ko je navidezno okolje aktivirano, namesti potrebne knjižnice za prenos podatkov in branje okoljskih spremenljivk:
 
 ```Bash
+pip install -r requirements.txt
+```
+
+```Bash
 pip install roboflow python-dotenv
 ```
 
