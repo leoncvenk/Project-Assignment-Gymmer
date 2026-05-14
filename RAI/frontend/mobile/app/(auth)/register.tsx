@@ -45,14 +45,14 @@ export default function RegisterScreen() {
   }
 
   return (
-    <SafeAreaView className="bg-background flex-1 px-6">
+    <SafeAreaView className="flex-1 bg-background px-6">
       <View className="flex-1 justify-center">
         <View className="mb-8 items-center">
           <Image source={require('../../assets/icon.png')} className="mb-6 h-20 w-20 rounded-2xl" />
 
-          <Text className="text-text text-4xl font-bold">Create account</Text>
+          <Text className="text-4xl font-bold text-text">Create account</Text>
 
-          <Text className="text-muted mt-3 text-center text-base">
+          <Text className="mt-3 text-center text-base text-muted">
             Join Gymmer Live and start tracking nutrition and activities.
           </Text>
         </View>
@@ -94,7 +94,7 @@ export default function RegisterScreen() {
           <View className="mt-6 flex-row justify-center">
             <Text className="text-muted">Already have an account? </Text>
 
-            <Link href="/(auth)/login" className="text-accent font-semibold">
+            <Link href="/(auth)/login" className="font-semibold text-accent">
               Log in
             </Link>
           </View>

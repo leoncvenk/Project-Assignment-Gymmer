@@ -43,14 +43,14 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView className="bg-background flex-1 px-6">
+    <SafeAreaView className="flex-1 bg-background px-6">
       <View className="flex-1 justify-center">
         <View className="mb-10 items-center">
           <Image source={require('../../assets/icon.png')} className="mb-6 h-20 w-20 rounded-2xl" />
 
-          <Text className="text-text text-4xl font-bold">Welcome back</Text>
+          <Text className="text-4xl font-bold text-text">Welcome back</Text>
 
-          <Text className="text-muted mt-3 text-center text-base">
+          <Text className="mt-3 text-center text-base text-muted">
             Sign in to continue tracking your nutrition and live activities.
           </Text>
         </View>
@@ -77,7 +77,7 @@ export default function LoginScreen() {
           <View className="mt-6 flex-row justify-center">
             <Text className="text-muted">Don&apos;t have an account? </Text>
 
-            <Link href="/(auth)/register" className="text-accent font-semibold">
+            <Link href="/(auth)/register" className="font-semibold text-accent">
               Register
             </Link>
           </View>
