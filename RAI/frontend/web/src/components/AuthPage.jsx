@@ -22,12 +22,45 @@ export default function AuthPage() {
     { path: "/workout", icon: "fi fi-rr-gym" },
   ];
 
-  const handleFormSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    console.log("Email:", formData.get("email"));
-    console.log("Password:", formData.get("password"));
+const handleFormSubmit = async (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(event.currentTarget);
+
+  const loginData = {
+    email: formData.get("email"),
+    password: formData.get("password"),
   };
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(loginData),
+    });
+
+    const data = await response.json();
+
+    console.log("POST /auth/login", response.status, data);
+
+    if (!response.ok) {
+      alert(
+        `POST /auth/login ${response.status}: ` +
+        (typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail))
+      );
+      return;
+    }
+
+    localStorage.setItem("access_token", data.access_token);
+
+    alert("Login successful");
+  } catch (error) {
+    console.error("POST /auth/login error:", error);
+    alert(`POST /auth/login error: ${error.message}`);
+  }
+};
 
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden">
