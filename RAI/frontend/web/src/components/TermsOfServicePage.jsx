@@ -1,8 +1,10 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 
 export default function TermsOfServicePage() {
+    const navigate = useNavigate();
+    
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] p-6 overflow-hidden">
       
@@ -20,13 +22,13 @@ export default function TermsOfServicePage() {
             <div className="flex items-center gap-3">
               <h2 className="text-2xl md:text-3xl text-white font-bold tracking-wide">Terms of Service</h2>
             </div>
-            <Link 
-              to="/profile" 
-              className="flex items-center justify-center p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
-              title="Back to Login"
+            <button 
+              onClick={() => navigate(-1)}
+              className="flex items-center justify-center p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+              title="Go back"
             >
               <ArrowLeft className="w-5 h-5" />
-            </Link>
+            </button>
           </div>
 
           {/* Scrollable Content Area */}

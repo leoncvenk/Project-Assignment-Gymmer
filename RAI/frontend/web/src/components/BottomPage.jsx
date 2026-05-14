@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 // Icons
 const GoogleIcon = (props) => (
@@ -9,6 +10,10 @@ const AppleIcon = (props) => (
 );
 
 export default function BottomPage() {
+  const legalLinks = [
+    { name: 'Privacy Policy', path: '/privacy-policy' },
+    { name: 'Terms', path: '/tos' }
+  ];
 
   return (
     <div className="relative min-h-screen w-full flex flex-col bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden text-white">
@@ -152,15 +157,16 @@ export default function BottomPage() {
             <h3 className="text-2xl tracking-wider uppercase mb-1" style={{ fontFamily: "'Anton', sans-serif" }}>
               TERMS & CONDITIONS
             </h3>
-            {['Privacy Policy', 'Terms', 'Privacy Settings'].map((link) => (
-              <a 
-                key={link} 
-                href="#" 
+            {/* UPDATED: Changed from <a> tags to <Link> components */}
+            {legalLinks.map((link) => (
+              <Link 
+                key={link.name} 
+                to={link.path} 
                 className="text-gray-400 hover:text-white transition-colors text-sm sm:text-base"
                 style={{ fontFamily: "'Anonymous Pro', monospace" }}
               >
-                {link}
-              </a>
+                {link.name}
+              </Link>
             ))}
           </div>
 
