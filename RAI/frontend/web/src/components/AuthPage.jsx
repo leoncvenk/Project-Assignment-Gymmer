@@ -180,9 +180,9 @@ export default function AuthPage() {
             
             <p className="text-xs text-gray-500 text-center mt-2 leading-relaxed">
               By logging in, you agree to our{' '}
-              <a href="#" className="text-gray-400 underline hover:text-white transition-colors">Terms of Service</a>
+              <Link to="/tos" className="text-gray-400 underline hover:text-white transition-colors">Terms of Service</Link>
               {' '}&{' '}
-              <a href="#" className="text-gray-400 underline hover:text-white transition-colors">Privacy Policy</a>
+              <Link to="/privacy-policy" className="text-gray-400 underline hover:text-white transition-colors">Privacy Policy</Link>
             </p>
           </div>
 
