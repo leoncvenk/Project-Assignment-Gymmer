@@ -98,8 +98,8 @@ export default function RegisterPage() {
         navigate('/profile'); 
       }
 
-    } catch (error) {
-      setError("Ni povezave z zaledjem. Preveri, če tvoj uvicorn teče!");
+    } catch (err) {
+      console.error("Network Fetch Error:", err);
     } finally {
       setLoading(false);
     }

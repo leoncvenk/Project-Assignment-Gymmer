@@ -108,7 +108,8 @@ export default function ProfilePage() {
       // Uspešno posodobljeno!
       navigate('/food'); 
       
-    } catch (error) {
+    } catch (err) {
+      console.error("Network Fetch Error:", err);
       setError("Network error: Make sure your backend (uvicorn) is running.");
     } finally {
       setLoading(false);
