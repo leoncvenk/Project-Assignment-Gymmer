@@ -1,6 +1,17 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom"; 
 
 export default function CaloriesPage() {
+  const navigate = useNavigate(); 
+
+  const handleStartTracking = () => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      navigate('/dashboard');
+    } else {
+      navigate('/profile'); 
+    }
+  };
 
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden">
@@ -54,8 +65,9 @@ export default function CaloriesPage() {
 
           </ul>
           
-          {/* Action Button */}
+          {/* Action Button z dodanim onClick dogodkom */}
           <motion.button 
+            onClick={handleStartTracking}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="cursor-pointer mt-12 bg-blue-600 text-white px-10 py-4 rounded-3xl text-xl sm:text-2xl font-bold shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(10,10,100,0.3)] transition-shadow"
