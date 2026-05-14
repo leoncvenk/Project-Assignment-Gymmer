@@ -27,7 +27,7 @@ export default function LoginScreen() {
       console.log('PROFILE COMPLETED:', user.profile_completed);
 
       if (user.profile_completed) {
-        router.replace('/(app)/dashboard');
+        router.replace('/(app)/nutrition');
         return;
       }
 
