@@ -47,7 +47,7 @@ jobs:
         run: pytest -v
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
-          DB_NAME: rai_test_${{ matrix.db-suffix }}_${{ github.run_id }}_${{ github.run_attempt }}
+          DB_NAME: rai_test_${{ matrix.db-suffix }}
 
   web-check:
     name: Web frontend check
