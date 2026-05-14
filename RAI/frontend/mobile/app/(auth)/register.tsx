@@ -1,10 +1,13 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, Text, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AuthTextInput from 'components/forms/AuthTextInput';
 import PrimaryButton from 'components/ui/PrimaryButton';
+
+import { register } from 'lib/auth';
+import { isAxiosError } from 'axios';
 
 export default function RegisterScreen() {
   const [username, setUsername] = useState('');
@@ -12,8 +15,33 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  function handleRegister() {
-    // API integration comes in next branch.
+  async function handleRegister() {
+    if (password !== confirmPassword) {
+      Alert.alert('Registration failed', 'Passwords do not match.');
+      return;
+    }
+
+    try {
+      await register({
+        username,
+        email,
+        password,
+      });
+
+      router.replace('/(auth)/login');
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.log('REGISTER ERROR STATUS:', error.response?.status);
+        console.log('REGISTER ERROR DATA:', error.response?.data);
+        console.log('REGISTER ERROR MESSAGE:', error.message);
+
+        Alert.alert('Registration failed', JSON.stringify(error.response?.data ?? error.message));
+
+        return;
+      }
+
+      Alert.alert('Registration failed', 'Unknown error.');
+    }
   }
 
   return (

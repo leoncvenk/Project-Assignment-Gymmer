@@ -1,7 +1,9 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, Text, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getCurrentUser, login, saveAuthToken } from 'lib/auth';
+import { isAxiosError } from 'axios';
 
 import AuthTextInput from 'components/forms/AuthTextInput';
 import PrimaryButton from 'components/ui/PrimaryButton';
@@ -10,8 +12,34 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  function handleLogin() {
-    // API integration comes in next branch.
+  async function handleLogin() {
+    try {
+      const loginResponse = await login({
+        email,
+        password,
+      });
+
+      await saveAuthToken(loginResponse.access_token);
+
+      const user = await getCurrentUser(loginResponse.access_token);
+
+      console.log('CURRENT USER:', user);
+      console.log('PROFILE COMPLETED:', user.profile_completed);
+
+      if (user.profile_completed) {
+        router.replace('/(app)/dashboard');
+        return;
+      }
+
+      router.replace('/(auth)/profile-setup');
+    } catch (error) {
+      if (isAxiosError(error)) {
+        Alert.alert('Login failed', JSON.stringify(error.response?.data ?? error.message));
+        return;
+      }
+
+      Alert.alert('Login failed', 'Unknown error.');
+    }
   }
 
   return (
