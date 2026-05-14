@@ -73,3 +73,119 @@ export default function DashboardPage() {
     }, 30 * 60 * 1000);
 
   };
+
+  useEffect(() => {
+
+    const token = localStorage.getItem('access_token');
+
+    if (!token) {
+
+      navigate('/profile');
+
+      return;
+
+    }
+
+
+
+    window.addEventListener('mousemove', resetLogoutTimer);
+
+    window.addEventListener('keydown', resetLogoutTimer);
+
+    window.addEventListener('click', resetLogoutTimer);
+
+    resetLogoutTimer();
+
+
+
+    const fetchUserData = async () => {
+
+      try {
+
+        const userRes = await fetch("http://127.0.0.1:8000/auth/me", {
+
+          headers: { "Authorization": `Bearer ${token}` }
+
+        });
+
+       
+
+        const profileRes = await fetch("http://127.0.0.1:8000/users/me/profile", {
+
+          headers: { "Authorization": `Bearer ${token}` }
+
+        });
+
+       
+
+        if (userRes.ok && profileRes.ok) {
+
+          const userBaseData = await userRes.json();
+
+          const userProfileData = await profileRes.json();
+
+         
+
+          setUserData({ ...userBaseData, profile: userProfileData });
+
+         
+
+          // Predizpolnimo formo za urejanje z obstoječimi podatki
+
+          setEditFormData({
+
+            height: userProfileData.height_cm || '',
+
+            weight: userProfileData.weight_kg || '',
+
+            targetWeight: userProfileData.goal_weight_kg || '',
+
+            age: userProfileData.age || '',
+
+            sex: userProfileData.sex || 'male',
+
+            activityLevel: userProfileData.activity_level || 'sedentary',
+
+            goalType: userProfileData.goal_type || 'maintain_weight'
+
+          });
+
+        } else {
+
+          handleLogout();
+
+        }
+
+      } catch (error) {
+
+        console.error("Napaka pri pridobivanju podatkov:", error);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+
+
+    fetchUserData();
+
+
+
+    return () => {
+
+      window.removeEventListener('mousemove', resetLogoutTimer);
+
+      window.removeEventListener('keydown', resetLogoutTimer);
+
+      window.removeEventListener('click', resetLogoutTimer);
+
+      if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+
+    };
+
+  }, [navigate]);
+
+
