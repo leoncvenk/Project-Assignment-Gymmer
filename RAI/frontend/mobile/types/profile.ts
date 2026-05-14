@@ -7,7 +7,7 @@ export type ActivityLevel =
     | "active"
     | "very_active";
 
-export type GoalType = "lose" | "maintain" | "gain";
+export type GoalType = "lose_weight" | "maintain_weight" | "gain_weight";
 
 export type CreateProfileRequest = {
     age: number;

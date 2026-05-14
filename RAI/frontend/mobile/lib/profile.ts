@@ -5,7 +5,7 @@ export async function createProfile(
     token: string,
     payload: CreateProfileRequest,
 ): Promise<ProfileResponse> {
-    const response = await api.put("/profiles/me", payload, {
+    const response = await api.put("/users/me/profile", payload, {
         headers: {
             Authorization: `Bearer ${token}`
         }

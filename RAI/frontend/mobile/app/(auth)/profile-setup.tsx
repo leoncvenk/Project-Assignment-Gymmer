@@ -1,17 +1,72 @@
+import { isAxiosError } from 'axios';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Alert, ScrollView, Text, View, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AuthTextInput from 'components/forms/AuthTextInput';
 import PrimaryButton from 'components/ui/PrimaryButton';
+import { getAuthToken } from 'lib/auth';
+import { createProfile } from 'lib/profile';
+import { ActivityLevel, GoalType, Sex } from 'types/profile';
 
 export default function ProfileSetupScreen() {
   const [heightCm, setHeightCm] = useState('');
   const [weightKg, setWeightKg] = useState('');
   const [goalWeightKg, setGoalWeightKg] = useState('');
   const [age, setAge] = useState('');
+  const [sex, setSex] = useState<Sex>('male');
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel>('moderate');
+  const [goalType, setGoalType] = useState<GoalType>('lose_weight');
 
-  function handleSubmit() {}
+  const activityOptions: { label: string; value: ActivityLevel }[] = [
+    { label: 'Sedentary', value: 'sedentary' },
+    { label: 'Light', value: 'light' },
+    { label: 'Moderate', value: 'moderate' },
+    { label: 'Active', value: 'active' },
+    { label: 'Very active', value: 'very_active' },
+  ];
+
+  const goalOptions: { label: string; value: GoalType }[] = [
+    { label: 'Lose weight', value: 'lose_weight' },
+    { label: 'Maintain weight', value: 'maintain_weight' },
+    { label: 'Gain weight', value: 'gain_weight' },
+  ];
+
+  async function handleSubmit() {
+    if (!heightCm || !weightKg || !goalWeightKg || !age) {
+      Alert.alert('Missing fields', 'Fill in all profile fields.');
+      return;
+    }
+
+    const token = await getAuthToken();
+
+    if (!token) {
+      Alert.alert('Auth error', 'Missing authentication token.');
+      return;
+    }
+
+    try {
+      await createProfile(token, {
+        age: Number(age),
+        sex,
+        height_cm: Number(heightCm),
+        weight_kg: Number(weightKg),
+        goal_weight_kg: Number(goalWeightKg),
+        activity_level: activityLevel,
+        goal_type: goalType,
+      });
+
+      router.replace('/(app)/dashboard');
+    } catch (error) {
+      if (isAxiosError(error)) {
+        Alert.alert('Profile setup failed', JSON.stringify(error.response?.data ?? error.message));
+        return;
+      }
+
+      Alert.alert('Profile setup failed', 'Unknown error.');
+    }
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -62,13 +117,23 @@ export default function ProfileSetupScreen() {
           <View className="mb-5">
             <Text className="mb-2 text-sm font-medium text-text">Sex</Text>
             <View className="flex-row gap-3">
-              <View className="flex-1 rounded-xl border border-muted bg-card px-4 py-4">
-                <Text className="text-center font-semibold text-textOnDark">Male</Text>
-              </View>
+              <TouchableOpacity
+                onPress={() => setSex('male')}
+                className={`flex-1 rounded-xl border px-4 py-4 ${sex === 'male' ? 'border-accent bg-card' : 'border-muted bg-white'}`}>
+                <Text
+                  className={`text-center font-semibold ${sex === 'male' ? 'text-textOnDark' : 'text-text'}`}>
+                  Male
+                </Text>
+              </TouchableOpacity>
 
-              <View className="flex-1 rounded-xl border border-muted bg-white px-4 py-4">
-                <Text className="text-center font-semibold text-text">Female</Text>
-              </View>
+              <TouchableOpacity
+                onPress={() => setSex('female')}
+                className={`flex-1 rounded-xl border px-4 py-4 ${sex === 'female' ? 'border-accent bg-card' : 'border-muted bg-white'}`}>
+                <Text
+                  className={`text-center font-semibold ${sex === 'female' ? 'text-textOnDark' : 'text-text'}`}>
+                  Female
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -76,10 +141,22 @@ export default function ProfileSetupScreen() {
             <Text className="mb-2 text-sm font-medium text-text">Activity Level</Text>
 
             <View className="gap-3">
-              {['Sedentary', 'Light', 'Moderate', 'Active', 'Very active'].map((level) => (
-                <View key={level} className="rounded-xl border border-muted bg-white px-4 py-4">
-                  <Text className="font-medium text-text">{level}</Text>
-                </View>
+              {activityOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => setActivityLevel(option.value)}
+                  className={`rounded-xl border px-4 py-4 ${
+                    activityLevel === option.value
+                      ? 'border-accent bg-card'
+                      : 'border-muted bg-white'
+                  }`}>
+                  <Text
+                    className={`font-medium ${
+                      activityLevel === option.value ? 'text-textOnDark' : 'text-text'
+                    }`}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
@@ -88,10 +165,16 @@ export default function ProfileSetupScreen() {
             <Text className="mb-2 text-sm font-medium text-text">Goal</Text>
 
             <View className="gap-3">
-              {['Lose weight', 'Maintain weight', 'Gain weight'].map((goal) => (
-                <View key={goal} className="rounded-xl border border-muted bg-white px-4 py-4">
-                  <Text className="font-medium text-text">{goal}</Text>
-                </View>
+              {goalOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => setGoalType(option.value)}
+                  className={`rounded-xl border px-4 py-4 ${goalType === option.value ? 'border-accent bg-card' : 'border-muted bg-white'}`}>
+                  <Text
+                    className={`font-medium ${goalType === option.value ? 'text-textOnDark' : 'text-text'}`}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
