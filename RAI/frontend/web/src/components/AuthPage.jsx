@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, KeyRound, Mail, Sparkles } from "lucide-react";
 
@@ -11,17 +11,8 @@ const AppleIcon = (props) => (
 );
 
 export default function AuthPage() {
-  const location = useLocation();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-
-  const dockItems = [
-    { path: "/", icon: "fi fi-rr-home" },
-    { path: "/profile", icon: "fi fi-rs-user" },
-    { path: "/food", icon: "fi fi-rr-restaurant" },
-    { path: "/running", icon: "fi fi-rr-running" },
-    { path: "/workout", icon: "fi fi-rr-gym" },
-  ];
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();

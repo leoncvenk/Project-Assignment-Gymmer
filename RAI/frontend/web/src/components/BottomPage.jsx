@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 // Icons
@@ -10,14 +10,6 @@ const AppleIcon = (props) => (
 );
 
 export default function BottomPage() {
-  const location = useLocation();
-  const dockItems = [
-    { path: "/", icon: "fi fi-rr-home" },
-    { path: "/profile", icon: "fi fi-rs-user" },
-    { path: "/food", icon: "fi fi-rr-restaurant" },
-    { path: "/running", icon: "fi fi-rr-running" },
-    { path: "/workout", icon: "fi fi-rr-gym" },
-  ];
 
   return (
     <div className="relative min-h-screen w-full flex flex-col bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden text-white">
