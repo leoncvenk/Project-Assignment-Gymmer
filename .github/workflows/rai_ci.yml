@@ -41,11 +41,11 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Clean backend test database
-          working-directory: RAI/backend
-          run: python scripts/clear_test_db.py
-          env:
-            MONGO_URI: ${{ secrets.MONGO_URI }}
-            DB_NAME: rai_test_${{ matrix.db-suffix }}
+        working-directory: RAI/backend
+        run: python scripts/clear_test_db.py
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          DB_NAME: rai_test_${{ matrix.db-suffix }}
 
       - name: Run backend tests
         working-directory: RAI/backend
