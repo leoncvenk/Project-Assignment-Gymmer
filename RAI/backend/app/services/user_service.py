@@ -20,7 +20,7 @@ def _user_from_document(document: dict) -> User:
         username=document["username"],
         email=document["email"],
         hashed_password=document["hashed_password"],
-        roles=document.get("rolse", ["user"]),
+        roles=document.get("roles", ["user"]),
         profile_completed=document.get("profile_completed", False),
         created_at=document["created_at"],
         updated_at=document["updated_at"],
