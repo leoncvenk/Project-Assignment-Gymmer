@@ -30,3 +30,9 @@ export const radius = {
   lg: 16,
   xl: 24,
 } as const;
+
+export const layout = {
+  floatingTabBarHeight: 84,
+  floatingTabBarMarginBottom: 16,
+  floatingTabBarSafePadding: 84,
+} as const;
