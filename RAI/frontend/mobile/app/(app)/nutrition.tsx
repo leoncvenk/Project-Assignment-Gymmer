@@ -87,12 +87,14 @@ export default function NutritionScreen() {
             title="Calories"
             value={`${dashboard.summary.total_calories}`}
             description={targets ? `/ ${targets.calorie_target} kcal` : 'no target'}
+            percent={dashboard.progress?.calories_percent ?? 0}
           />
 
           <DashboardStatCard
             title="Protein"
             value={`${dashboard.summary.total_protein_g}g`}
             description={targets ? `/ ${targets.protein_target_g}g` : 'no target'}
+            percent={dashboard.progress?.protein_percent ?? 0}
           />
         </View>
 
@@ -101,12 +103,14 @@ export default function NutritionScreen() {
             title="Carbs"
             value={`${dashboard.summary.total_carbs_g}g`}
             description={targets ? `/ ${targets.carbs_target_g}g` : 'no target'}
+            percent={dashboard.progress?.carbs_percent ?? 0}
           />
 
           <DashboardStatCard
             title="Fats"
             value={`${dashboard.summary.total_fat_g}g`}
             description={targets ? `/ ${targets.fat_target_g}g` : 'no target'}
+            percent={dashboard.progress?.fat_percent ?? 0}
           />
         </View>
 
