@@ -63,6 +63,7 @@ export default function NutritionScreen() {
   }
 
   const targets = dashboard.targets;
+  const meals = dashboard.meals.filter((meal) => meal.entry_count > 0);
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -111,26 +112,30 @@ export default function NutritionScreen() {
 
         <DashboardSectionCard title="Meals" subtitle="Today's logged meals and nutrition totals.">
           <View className="gap-4">
-            {dashboard.meals.map((meal) => (
-              <View
-                key={meal.meal_type}
-                className="rounded-2xl border border-muted bg-background p-4">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-lg font-semibold text-text">
-                    {formatMealTitle(meal.meal_type)}
-                  </Text>
+            {meals.length === 0 ? (
+              <Text className="text-sm text-muted">No meals logged today.</Text>
+            ) : (
+              meals.map((meal) => (
+                <View
+                  key={meal.meal_type}
+                  className="rounded-2xl border border-muted bg-background p-4">
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-lg font-semibold text-text">
+                      {formatMealTitle(meal.meal_type)}
+                    </Text>
 
-                  <Text className="text-sm text-muted">{meal.entry_count} entries</Text>
-                </View>
+                    <Text className="text-sm text-muted">{meal.entry_count} entries</Text>
+                  </View>
 
-                <View className="mt-3 flex-row flex-wrap gap-4">
-                  <Text className="text-sm text-muted">{meal.total_calories} kcal</Text>
-                  <Text className="text-sm text-muted">P {meal.total_protein_g}g</Text>
-                  <Text className="text-sm text-muted">C {meal.total_carbs_g}g</Text>
-                  <Text className="text-sm text-muted">F {meal.total_fat_g}g</Text>
+                  <View className="mt-3 flex-row flex-wrap gap-4">
+                    <Text className="text-sm text-muted">{meal.total_calories} kcal</Text>
+                    <Text className="text-sm text-muted">P {meal.total_protein_g}g</Text>
+                    <Text className="text-sm text-muted">C {meal.total_carbs_g}g</Text>
+                    <Text className="text-sm text-muted">F {meal.total_fat_g}g</Text>
+                  </View>
                 </View>
-              </View>
-            ))}
+              ))
+            )}
           </View>
         </DashboardSectionCard>
       </ScrollView>
