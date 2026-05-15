@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import DashboardSectionCard from 'components/cards/DashboardSectionCard';
 import PrimaryButton from 'components/ui/PrimaryButton';
+import { layout } from 'constants/theme';
 
 const accountItems = [
   { label: 'Edit Profile', description: 'Update body stats and goals', icon: User },
@@ -38,6 +39,10 @@ export default function ProfileScreen() {
       <ScrollView
         className="flex-1 px-6"
         contentContainerClassName="py-8"
+        contentContainerStyle={{
+          paddingTop: 32,
+          paddingBottom: layout.floatingTabBarSafePadding,
+        }}
         showsVerticalScrollIndicator={false}>
         <View className="mb-8">
           <Text className="text-4xl font-bold text-text">Profile</Text>

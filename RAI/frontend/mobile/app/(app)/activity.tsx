@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import DashboardSectionCard from 'components/cards/DashboardSectionCard';
 import DashboardStatCard from 'components/cards/DashboardStatCard';
 import PrimaryButton from 'components/ui/PrimaryButton';
+import { layout } from 'constants/theme';
 
 export default function ActivityScreen() {
   function handleStartActivity() {}
@@ -14,6 +15,10 @@ export default function ActivityScreen() {
       <ScrollView
         className="flex-1 px-6"
         contentContainerClassName="py-8"
+        contentContainerStyle={{
+          paddingTop: 32,
+          paddingBottom: layout.floatingTabBarSafePadding,
+        }}
         showsVerticalScrollIndicator={false}>
         <View className="mb-8">
           <Text className="text-4xl font-bold text-text">Live Activity</Text>
