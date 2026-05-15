@@ -24,6 +24,7 @@ export type DashboardResponse = {
   date: string;
   profile_completed: boolean;
   has_nutrition_target: boolean;
+
   summary: {
     total_calories: number;
     total_protein_g: number;
@@ -31,11 +32,28 @@ export type DashboardResponse = {
     total_fat_g: number;
     entry_count: number;
   };
+
   targets: {
     calorie_target: number;
     protein_target_g: number;
     carbs_target_g: number;
     fat_target_g: number;
   } | null;
+
+  remaining: {
+    calories: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+  } | null;
+
+  progress: {
+    calories_percent: number;
+    protein_percent: number | null;
+    carbs_percent: number | null;
+    fat_percent: number | null;
+  } | null;
+
+  entries: DashboardEntry[];
   meals: DashboardMeal[];
 };
