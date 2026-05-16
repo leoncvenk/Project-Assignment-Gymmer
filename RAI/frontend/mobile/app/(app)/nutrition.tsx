@@ -122,9 +122,18 @@ export default function NutritionScreen() {
         <DashboardSectionCard title="Meals" subtitle="Today's logged meals and nutrition totals.">
           <View className="gap-4">
             {dashboard.meals.map((meal) => (
-              <View
+              <TouchableOpacity
                 key={meal.meal_type}
-                className="rounded-2xl border border-muted bg-background p-4">
+                activeOpacity={0.9}
+                className="rounded-2xl border border-muted bg-background p-4"
+                onPress={() =>
+                  router.push({
+                    pathname: '/meal-details',
+                    params: {
+                      mealType: meal.meal_type,
+                    },
+                  })
+                }>
                 <Text className="text-lg font-semibold text-text">
                   {formatMealTitle(meal.meal_type)}
                 </Text>
@@ -136,7 +145,9 @@ export default function NutritionScreen() {
                   <Text className="text-sm text-muted">F {meal.total_fat_g}g</Text>
                 </View>
 
-                <View className="my-4 h-px bg-muted/40" />
+                <Text className="mt-3 text-xs font-medium text-accent">View details</Text>
+
+                <View className="mb-4 mt-3 h-px bg-muted/40" />
 
                 <View className="flex-row items-center justify-between">
                   <Text className="text-sm text-muted">Entries: {meal.entry_count}</Text>
@@ -153,7 +164,7 @@ export default function NutritionScreen() {
                     <Text className="text-sm font-semibold text-accent">Add Entry</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         </DashboardSectionCard>
