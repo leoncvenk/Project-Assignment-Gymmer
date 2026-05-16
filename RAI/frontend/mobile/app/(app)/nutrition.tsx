@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,7 +8,7 @@ import { layout } from 'constants/theme';
 import { getAuthToken } from 'lib/auth';
 import { getDashboard } from 'lib/dashboard';
 import { DashboardResponse } from 'types/dashboard';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 
 function formatMealTitle(mealType: string) {
   return mealType
@@ -22,27 +22,31 @@ export default function NutritionScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadDashboard() {
-      try {
-        const token = await getAuthToken();
+  const loadDashboard = useCallback(async () => {
+    try {
+      setError(null);
 
-        if (!token) {
-          setError('Missing authentication token.');
-          return;
-        }
+      const token = await getAuthToken();
 
-        const data = await getDashboard(token);
-        setDashboard(data);
-      } catch {
-        setError('Could not load nutrition dashboard.');
-      } finally {
-        setIsLoading(false);
+      if (!token) {
+        setError('Missing authentication token.');
+        return;
       }
-    }
 
-    loadDashboard();
+      const data = await getDashboard(token);
+      setDashboard(data);
+    } catch {
+      setError('Could not load nutrition dashboard.');
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadDashboard();
+    }, [loadDashboard])
+  );
 
   if (isLoading) {
     return (
@@ -140,7 +144,7 @@ export default function NutritionScreen() {
                   <TouchableOpacity
                     onPress={() =>
                       router.push({
-                        pathname: 'food-entry',
+                        pathname: '/food-entry',
                         params: {
                           mealType: meal.meal_type,
                         },

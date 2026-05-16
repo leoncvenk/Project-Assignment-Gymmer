@@ -14,6 +14,7 @@ import ManualFoodForm from 'components/food-entry/ManualFoodForm';
 import { createFood, searchFoods } from 'lib/food';
 import { Food } from 'types/food';
 import { MealType } from 'types/food-entry';
+import { createFoodEntry } from 'lib/food-entry';
 
 export default function FoodEntryModal() {
   const [query, setQuery] = useState('');
@@ -48,6 +49,21 @@ export default function FoodEntryModal() {
     setSelectedFood(createdFood);
     setQuery(createdFood.name);
     setIsCreatingFood(false);
+  }
+
+  async function handleCreateEntry() {
+    if (!selectedFood || !quantityG) {
+      return;
+    }
+
+    await createFoodEntry({
+      food_id: selectedFood.id,
+      quantity_g: Number(quantityG),
+      meal_type: mealType ?? 'unspecified',
+      consumed_at: new Date().toISOString(),
+    });
+
+    router.back();
   }
 
   useEffect(() => {
@@ -123,7 +139,7 @@ export default function FoodEntryModal() {
                 onQuantityChange={setQuantityG}
                 onScanBarcode={() => {}}
                 onCreateFoodManually={() => setIsCreatingFood(true)}
-                onCreateEntry={() => {}}
+                onCreateEntry={handleCreateEntry}
               />
             )}
           </View>
