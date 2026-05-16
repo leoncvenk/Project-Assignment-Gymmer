@@ -8,7 +8,18 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(app)" />
+
+        <Stack.Screen
+          name="food-entry"
+          options={{
+            presentation: 'transparentModal',
+            animation: 'fade',
+          }}
+        />
+      </Stack>
     </SafeAreaProvider>
   );
 }

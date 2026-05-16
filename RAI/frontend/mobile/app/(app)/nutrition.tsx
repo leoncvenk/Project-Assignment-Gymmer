@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import DashboardSectionCard from 'components/cards/DashboardSectionCard';
@@ -8,6 +8,7 @@ import { layout } from 'constants/theme';
 import { getAuthToken } from 'lib/auth';
 import { getDashboard } from 'lib/dashboard';
 import { DashboardResponse } from 'types/dashboard';
+import { router, useFocusEffect } from 'expo-router';
 
 function formatMealTitle(mealType: string) {
   return mealType
@@ -21,27 +22,31 @@ export default function NutritionScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadDashboard() {
-      try {
-        const token = await getAuthToken();
+  const loadDashboard = useCallback(async () => {
+    try {
+      setError(null);
 
-        if (!token) {
-          setError('Missing authentication token.');
-          return;
-        }
+      const token = await getAuthToken();
 
-        const data = await getDashboard(token);
-        setDashboard(data);
-      } catch {
-        setError('Could not load nutrition dashboard.');
-      } finally {
-        setIsLoading(false);
+      if (!token) {
+        setError('Missing authentication token.');
+        return;
       }
-    }
 
-    loadDashboard();
+      const data = await getDashboard(token);
+      setDashboard(data);
+    } catch {
+      setError('Could not load nutrition dashboard.');
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadDashboard();
+    }, [loadDashboard])
+  );
 
   if (isLoading) {
     return (
@@ -116,30 +121,40 @@ export default function NutritionScreen() {
 
         <DashboardSectionCard title="Meals" subtitle="Today's logged meals and nutrition totals.">
           <View className="gap-4">
-            {meals.length === 0 ? (
-              <Text className="text-sm text-muted">No meals logged today.</Text>
-            ) : (
-              meals.map((meal) => (
-                <View
-                  key={meal.meal_type}
-                  className="rounded-2xl border border-muted bg-background p-4">
-                  <View className="flex-row items-center justify-between">
-                    <Text className="text-lg font-semibold text-text">
-                      {formatMealTitle(meal.meal_type)}
-                    </Text>
+            {dashboard.meals.map((meal) => (
+              <View
+                key={meal.meal_type}
+                className="rounded-2xl border border-muted bg-background p-4">
+                <Text className="text-lg font-semibold text-text">
+                  {formatMealTitle(meal.meal_type)}
+                </Text>
 
-                    <Text className="text-sm text-muted">{meal.entry_count} entries</Text>
-                  </View>
-
-                  <View className="mt-3 flex-row flex-wrap gap-4">
-                    <Text className="text-sm text-muted">{meal.total_calories} kcal</Text>
-                    <Text className="text-sm text-muted">P {meal.total_protein_g}g</Text>
-                    <Text className="text-sm text-muted">C {meal.total_carbs_g}g</Text>
-                    <Text className="text-sm text-muted">F {meal.total_fat_g}g</Text>
-                  </View>
+                <View className="mt-3 flex-row flex-wrap gap-4">
+                  <Text className="text-sm text-muted">{meal.total_calories} kcal</Text>
+                  <Text className="text-sm text-muted">P {meal.total_protein_g}g</Text>
+                  <Text className="text-sm text-muted">C {meal.total_carbs_g}g</Text>
+                  <Text className="text-sm text-muted">F {meal.total_fat_g}g</Text>
                 </View>
-              ))
-            )}
+
+                <View className="my-4 h-px bg-muted/40" />
+
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm text-muted">Entries: {meal.entry_count}</Text>
+
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: '/food-entry',
+                        params: {
+                          mealType: meal.meal_type,
+                        },
+                      })
+                    }>
+                    <Text className="text-sm font-semibold text-accent">Add Entry</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
           </View>
         </DashboardSectionCard>
       </ScrollView>
