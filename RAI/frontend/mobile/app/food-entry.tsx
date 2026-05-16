@@ -15,7 +15,7 @@ export default function FoodEntryModal() {
   }>();
 
   return (
-    <View className="flex-1 justify-end bg-black/40 px-4 pb-8">
+    <View className="flex-1 justify-center bg-black/40 px-4 pb-8">
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => router.back()}
