@@ -26,3 +26,12 @@ export type FoodSearchParams = {
     limit?: number;
     skip?: number;
 }
+
+export type CreateFoodRequest = {
+  name: string;
+  brand?: string;
+  calories_per_100g: number;
+  protein_g_per_100g: number;
+  carbs_g_per_100g: number;
+  fat_g_per_100g: number;
+};

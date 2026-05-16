@@ -1,10 +1,36 @@
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-type ManualFoodFormProps = {
-  onBack: () => void;
+import PrimaryButton from 'components/ui/PrimaryButton';
+
+export type ManualFoodFormValues = {
+  name: string;
+  brand: string;
+  calories_per_100g: string;
+  protein_g_per_100g: string;
+  carbs_g_per_100g: string;
+  fat_g_per_100g: string;
 };
 
-export default function ManualFoodForm({ onBack }: ManualFoodFormProps) {
+type ManualFoodFormProps = {
+  values: ManualFoodFormValues;
+  onChange: (values: ManualFoodFormValues) => void;
+  onBack: () => void;
+  onCreate: () => void;
+};
+
+export default function ManualFoodForm({
+  values,
+  onChange,
+  onBack,
+  onCreate,
+}: ManualFoodFormProps) {
+  function updateField(key: keyof ManualFoodFormValues, value: string) {
+    onChange({
+      ...values,
+      [key]: value,
+    });
+  }
+
   return (
     <View>
       <View className="mb-6">
@@ -17,18 +43,24 @@ export default function ManualFoodForm({ onBack }: ManualFoodFormProps) {
 
       <View className="gap-4">
         <TextInput
+          value={values.name}
+          onChangeText={(value) => updateField('name', value)}
           placeholder="Food name"
           placeholderTextColor="#c5c5c5"
           className="rounded-xl border border-muted bg-background px-4 py-4 text-text"
         />
 
         <TextInput
+          value={values.brand}
+          onChangeText={(value) => updateField('brand', value)}
           placeholder="Brand"
           placeholderTextColor="#c5c5c5"
           className="rounded-xl border border-muted bg-background px-4 py-4 text-text"
         />
 
         <TextInput
+          value={values.calories_per_100g}
+          onChangeText={(value) => updateField('calories_per_100g', value)}
           placeholder="Calories per 100g"
           placeholderTextColor="#c5c5c5"
           keyboardType="numeric"
@@ -36,6 +68,8 @@ export default function ManualFoodForm({ onBack }: ManualFoodFormProps) {
         />
 
         <TextInput
+          value={values.protein_g_per_100g}
+          onChangeText={(value) => updateField('protein_g_per_100g', value)}
           placeholder="Protein per 100g"
           placeholderTextColor="#c5c5c5"
           keyboardType="numeric"
@@ -43,6 +77,8 @@ export default function ManualFoodForm({ onBack }: ManualFoodFormProps) {
         />
 
         <TextInput
+          value={values.carbs_g_per_100g}
+          onChangeText={(value) => updateField('carbs_g_per_100g', value)}
           placeholder="Carbs per 100g"
           placeholderTextColor="#c5c5c5"
           keyboardType="numeric"
@@ -50,6 +86,8 @@ export default function ManualFoodForm({ onBack }: ManualFoodFormProps) {
         />
 
         <TextInput
+          value={values.fat_g_per_100g}
+          onChangeText={(value) => updateField('fat_g_per_100g', value)}
           placeholder="Fats per 100g"
           placeholderTextColor="#c5c5c5"
           keyboardType="numeric"
@@ -57,9 +95,13 @@ export default function ManualFoodForm({ onBack }: ManualFoodFormProps) {
         />
       </View>
 
-      <TouchableOpacity onPress={onBack} className="mt-6">
-        <Text className="text-center text-sm font-semibold text-accent">Back to search</Text>
-      </TouchableOpacity>
+      <View className="mt-6 gap-4">
+        <PrimaryButton title="Create Food" onPress={onCreate} />
+
+        <TouchableOpacity onPress={onBack}>
+          <Text className="text-center text-sm font-semibold text-accent">Back to search</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
