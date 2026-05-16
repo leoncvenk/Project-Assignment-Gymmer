@@ -12,6 +12,7 @@ runs/
 *.pt
 *.onnx
 *.engine
+!models/best.pt
 
 __pycache__/
 *.pyc
