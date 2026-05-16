@@ -15,6 +15,10 @@ from app.routes.nutrition_targets import (
 from app.routes.dashboard import (
     router as dashboard_router,
 )
+from app.routes.food_recognition import (
+    router as food_recognition_router,
+)
+
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -46,3 +50,4 @@ app.include_router(food_entries_router)
 app.include_router(nutrition_summary_router)
 app.include_router(nutrition_targets_router)
 app.include_router(dashboard_router)
+app.include_router(food_recognition_router)
