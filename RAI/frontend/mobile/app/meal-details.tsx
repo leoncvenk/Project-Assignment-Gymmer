@@ -6,7 +6,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getAuthToken } from 'lib/auth';
 import { getDashboard } from 'lib/dashboard';
+import { getFoodById } from 'lib/food';
 import { DashboardMeal } from 'types/dashboard';
+import { Food } from 'types/food';
 
 function formatMealTitle(mealType: string) {
   return mealType
@@ -21,6 +23,7 @@ export default function MealDetailsScreen() {
   const [meal, setMeal] = useState<DashboardMeal | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [foodsById, setFoodsById] = useState<Record<string, Food>>({});
 
   const loadMeal = useCallback(async () => {
     try {
@@ -36,6 +39,19 @@ export default function MealDetailsScreen() {
       const dashboard = await getDashboard(token);
 
       const selectedMeal = dashboard.meals.find((item) => item.meal_type === mealType) ?? null;
+
+      if (selectedMeal) {
+        const uniqueFoodIds = [...new Set(selectedMeal.entries.map((entry) => entry.food_id))];
+
+        const foods = await Promise.all(uniqueFoodIds.map((foodId) => getFoodById(foodId)));
+
+        setFoodsById(
+          foods.reduce<Record<string, Food>>((acc, food) => {
+            acc[food.id] = food;
+            return acc;
+          }, {})
+        );
+      }
 
       setMeal(selectedMeal);
     } catch {
@@ -108,20 +124,28 @@ export default function MealDetailsScreen() {
             <Text className="text-sm text-muted">No entries logged for this meal.</Text>
           ) : (
             <View className="gap-4">
-              {meal.entries.map((entry) => (
-                <View key={entry.id} className="rounded-2xl border border-muted bg-background p-4">
-                  <Text className="font-semibold text-text">Food ID: {entry.food_id}</Text>
+              {meal.entries.map((entry) => {
+                const food = foodsById[entry.food_id];
 
-                  <Text className="mt-1 text-sm text-muted">Quantity: {entry.quantity_g}g</Text>
+                return (
+                  <View
+                    key={entry.id}
+                    className="rounded-2xl border border-muted bg-background p-4">
+                    <Text className="font-semibold text-text">{food.name}</Text>
 
-                  <View className="mt-3 flex-row flex-wrap gap-4">
-                    <Text className="text-sm text-muted">{entry.calories} kcal</Text>
-                    <Text className="text-sm text-muted">P {entry.protein_g}g</Text>
-                    <Text className="text-sm text-muted">C {entry.carbs_g}g</Text>
-                    <Text className="text-sm text-muted">F {entry.fat_g}g</Text>
+                    <Text className="mt-1 text-sm text-muted">
+                      {food?.brand ?? 'Unknown brand'} · {entry.quantity_g}g
+                    </Text>
+
+                    <View className="mt-3 flex-row flex-wrap gap-4">
+                      <Text className="text-sm text-muted">{entry.calories} kcal</Text>
+                      <Text className="text-sm text-muted">P {entry.protein_g}g</Text>
+                      <Text className="text-sm text-muted">C {entry.carbs_g}g</Text>
+                      <Text className="text-sm text-muted">F {entry.fat_g}g</Text>
+                    </View>
                   </View>
-                </View>
-              ))}
+                );
+              })}
             </View>
           )}
         </View>
