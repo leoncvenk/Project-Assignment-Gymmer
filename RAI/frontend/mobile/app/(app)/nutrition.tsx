@@ -8,6 +8,7 @@ import { layout } from 'constants/theme';
 import { getAuthToken } from 'lib/auth';
 import { getDashboard } from 'lib/dashboard';
 import { DashboardResponse } from 'types/dashboard';
+import { router } from 'expo-router';
 
 function formatMealTitle(mealType: string) {
   return mealType
@@ -136,7 +137,15 @@ export default function NutritionScreen() {
                 <View className="flex-row items-center justify-between">
                   <Text className="text-sm text-muted">Entries: {meal.entry_count}</Text>
 
-                  <TouchableOpacity onPress={() => {}}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: 'food-entry',
+                        params: {
+                          mealType: meal.meal_type,
+                        },
+                      })
+                    }>
                     <Text className="text-sm font-semibold text-accent">Add Entry</Text>
                   </TouchableOpacity>
                 </View>
