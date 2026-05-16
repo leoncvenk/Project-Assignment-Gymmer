@@ -88,8 +88,42 @@ export default function MealDetailsScreen() {
           </Text>
         </View>
 
-        <View className="rounded-3xl border border-muted bg-white p-6">
-          <Text className="text-lg font-semibold text-text">Meal Summary</Text>
+        <View className="mb-6 rounded-3xl bg-white p-6 shadow-sm">
+          <Text className="mb-4 text-lg font-semibold text-text">Meal Summary</Text>
+
+          <View className="flex-row flex-wrap gap-4">
+            <Text className="text-sm text-muted">{meal.total_calories} kcal</Text>
+            <Text className="text-sm text-muted">P {meal.total_protein_g}g</Text>
+            <Text className="text-sm text-muted">C {meal.total_carbs_g}g</Text>
+            <Text className="text-sm text-muted">F {meal.total_fat_g}g</Text>
+          </View>
+
+          <Text className="mt-4 text-sm text-muted">Entries: {meal.entry_count}</Text>
+        </View>
+
+        <View className="rounded-3xl bg-white p-6 shadow-sm">
+          <Text className="mb-4 text-lg font-semibold text-text">Entries</Text>
+
+          {meal.entries.length === 0 ? (
+            <Text className="text-sm text-muted">No entries logged for this meal.</Text>
+          ) : (
+            <View className="gap-4">
+              {meal.entries.map((entry) => (
+                <View key={entry.id} className="rounded-2xl border border-muted bg-background p-4">
+                  <Text className="font-semibold text-text">Food ID: {entry.food_id}</Text>
+
+                  <Text className="mt-1 text-sm text-muted">Quantity: {entry.quantity_g}g</Text>
+
+                  <View className="mt-3 flex-row flex-wrap gap-4">
+                    <Text className="text-sm text-muted">{entry.calories} kcal</Text>
+                    <Text className="text-sm text-muted">P {entry.protein_g}g</Text>
+                    <Text className="text-sm text-muted">C {entry.carbs_g}g</Text>
+                    <Text className="text-sm text-muted">F {entry.fat_g}g</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
