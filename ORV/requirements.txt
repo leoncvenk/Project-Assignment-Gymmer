@@ -1,3 +1,5 @@
 ultralytics
 roboflow
 python-dotenv
+opencv-python
+Pillow
