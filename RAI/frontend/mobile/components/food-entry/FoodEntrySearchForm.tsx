@@ -44,9 +44,9 @@ export default function FoodEntrySearchForm({
     <View>
       <View className="mb-6">
         <Text className="text-2xl font-bold text-text">Add Food Entry</Text>
-      </View>
 
-      <Text className="mt-2 text-sm text-muted">Logging for {formatMealType(mealType)}</Text>
+        <Text className="mt-2 text-sm text-muted">Logging for {formatMealType(mealType)}</Text>
+      </View>
 
       <View className="mb-5">
         <Text className="mb-2 text-sm font-medium text-text">Search Food</Text>
