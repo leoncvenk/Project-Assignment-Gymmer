@@ -7,9 +7,9 @@ export type Food = {
     barcode: string | null;
     category: string | null;
     calories_per_100g: 0 | null;
-    protein_per_100g: 0 | null;
-    carbs_per_100g: 0 | null;
-    fat_per_100g: 0 | null;
+    protein_g_per_100g: 0 | null;
+    carbs_g_per_100g: 0 | null;
+    fat_g_per_100g: 0 | null;
     fiber_per_100g: 0 | null;
     sugar_per_100g: 0 | null;
     salt_per_100g: 0 | null;
