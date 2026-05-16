@@ -8,6 +8,8 @@ datasets/
 data/
 *.zip
 
+results/
+
 runs/
 *.pt
 *.onnx
