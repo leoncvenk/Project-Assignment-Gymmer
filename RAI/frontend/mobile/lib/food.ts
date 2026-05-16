@@ -15,6 +15,12 @@ export async function searchFoods(params: FoodSearchParams): Promise<Food[]> {
     return response.data
 }
 
+export async function getFoodById(food_id: string): Promise<Food> {
+    const response = await api.get(`/foods/${food_id}`)
+
+    return response.data
+}
+
 export async function createFood(payload: CreateFoodRequest): Promise<Food> {
     const response = await api.post("/foods", payload)
     return response.data
