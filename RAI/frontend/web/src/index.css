@@ -11,10 +11,15 @@
   font-style: normal;
 }
 
-.text-metallic {
-  background: #ffffff;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
+:root {
+  --background: #2b2b2b;
+  --surface: #413f4f;
+  --surface-dark: #1f1f1f;
+  --card-highlight: #00a97f;
+  --accent: #00a97f;
+  --accent-hover: #008a68;
+  --text-primary: #f2f2f2;
+  --text-inverse: #2b2b2b;
+  --border: #5a5a5a;
+  --muted: #c5c5c5;
 }

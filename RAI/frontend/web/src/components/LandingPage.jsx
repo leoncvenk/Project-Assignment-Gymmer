@@ -17,7 +17,7 @@ export default function LandingPage() {
           className="group flex flex-col items-center justify-center text-center select-none transition-all duration-500 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]"
         >
           <h1 
-            className="text-7xl sm:text-8xl md:text-[130px] leading-none tracking-wide m-0 text-metallic"
+            className="text-7xl sm:text-8xl md:text-[130px] leading-none tracking-wide m-0 text-white"
             style={{ fontFamily: 'Chopsic, sans-serif' }}
           >
             GYMMER
