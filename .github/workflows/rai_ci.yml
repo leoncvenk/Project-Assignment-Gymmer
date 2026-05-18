@@ -103,3 +103,7 @@ jobs:
       - name: Lint mobile
         working-directory: RAI/frontend/mobile
         run: npm run lint
+
+      - name: Check formatting
+        working-directory: RAI/frontend/mobile
+        run: npm run format:check

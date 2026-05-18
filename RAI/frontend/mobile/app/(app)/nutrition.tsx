@@ -209,14 +209,23 @@ export default function NutritionScreen() {
                 </View>
                 {weeklyTrendDisplay.days.map((day) => (
                   <View
-                    key={day.shortLabel}
+                    key={day.date}
                     className="rounded-2xl border border-muted bg-background p-4">
-                    <View className="flex-row items-center justify-between">
-                      <Text className="font-semibold text-text">{day.date}</Text>
+                    <View className="mb-3 flex-row items-center justify-between">
+                      <Text className="w-10 font-semibold text-text">{day.shortLabel}</Text>
 
                       <Text className="text-sm font-semibold text-accent">
                         {day.adherencePercent}%
                       </Text>
+                    </View>
+
+                    <View className="h-3 overflow-hidden rounded-full bg-muted/30">
+                      <View
+                        className="h-3 rounded-full bg-accent"
+                        style={{
+                          width: `${day.adherencePercent}%`,
+                        }}
+                      />
                     </View>
 
                     <View className="mt-3 flex-row flex-wrap gap-4">
