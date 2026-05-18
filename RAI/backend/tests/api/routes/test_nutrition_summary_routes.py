@@ -1,72 +1,8 @@
-from uuid import uuid4
-
 import pytest
-import pytest_asyncio
-from asgi_lifespan import LifespanManager
-from httpx import ASGITransport, AsyncClient
 
-from app.core.database import get_db
-from app.main import app
-from app.services.food_entry_service import FOOD_ENTRIES_COLLECTION
-from app.services.food_service import FOODS_COLLECTION
+from httpx import AsyncClient
 
-
-def unique_email() -> str:
-    return f"test-{uuid4().hex}@example.com"
-
-
-@pytest_asyncio.fixture
-async def client():
-    async with LifespanManager(app):
-        db = get_db()
-
-        await db[FOOD_ENTRIES_COLLECTION].delete_many({})
-        await db[FOODS_COLLECTION].delete_many({})
-        await db["users"].delete_many({})
-
-        transport = ASGITransport(app=app)
-
-        async with AsyncClient(
-            transport=transport,
-            base_url="http://test",
-        ) as test_client:
-            yield test_client
-
-        await db[FOOD_ENTRIES_COLLECTION].delete_many({})
-        await db[FOODS_COLLECTION].delete_many({})
-        await db["users"].delete_many({})
-
-
-async def register_and_login(client: AsyncClient) -> str:
-    email = unique_email()
-    password = "Password123!"
-
-    register_response = await client.post(
-        "/auth/register",
-        json={
-            "username": f"user-{uuid4().hex[:8]}",
-            "email": email,
-            "password": password,
-        },
-    )
-
-    assert register_response.status_code in [200, 201]
-
-    login_response = await client.post(
-        "/auth/login",
-        json={
-            "email": email,
-            "password": password,
-        },
-    )
-
-    assert login_response.status_code == 200
-
-    token = login_response.json()["access_token"]
-    assert token
-
-    return token
-
+from tests.api.conftest import auth_headers, register_and_login
 
 async def create_food(client: AsyncClient) -> str:
     response = await client.post(
@@ -100,7 +36,7 @@ async def test_get_nutrition_summary_returns_zero_for_empty_day(client):
 
     response = await client.get(
         "/users/me/nutrition-summary?date=2026-05-10",
-        headers={"Authorization": f"Bearer {token}"},
+        headers=auth_headers(token),
     )
 
     assert response.status_code == 200
@@ -121,7 +57,7 @@ async def test_get_nutrition_summary_sums_entries_for_authenticated_user(client)
 
     await client.post(
         "/users/me/food-entries",
-        headers={"Authorization": f"Bearer {token}"},
+        headers=auth_headers(token),
         json={
             "food_id": food_id,
             "quantity_g": 100,
@@ -131,7 +67,7 @@ async def test_get_nutrition_summary_sums_entries_for_authenticated_user(client)
 
     await client.post(
         "/users/me/food-entries",
-        headers={"Authorization": f"Bearer {token}"},
+        headers=auth_headers(token),
         json={
             "food_id": food_id,
             "quantity_g": 200,
@@ -141,7 +77,7 @@ async def test_get_nutrition_summary_sums_entries_for_authenticated_user(client)
 
     response = await client.get(
         "/users/me/nutrition-summary?date=2026-05-10",
-        headers={"Authorization": f"Bearer {token}"},
+        headers=auth_headers(token),
     )
 
     assert response.status_code == 200
@@ -200,7 +136,7 @@ async def test_get_nutrition_summary_rejects_invalid_date(client):
 
     response = await client.get(
         "/users/me/nutrition-summary?date=invalid-date",
-        headers={"Authorization": f"Bearer {token}"},
+        headers=auth_headers(token),
     )
 
     assert response.status_code == 422
