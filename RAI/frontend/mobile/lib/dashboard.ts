@@ -31,7 +31,7 @@ export async function getDashboard(token: string): Promise<DashboardResponse> {
 export async function getWeeklyNutritionDashboard(token: string): Promise<WeeklyNutritionDashboardResponse> {
   const response = await api.get("/users/me/dashboard/weekly", {
     params: {
-      start_date: getWeekStartDateString() 
+      date: getWeekStartDateString() 
     },
     headers: {
       Authorization: `Bearer ${token}`
