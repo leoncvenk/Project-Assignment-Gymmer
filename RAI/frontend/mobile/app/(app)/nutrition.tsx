@@ -9,6 +9,7 @@ import { getAuthToken } from 'lib/auth';
 import { getDashboard, getWeeklyNutritionDashboard } from 'lib/dashboard';
 import { DashboardResponse, WeeklyNutritionDashboardResponse } from 'types/dashboard';
 import { router, useFocusEffect } from 'expo-router';
+import { prepareWeeklyTrendDisplay } from 'utils/weekly-trends';
 
 function formatMealTitle(mealType: string) {
   return mealType
@@ -76,6 +77,9 @@ export default function NutritionScreen() {
   }
 
   const targets = dashboard.targets;
+  const weeklyTrendDisplay = weeklyDashboard
+    ? prepareWeeklyTrendDisplay(weeklyDashboard.days)
+    : null;
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -176,29 +180,29 @@ export default function NutritionScreen() {
           </View>
         </DashboardSectionCard>
 
-        {weeklyDashboard ? (
+        {weeklyTrendDisplay ? (
           <View className="mt-8">
             <DashboardSectionCard
               title="Weekly Trends"
               subtitle="Nutrition totals across the current week.">
               <View className="gap-4">
-                {weeklyDashboard.days.map((day) => (
+                {weeklyTrendDisplay.days.map((day) => (
                   <View
-                    key={day.date}
+                    key={day.shortLabel}
                     className="rounded-2xl border border-muted bg-background p-4">
                     <View className="flex-row items-center justify-between">
                       <Text className="font-semibold text-text">{day.date}</Text>
 
                       <Text className="text-sm font-semibold text-accent">
-                        {day.calories_percent ?? 0}%
+                        {day.adherencePercent}%
                       </Text>
                     </View>
 
                     <View className="mt-3 flex-row flex-wrap gap-4">
-                      <Text className="text-sm text-muted">{day.total_calories} kcal</Text>
-                      <Text className="text-sm text-muted">P {day.total_protein_g}g</Text>
-                      <Text className="text-sm text-muted">C {day.total_carbs_g}g</Text>
-                      <Text className="text-sm text-muted">F {day.total_fat_g}g</Text>
+                      <Text className="text-sm text-muted">{day.calories} kcal</Text>
+                      <Text className="text-sm text-muted">P {day.protein}g</Text>
+                      <Text className="text-sm text-muted">C {day.carbs}g</Text>
+                      <Text className="text-sm text-muted">F {day.fats}g</Text>
                     </View>
                   </View>
                 ))}
