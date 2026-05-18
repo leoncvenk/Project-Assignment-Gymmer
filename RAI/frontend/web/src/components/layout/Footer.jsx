@@ -30,7 +30,7 @@ export default function Footer() {
         {/* Center Column: shrink-0 prevents it from being squished */}
         <div className="flex flex-col items-center gap-4 shrink-0">
           <img 
-            src="/images/gymmerlogo.png" 
+            src="/images/gymmerLogo.svg" 
             alt="Gymmer Logo" 
             className="w-16 h-16 object-contain"
           />

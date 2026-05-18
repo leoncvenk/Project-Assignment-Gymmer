@@ -5,9 +5,9 @@ export default function AuthSidebar() {
     <div className="hidden lg:flex flex-col justify-center w-1/2 p-12 lg:px-24 xl:px-32 2xl:px-48 bg-[var(--background)]">
       <div className="flex items-center gap-2 mb-12">
         <img 
-          src="/images/gymmerlogo.png" 
+          src="/images/gymmerLogo.svg" 
           alt="Gymmer Logo" 
-          className="h-6 w-6 object-contain" 
+          className="h-12 w-12 object-contain" 
         />
         <span className="text-xl font-semibold text-[var(--text-primary)]">Gymmer</span>
       </div>
