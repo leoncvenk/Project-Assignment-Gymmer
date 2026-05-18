@@ -1,4 +1,4 @@
-import { WeeklyNutritionDay } from "types/dashboard";
+import { WeeklyNutritionDay } from 'types/dashboard';
 
 type WeeklyTrendDayDisplay = {
   date: string;
@@ -27,9 +27,7 @@ function formatShortWeekday(dateString: string) {
 export function prepareWeeklyTrendDisplay(days: WeeklyNutritionDay[]) {
   const displayDays: WeeklyTrendDayDisplay[] = days.map((day) => {
     const adherencePercent =
-      day.calories_percent !== null
-        ? Math.min(Math.round(day.calories_percent), 100)
-        : 0;
+      day.calories_percent !== null ? Math.min(Math.round(day.calories_percent), 100) : 0;
 
     return {
       date: day.date,
@@ -43,32 +41,23 @@ export function prepareWeeklyTrendDisplay(days: WeeklyNutritionDay[]) {
     };
   });
 
-  const targetHitDays = displayDays.filter(
-    (day) => day.adherencePercent >= 90
-  ).length;
+  const targetHitDays = displayDays.filter((day) => day.adherencePercent >= 90).length;
 
   const overallAdherencePercent =
     displayDays.length > 0
       ? Math.round(
-          displayDays.reduce((sum, day) => sum + day.adherencePercent, 0) /
-            displayDays.length
+          displayDays.reduce((sum, day) => sum + day.adherencePercent, 0) / displayDays.length
         )
       : 0;
 
   const averageCalories =
     displayDays.length > 0
-      ? Math.round(
-          displayDays.reduce((sum, day) => sum + day.calories, 0) /
-            displayDays.length
-        )
+      ? Math.round(displayDays.reduce((sum, day) => sum + day.calories, 0) / displayDays.length)
       : 0;
 
   const averageProtein =
     displayDays.length > 0
-      ? Math.round(
-          displayDays.reduce((sum, day) => sum + day.protein, 0) /
-            displayDays.length
-        )
+      ? Math.round(displayDays.reduce((sum, day) => sum + day.protein, 0) / displayDays.length)
       : 0;
 
   return {

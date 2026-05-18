@@ -68,10 +68,10 @@ export type WeeklyNutritionDay = {
   calorie_target: number | null;
   calories_remaining: number | null;
   calories_percent: number | null;
-}
+};
 
 export type WeeklyNutritionDashboardResponse = {
   week_start: string;
   week_end: string;
   days: WeeklyNutritionDay[];
-}
+};
