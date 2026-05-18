@@ -1,0 +1,52 @@
+name: ORV CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ORV/**"
+      - ".github/workflows/orv_ci.yml"
+
+  pull_request:
+    branches: [main]
+    paths:
+      - "ORV/**"
+      - ".github/workflows/orv_ci.yml"
+
+jobs:
+  orv-tests:
+    name: ORV Python tests and linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies for OpenCV
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-glx libglib2.0-0
+
+      - name: Install dependencies
+        working-directory: ORV
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest flake8
+
+      - name: Lint with flake8 (Syntax check)
+        working-directory: ORV
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings.
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Run ORV tests
+        working-directory: ORV
+        run: pytest -v
