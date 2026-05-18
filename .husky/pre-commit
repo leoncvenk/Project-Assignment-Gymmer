@@ -1,1 +1,1 @@
-npx --prefix RAI/frontent/mobile lint-staged
+npx --prefix RAI/frontend/mobile lint-staged
