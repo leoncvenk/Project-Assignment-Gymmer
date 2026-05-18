@@ -186,6 +186,27 @@ export default function NutritionScreen() {
               title="Weekly Trends"
               subtitle="Nutrition totals across the current week.">
               <View className="gap-4">
+                <View className="mb-5 rounded-2xl border border-accent bg-accent/10 p-5">
+                  <Text className="text-sm font-semibold text-accent">Weekly adherence</Text>
+
+                  <Text className="mt-2 text-4xl font-bold text-text">
+                    {weeklyTrendDisplay.summary.overallAdherencePercent}%
+                  </Text>
+
+                  <Text className="mt-2 text-sm text-muted">
+                    {weeklyTrendDisplay.summary.targetHitDays} / 7 days near target
+                  </Text>
+
+                  <View className="mt-4 flex-row gap-4">
+                    <Text className="text-sm text-muted">
+                      Avg {weeklyTrendDisplay.summary.averageCalories} kcal
+                    </Text>
+
+                    <Text className="text-sm text-muted">
+                      Avg P {weeklyTrendDisplay.summary.averageProtein}g
+                    </Text>
+                  </View>
+                </View>
                 {weeklyTrendDisplay.days.map((day) => (
                   <View
                     key={day.shortLabel}
