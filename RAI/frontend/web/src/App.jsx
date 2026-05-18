@@ -1,16 +1,16 @@
 import { Routes, Route } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
-import CaloriesPage from './components/CaloriesPage';
-import AuthPage from './components/AuthPage';
-import RunningPage from './components/RunningPage';
-import BottomPage from './components/BottomPage';
-import ScrollManager from './components/ScrollManager';
-import RegisterPage from './components/RegisterPage';
-import ProfilePage from './components/ProfilePage';
-import ForgotPasswordPage from './components/ForgotPasswordPage';
-import PrivacyPolicyPage from './components/PrivacyPolicyPage';
-import TermsOfServicePage from './components/TermsOfServicePage';
-import DashboardPage from './components/DashboardPage'; 
+import LandingPage from './components/pages/LandingPage';
+import CaloriesPage from './components/pages/CaloriesPage';
+import AuthPage from './components/pages/AuthPage';
+import RunningPage from './components/pages/RunningPage';
+import BottomPage from './components/pages/BottomPage';
+import ScrollManager from './components/pages/ScrollManager';
+import RegisterPage from './components/pages/RegisterPage';
+import ForgotPasswordPage from './components/pages/ForgotPasswordPage';
+import ProfilePage from './components/pages/ProfilePage';
+import PrivacyPolicyPage from './components/pages/PrivacyPolicyPage';
+import TermsOfServicePage from './components/pages/TermsOfServicePage';
+import DashboardPage from './components/pages/DashboardPage'; 
 
 function App() {
   return (
