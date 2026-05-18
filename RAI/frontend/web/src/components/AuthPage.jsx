@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, KeyRound, Mail, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Settings, Shield, ThumbsUp, Lightbulb, Dumbbell } from "lucide-react";
 
 const GoogleIcon = (props) => (
   <img src="https://svgl.app/library/google.svg" alt="Google" {...props} />
@@ -27,15 +27,11 @@ export default function AuthPage() {
     try {
       const response = await fetch("http://127.0.0.1:8000/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginData),
       });
 
       const data = await response.json();
-
-      console.log("POST /auth/login", response.status, data);
 
       if (!response.ok) {
         alert(
@@ -48,14 +44,10 @@ export default function AuthPage() {
       localStorage.setItem("access_token", data.access_token);
 
       const meResponse = await fetch("http://127.0.0.1:8000/auth/me", {
-        headers: {
-          Authorization: `Bearer ${data.access_token}`,
-        },
+        headers: { Authorization: `Bearer ${data.access_token}` },
       });
 
       const meData = await meResponse.json();
-
-      console.log("GET /auth/me", meResponse.status, meData);
 
       if (!meResponse.ok) {
         alert("Failed to fetch current user");
@@ -68,126 +60,135 @@ export default function AuthPage() {
         navigate("/profile-setup");
       }
     } catch (error) {
-      console.error("POST /auth/login error:", error);
       alert(`POST /auth/login error: ${error.message}`);
     }
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden">
-      {/* Main Content: Auth Form */}
-      <motion.div 
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-        className="w-full max-w-md px-6 mt-20 lg:mt-0 z-10"
-        style={{ fontFamily: "'Anonymous Pro', monospace" }}
-      >
-        <div className="bg-[#1a1a1a]/80 backdrop-blur-md border border-white/10 p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-full">
-          
-          <div className="text-left mb-8">
-            <h2 className="text-3xl text-white font-bold tracking-wide mb-2">Sign in to Gymmer</h2>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Log in to track your macros, sync your workouts, and hit your daily goals.
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {/* Social Sign-in */}
-            <div className="space-y-3">
-              <label className="text-xs text-gray-400 uppercase tracking-wider">Sign in with</label>
-              <div className="grid grid-cols-2 gap-5">
-                <button className="cursor-pointer flex items-center justify-center p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-                  <GoogleIcon className="w-5 h-5" />
-                </button>
-                <button className="cursor-pointer flex items-center justify-center p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-                  <AppleIcon className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-white/10"></div>
-              <span className="flex-shrink-0 mx-4 text-xs text-gray-500 uppercase tracking-widest">or</span>
-              <div className="flex-grow border-t border-white/10"></div>
-            </div>
-
-            {/* Email Form */}
-            <form onSubmit={handleFormSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm text-gray-300">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input 
-                    id="email" 
-                    name="email" 
-                    type="email" 
-                    placeholder="jdoe@example.com" 
-                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors"
-                    required 
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="text-sm text-gray-300">Password</label>
-                  <Link to="/forgot-password" className="text-sm text-blue-500 hover:text-blue-400 hover:underline transition-colors">
-                    Forgot password?
-                  </Link>
-                </div>
-                <div className="relative">
-                  <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input 
-                    id="password" 
-                    name="password" 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="••••••••"
-                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 pl-11 pr-12 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors"
-                    required 
-                  />
-                  <button 
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit" 
-                className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-bold tracking-wide mt-2 shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] transition-all cursor-pointer"
-              >
-                SIGN IN
-              </motion.button>
-            </form>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-8 flex flex-col items-center gap-4">
-            <Link 
-              to="/register" 
-              className="cursor-pointer flex items-center text-gray-400 hover:text-white transition-colors text-sm"
-            >
-              <Sparkles className="mr-2 h-4 w-4 text-blue-400" />
-              Or create an account
-            </Link>
-            
-            <p className="text-xs text-gray-500 text-center mt-2 leading-relaxed">
-              By logging in, you agree to our{' '}
-              <Link to="/tos" className="text-gray-400 underline hover:text-white transition-colors">Terms of Service</Link>
-              {' '}&{' '}
-              <Link to="/privacy-policy" className="text-gray-400 underline hover:text-white transition-colors">Privacy Policy</Link>
-            </p>
-          </div>
-
+    <div className="flex min-h-screen w-full bg-[var(--background)] text-[var(--text-primary)] font-sans">
+      {/* Left Side - Information Panel */}
+      <div className="hidden lg:flex flex-col justify-center w-1/2 p-12 lg:px-24 xl:px-32 2xl:px-48 bg-[var(--background)]">
+        <div className="flex items-center gap-2 mb-12">
+          <Dumbbell className="text-[var(--accent)] h-6 w-6" />
+          <span className="text-xl font-semibold text-[var(--text-primary)]">Gymmer</span>
         </div>
-      </motion.div>
+
+        <div className="space-y-10">
+          <div className="flex gap-4">
+            <Settings className="text-[var(--accent)] h-6 w-6 shrink-0 mt-1" />
+            <div>
+              <h3 className="text-[var(--text-primary)] font-medium mb-1">Adaptable performance</h3>
+              <p className="text-sm text-[var(--muted)] leading-relaxed">Our product effortlessly adjusts to your needs, boosting efficiency and simplifying your tasks.</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <Shield className="text-[var(--accent)] h-6 w-6 shrink-0 mt-1" />
+            <div>
+              <h3 className="text-[var(--text-primary)] font-medium mb-1">Built to last</h3>
+              <p className="text-sm text-[var(--muted)] leading-relaxed">Experience unmatched durability that goes above and beyond with lasting investment.</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <ThumbsUp className="text-[var(--accent)] h-6 w-6 shrink-0 mt-1" />
+            <div>
+              <h3 className="text-[var(--text-primary)] font-medium mb-1">Great user experience</h3>
+              <p className="text-sm text-[var(--muted)] leading-relaxed">Integrate our product into your routine with an intuitive and easy-to-use interface.</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <Lightbulb className="text-[var(--accent)] h-6 w-6 shrink-0 mt-1" />
+            <div>
+              <h3 className="text-[var(--text-primary)] font-medium mb-1">Innovative functionality</h3>
+              <p className="text-sm text-[var(--muted)] leading-relaxed">Stay ahead with features that set new standards, addressing your evolving needs better than the rest.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Form Panel */}
+      <div className="flex-1 flex items-center justify-center p-6 bg-[var(--background)]">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-[450px] bg-[var(--surface-dark)] border border-[var(--border)] rounded-2xl p-8 sm:p-10 shadow-2xl"
+        >
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-6">Sign in</h1>
+          
+          <form onSubmit={handleFormSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm text-[var(--muted)]">Email</label>
+              <input 
+                id="email" 
+                name="email" 
+                type="email" 
+                placeholder="your@email.com" 
+                className="w-full bg-transparent border border-[var(--border)] rounded-xl py-2.5 px-3.5 text-[var(--text-primary)] placeholder:text-[var(--border)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all"
+                required 
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="block text-sm text-[var(--muted)]">Password</label>
+                <Link to="/forgot-password" className="text-sm text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline transition-colors">
+                  Forgot your password?
+                </Link>
+              </div>
+              <div className="relative">
+                <input 
+                  id="password" 
+                  name="password" 
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="••••••"
+                  className="w-full bg-transparent border border-[var(--border)] rounded-xl py-2.5 px-3.5 pr-10 text-[var(--text-primary)] placeholder:text-[var(--border)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all"
+                  required 
+                />
+                <button 
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1 pb-2">
+              <input type="checkbox" id="remember" className="rounded border-[var(--border)] bg-transparent text-[var(--accent)] focus:ring-[var(--accent)] h-4 w-4" />
+              <label htmlFor="remember" className="text-sm text-[var(--muted)]">Remember me</label>
+            </div>
+
+            <button 
+              type="submit" 
+              className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--text-primary)] font-medium py-2.5 rounded-xl transition-colors cursor-pointer"
+            >
+              Sign in
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-[var(--muted)] mt-6">
+            Don't have an account? <Link to="/register" className="text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline transition-colors">Sign up</Link>
+          </p>
+
+          <div className="flex items-center my-6">
+            <div className="flex-1 border-t border-[var(--border)]"></div>
+            <span className="px-3 text-sm text-[var(--muted)]">or</span>
+            <div className="flex-1 border-t border-[var(--border)]"></div>
+          </div>
+
+          <div className="space-y-3">
+            <button className="w-full flex items-center justify-center gap-3 py-2.5 border border-[var(--border)] rounded-xl hover:bg-[var(--surface)] transition-colors text-sm text-[var(--muted)] hover:text-[var(--text-primary)] cursor-pointer">
+              <GoogleIcon className="w-4 h-4" />
+              Sign in with Google
+            </button>
+            <button className="w-full flex items-center justify-center gap-3 py-2.5 border border-[var(--border)] rounded-xl hover:bg-[var(--surface)] transition-colors text-sm text-[var(--muted)] hover:text-[var(--text-primary)] cursor-pointer">
+              <AppleIcon className="w-4 h-4" />
+              Sign in with Apple
+            </button>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

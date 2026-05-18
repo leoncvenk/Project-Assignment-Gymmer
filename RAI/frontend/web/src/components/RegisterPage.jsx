@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion"; 
-import { Eye, EyeOff, KeyRound, Mail, Sparkles, User, Calendar, Phone, AtSign, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Settings, Shield, ThumbsUp, Lightbulb, Dumbbell, AlertCircle } from "lucide-react";
 
 const GoogleIcon = (props) => (
   <img src="https://svgl.app/library/google.svg" alt="Google" {...props} />
@@ -14,7 +14,6 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
-  
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -23,19 +22,9 @@ export default function RegisterPage() {
     if (Array.isArray(data.detail)) {
       const err = data.detail[0];
       const field = err.loc[err.loc.length - 1];
-      
-      const fieldNames = {
-        username: "Uporabniško ime",
-        email: "E-poštni naslov",
-        password: "Geslo"
-      };
-
-      if (err.type === "string_too_short") {
-        return `${fieldNames[field] || field} mora imeti vsaj ${err.ctx.min_length} znakov.`;
-      }
-      if (err.type === "value_error.email") {
-        return "Vnesite veljaven e-poštni naslov.";
-      }
+      const fieldNames = { username: "Uporabniško ime", email: "E-poštni naslov", password: "Geslo" };
+      if (err.type === "string_too_short") return `${fieldNames[field] || field} mora imeti vsaj ${err.ctx.min_length} znakov.`;
+      if (err.type === "value_error.email") return "Vnesite veljaven e-poštni naslov.";
       return err.msg;
     }
     return "Prišlo je do nepredvidene napake.";
@@ -56,7 +45,6 @@ export default function RegisterPage() {
     }
 
     try {
-      // 1. KORAK: Registracija
       const registerResponse = await fetch("http://127.0.0.1:8000/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,29 +63,20 @@ export default function RegisterPage() {
         return;
       }
 
-      // 2. KORAK: Avtomatska prijava (če je bila registracija uspešna)
       const loginResponse = await fetch("http://127.0.0.1:8000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password, 
-        }),
+        body: JSON.stringify({ email: data.email, password: data.password }),
       });
 
       const loginData = await loginResponse.json();
 
       if (loginResponse.ok) {
-        // Shranimo žeton v brskalnik
         localStorage.setItem("access_token", loginData.access_token);
-        
-        // Ker gre za novega uporabnika, ga vržemo direktno na izpolnjevanje profila
         navigate('/profile-setup'); 
       } else {
-        // Če bi se pri avtomatski prijavi karkoli zalomilo, ga pošljemo na ročno prijavo
         navigate('/profile'); 
       }
-
     } catch (err) {
       console.error("Network Fetch Error:", err);
     } finally {
@@ -106,160 +85,158 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden pt-24 pb-6">
+    <div className="flex min-h-screen w-full bg-[var(--background)] text-[var(--text-primary)] font-sans">
+      {/* Left Side - Information Panel */}
+      <div className="hidden lg:flex flex-col justify-center w-1/2 p-12 lg:px-24 xl:px-32 2xl:px-48 bg-[var(--background)]">
+        <div className="flex items-center gap-2 mb-12">
+          <Dumbbell className="text-[var(--accent)] h-6 w-6" />
+          <span className="text-xl font-semibold text-[var(--text-primary)]">Gymmer</span>
+        </div>
 
-      <motion.div 
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-        className="w-full max-w-lg px-6 z-10"
-        style={{ fontFamily: "'Anonymous Pro', monospace" }}
-      >
-        <div className="bg-[#1a1a1a]/80 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-full">
-          
-          <div className="text-left mb-5">
-            <h2 className="text-2xl text-white font-bold tracking-wide mb-1">Join Gymmer</h2>
-            <p className="text-gray-400 text-xs leading-relaxed">
-              Create an account to start tracking your macros, workouts, and daily goals.
-            </p>
+        <div className="space-y-10">
+          <div className="flex gap-4">
+            <Settings className="text-[var(--accent)] h-6 w-6 shrink-0 mt-1" />
+            <div>
+              <h3 className="text-[var(--text-primary)] font-medium mb-1">Adaptable performance</h3>
+              <p className="text-sm text-[var(--muted)] leading-relaxed">Our product effortlessly adjusts to your needs, boosting efficiency and simplifying your tasks.</p>
+            </div>
           </div>
+          <div className="flex gap-4">
+            <Shield className="text-[var(--accent)] h-6 w-6 shrink-0 mt-1" />
+            <div>
+              <h3 className="text-[var(--text-primary)] font-medium mb-1">Built to last</h3>
+              <p className="text-sm text-[var(--muted)] leading-relaxed">Experience unmatched durability that goes above and beyond with lasting investment.</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <ThumbsUp className="text-[var(--accent)] h-6 w-6 shrink-0 mt-1" />
+            <div>
+              <h3 className="text-[var(--text-primary)] font-medium mb-1">Great user experience</h3>
+              <p className="text-sm text-[var(--muted)] leading-relaxed">Integrate our product into your routine with an intuitive and easy-to-use interface.</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <Lightbulb className="text-[var(--accent)] h-6 w-6 shrink-0 mt-1" />
+            <div>
+              <h3 className="text-[var(--text-primary)] font-medium mb-1">Innovative functionality</h3>
+              <p className="text-sm text-[var(--muted)] leading-relaxed">Stay ahead with features that set new standards, addressing your evolving needs better than the rest.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Form Panel */}
+      <div className="flex-1 flex items-center justify-center p-6 bg-[var(--background)] py-12">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-[500px] bg-[var(--surface-dark)] border border-[var(--border)] rounded-2xl p-8 shadow-2xl"
+        >
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-6">Sign up</h1>
 
           <AnimatePresence>
             {error && (
               <motion.div 
                 initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                animate={{ opacity: 1, height: "auto", marginBottom: 20 }}
+                animate={{ opacity: 1, height: "auto", marginBottom: 24 }}
                 exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-xl text-xs flex items-center gap-3">
+                <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-lg text-sm flex items-center gap-3">
                   <AlertCircle className="h-4 w-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[10px] text-gray-400 uppercase tracking-wider">Sign up with</label>
-              <div className="grid grid-cols-2 gap-4">
-                <button className="cursor-pointer flex items-center justify-center p-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-                  <GoogleIcon className="w-5 h-5" />
-                </button>
-                <button className="cursor-pointer flex items-center justify-center p-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-                  <AppleIcon className="w-5 h-5" />
-                </button>
+          
+          <form onSubmit={handleFormSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label htmlFor="name" className="block text-sm text-[var(--muted)]">First Name</label>
+                <input id="name" name="name" type="text" placeholder="John" className="w-full bg-transparent border border-[var(--border)] rounded-xl py-2.5 px-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--border)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all" required />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="surname" className="block text-sm text-[var(--muted)]">Last Name</label>
+                <input id="surname" name="surname" type="text" placeholder="Doe" className="w-full bg-transparent border border-[var(--border)] rounded-xl py-2.5 px-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--border)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all" required />
               </div>
             </div>
 
-            <div className="relative flex items-center py-1">
-              <div className="flex-grow border-t border-white/10"></div>
-              <span className="flex-shrink-0 mx-4 text-[10px] text-gray-500 uppercase tracking-widest">or</span>
-              <div className="flex-grow border-t border-white/10"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label htmlFor="username" className="block text-sm text-[var(--muted)]">Username</label>
+                <input id="username" name="username" type="text" placeholder="johndoe" className="w-full bg-transparent border border-[var(--border)] rounded-xl py-2.5 px-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--border)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all" required />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="birthdate" className="block text-sm text-[var(--muted)]">Birthdate</label>
+                <input id="birthdate" name="birthdate" type="date" className="w-full bg-transparent border border-[var(--border)] rounded-xl py-2.5 px-3.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all [color-scheme:dark]" required />
+              </div>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="name" className="text-xs text-gray-300">Name</label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                    <input id="name" name="name" type="text" placeholder="John" className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors" required />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label htmlFor="surname" className="text-xs text-gray-300">Surname</label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                    <input id="surname" name="surname" type="text" placeholder="Doe" className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors" required />
-                  </div>
-                </div>
-              </div>
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="block text-sm text-[var(--muted)]">Email</label>
+              <input id="email" name="email" type="email" placeholder="your@email.com" className="w-full bg-transparent border border-[var(--border)] rounded-xl py-2.5 px-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--border)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all" required />
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="username" className="text-xs text-gray-300">Username</label>
-                  <div className="relative">
-                    <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                    <input id="username" name="username" type="text" placeholder="johndoe99" className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors" required />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label htmlFor="birthdate" className="text-xs text-gray-300">Birthdate</label>
-                  <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                    <input id="birthdate" name="birthdate" type="date" className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors [color-scheme:dark]" required />
-                  </div>
+            <div className="space-y-1.5">
+              <label htmlFor="phone" className="block text-sm text-[var(--muted)]">Phone <span className="text-[var(--border)]">(Optional)</span></label>
+              <input id="phone" name="phone" type="tel" placeholder="+1 (555) 000-0000" className="w-full bg-transparent border border-[var(--border)] rounded-xl py-2.5 px-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--border)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div className="space-y-1.5">
+                <label htmlFor="password" className="block text-sm text-[var(--muted)]">Password</label>
+                <div className="relative">
+                  <input id="password" name="password" type={showPassword ? "text" : "password"} placeholder="••••••" className="w-full bg-transparent border border-[var(--border)] rounded-xl py-2.5 pl-3.5 pr-10 text-sm text-[var(--text-primary)] placeholder:text-[var(--border)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all" required />
+                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="email" className="text-xs text-gray-300">Email</label>
+                <label htmlFor="repeatPassword" className="block text-sm text-[var(--muted)]">Repeat Password</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <input id="email" name="email" type="email" placeholder="jdoe@example.com" className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors" required />
+                  <input id="repeatPassword" name="repeatPassword" type={showRepeatPassword ? "text" : "password"} placeholder="••••••" className="w-full bg-transparent border border-[var(--border)] rounded-xl py-2.5 pl-3.5 pr-10 text-sm text-[var(--text-primary)] placeholder:text-[var(--border)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all" required />
+                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer" onClick={() => setShowRepeatPassword(!showRepeatPassword)}>
+                    {showRepeatPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="phone" className="text-xs text-gray-300">Phone Number <span className="text-gray-600 text-[10px]">(Optional)</span></label>
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <input id="phone" name="phone" type="tel" placeholder="+1 (555) 000-0000" className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors" />
-                </div>
-              </div>
+            <button 
+              type="submit" 
+              disabled={loading}
+              className={`w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--text-primary)] font-medium py-2.5 rounded-xl transition-colors mt-4 ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              {loading ? "Creating..." : "Sign up"}
+            </button>
+          </form>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="password" className="text-xs text-gray-300">Password</label>
-                  <div className="relative">
-                    <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                    <input id="password" name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-10 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors" required />
-                    <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    </button>
-                  </div>
-                </div>
+          <p className="text-center text-sm text-[var(--muted)] mt-6">
+            Already have an account? <Link to="/profile" className="text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline transition-colors">Sign in</Link>
+          </p>
 
-                <div className="space-y-1.5">
-                  <label htmlFor="repeatPassword" className="text-xs text-gray-300">Repeat Password</label>
-                  <div className="relative">
-                    <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                    <input id="repeatPassword" name="repeatPassword" type={showRepeatPassword ? "text" : "password"} placeholder="••••••••" className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-10 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors" required />
-                    <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors cursor-pointer" onClick={() => setShowRepeatPassword(!showRepeatPassword)}>
-                      {showRepeatPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit" 
-                disabled={loading} 
-                className={`w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-bold tracking-wide mt-2 shadow-[0_0_15px_rgba(37,99,235,0.4)] transition-all ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] cursor-pointer'}`}
-              >
-                {loading ? "CREATING ACCOUNT..." : "CREATE ACCOUNT"}
-              </motion.button>
-            </form>
+          <div className="flex items-center my-6">
+            <div className="flex-1 border-t border-[var(--border)]"></div>
+            <span className="px-3 text-sm text-[var(--muted)]">or</span>
+            <div className="flex-1 border-t border-[var(--border)]"></div>
           </div>
 
-          <div className="mt-5 flex flex-col items-center gap-3">
-            <Link to="/profile" className="cursor-pointer flex items-center text-gray-400 hover:text-white transition-colors text-xs">
-              <Sparkles className="mr-2 h-3.5 w-3.5 text-blue-400" />
-              Or sign in to your account
-            </Link>
-            <p className="text-[10px] text-gray-500 text-center leading-relaxed">
-              By registering, you agree to our{' '}
-              <Link to="/tos" className="text-gray-400 underline hover:text-white transition-colors">Terms of Service</Link>
-              {' '}&{' '}
-              <Link to="/privacy-policy" className="text-gray-400 underline hover:text-white transition-colors">Privacy Policy</Link>
-            </p>
+          <div className="space-y-3">
+            <button className="w-full flex items-center justify-center gap-3 py-2.5 border border-[var(--border)] rounded-xl hover:bg-[var(--surface)] transition-colors text-sm text-[var(--muted)] hover:text-[var(--text-primary)] cursor-pointer">
+              <GoogleIcon className="w-4 h-4" />
+              Sign up with Google
+            </button>
+            <button className="w-full flex items-center justify-center gap-3 py-2.5 border border-[var(--border)] rounded-xl hover:bg-[var(--surface)] transition-colors text-sm text-[var(--muted)] hover:text-[var(--text-primary)] cursor-pointer">
+              <AppleIcon className="w-4 h-4" />
+              Sign up with Apple
+            </button>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }
