@@ -1,80 +1,8 @@
-from uuid import uuid4
-
 import pytest
-import pytest_asyncio
-from asgi_lifespan import LifespanManager
-from httpx import ASGITransport, AsyncClient
 
-from app.core.database import get_db
-from app.main import app
-from app.services.food_entry_service import FOOD_ENTRIES_COLLECTION
-from app.services.food_service import FOODS_COLLECTION
-from app.services.nutrition_target_service import NUTRITION_TARGETS_COLLECTION
-from app.services.user_service import USERS_COLLECTION
+from httpx import AsyncClient
 
-
-def unique_email() -> str:
-    return f"test-{uuid4().hex}@example.com"
-
-
-@pytest_asyncio.fixture
-async def client():
-    async with LifespanManager(app):
-        db = get_db()
-
-        await db[USERS_COLLECTION].delete_many({})
-        await db[FOODS_COLLECTION].delete_many({})
-        await db[FOOD_ENTRIES_COLLECTION].delete_many({})
-        await db[NUTRITION_TARGETS_COLLECTION].delete_many({})
-
-        transport = ASGITransport(app=app)
-
-        async with AsyncClient(
-            transport=transport,
-            base_url="http://test",
-        ) as test_client:
-            yield test_client
-
-        await db[USERS_COLLECTION].delete_many({})
-        await db[FOODS_COLLECTION].delete_many({})
-        await db[FOOD_ENTRIES_COLLECTION].delete_many({})
-        await db[NUTRITION_TARGETS_COLLECTION].delete_many({})
-
-
-async def register_and_login(client: AsyncClient) -> str:
-    email = unique_email()
-    password = "Password123!"
-
-    register_response = await client.post(
-        "/auth/register",
-        json={
-            "username": f"user-{uuid4().hex[:8]}",
-            "email": email,
-            "password": password,
-        },
-    )
-
-    assert register_response.status_code == 201
-
-    login_response = await client.post(
-        "/auth/login",
-        json={
-            "email": email,
-            "password": password,
-        },
-    )
-
-    assert login_response.status_code == 200
-
-    token = login_response.json()["access_token"]
-    assert token
-
-    return token
-
-
-def auth_headers(token: str) -> dict[str, str]:
-    return {"Authorization": f"Bearer {token}"}
-
+from tests.api.conftest import auth_headers, register_and_login
 
 async def create_food(client: AsyncClient) -> str:
     response = await client.post(

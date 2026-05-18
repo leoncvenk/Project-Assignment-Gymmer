@@ -68,7 +68,6 @@ export default function NutritionScreen() {
   }
 
   const targets = dashboard.targets;
-  const meals = dashboard.meals.filter((meal) => meal.entry_count > 0);
 
   return (
     <SafeAreaView className="flex-1 bg-background">

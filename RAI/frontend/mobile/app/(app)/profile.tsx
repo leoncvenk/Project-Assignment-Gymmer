@@ -1,13 +1,4 @@
-import {
-  Bell,
-  Dumbbell,
-  LogOut,
-  MapPin,
-  Moon,
-  Smartphone,
-  Target,
-  User,
-} from 'lucide-react-native';
+import { Bell, Dumbbell, MapPin, Moon, Smartphone, Target, User } from 'lucide-react-native';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 

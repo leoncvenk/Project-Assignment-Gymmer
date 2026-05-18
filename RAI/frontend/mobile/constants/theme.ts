@@ -15,11 +15,11 @@ export const colors = {
   dangerSoft: '#fef2f2',
   dangerHover: '#dc2626',
 
-  success: "#00a97f",
-  successSoft: "#e6f7f2",
+  success: '#00a97f',
+  successSoft: '#e6f7f2',
 
-  warning: "#f59e0b",
-  warningSoft: "#fff7ed",
+  warning: '#f59e0b',
+  warningSoft: '#fff7ed',
 } as const;
 
 export const spacing = {
