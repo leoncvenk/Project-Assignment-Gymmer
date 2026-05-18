@@ -57,3 +57,21 @@ export type DashboardResponse = {
   entries: DashboardEntry[];
   meals: DashboardMeal[];
 };
+
+export type WeeklyNutritionDay = {
+  date: string;
+  total_calories: number;
+  total_protein_g: number;
+  total_carbs_g: number;
+  total_fat_g: number;
+  entry_count: number;
+  calorie_target: number | null;
+  calories_remaining: number | null;
+  calories_percent: number | null;
+}
+
+export type WeeklyNutritionDashboardResponse = {
+  week_start: string;
+  week_end: string;
+  days: WeeklyNutritionDay[];
+}

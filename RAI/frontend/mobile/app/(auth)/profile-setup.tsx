@@ -57,7 +57,7 @@ export default function ProfileSetupScreen() {
         goal_type: goalType,
       });
 
-      router.replace('/(app)/dashboard');
+      router.replace('/(app)/activity');
     } catch (error) {
       if (isAxiosError(error)) {
         Alert.alert('Profile setup failed', JSON.stringify(error.response?.data ?? error.message));

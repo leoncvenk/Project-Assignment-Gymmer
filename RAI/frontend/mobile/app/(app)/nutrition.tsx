@@ -6,8 +6,8 @@ import DashboardSectionCard from 'components/cards/DashboardSectionCard';
 import DashboardStatCard from 'components/cards/DashboardStatCard';
 import { layout } from 'constants/theme';
 import { getAuthToken } from 'lib/auth';
-import { getDashboard } from 'lib/dashboard';
-import { DashboardResponse } from 'types/dashboard';
+import { getDashboard, getWeeklyNutritionDashboard } from 'lib/dashboard';
+import { DashboardResponse, WeeklyNutritionDashboardResponse } from 'types/dashboard';
 import { router, useFocusEffect } from 'expo-router';
 
 function formatMealTitle(mealType: string) {
@@ -21,6 +21,9 @@ export default function NutritionScreen() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [weeklyDashboard, setWeeklyDashboard] = useState<WeeklyNutritionDashboardResponse | null>(
+    null
+  );
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -33,8 +36,13 @@ export default function NutritionScreen() {
         return;
       }
 
-      const data = await getDashboard(token);
-      setDashboard(data);
+      const [dailyData, weeklyData] = await Promise.all([
+        getDashboard(token),
+        getWeeklyNutritionDashboard(token),
+      ]);
+
+      setDashboard(dailyData);
+      setWeeklyDashboard(weeklyData);
     } catch {
       setError('Could not load nutrition dashboard.');
     } finally {
@@ -167,6 +175,37 @@ export default function NutritionScreen() {
             ))}
           </View>
         </DashboardSectionCard>
+
+        {weeklyDashboard ? (
+          <View className="mt-8">
+            <DashboardSectionCard
+              title="Weekly Trends"
+              subtitle="Nutrition totals across the current week.">
+              <View className="gap-4">
+                {weeklyDashboard.days.map((day) => (
+                  <View
+                    key={day.date}
+                    className="rounded-2xl border border-muted bg-background p-4">
+                    <View className="flex-row items-center justify-between">
+                      <Text className="font-semibold text-text">{day.date}</Text>
+
+                      <Text className="text-sm font-semibold text-accent">
+                        {day.calories_percent ?? 0}%
+                      </Text>
+                    </View>
+
+                    <View className="mt-3 flex-row flex-wrap gap-4">
+                      <Text className="text-sm text-muted">{day.total_calories} kcal</Text>
+                      <Text className="text-sm text-muted">P {day.total_protein_g}g</Text>
+                      <Text className="text-sm text-muted">C {day.total_carbs_g}g</Text>
+                      <Text className="text-sm text-muted">F {day.total_fat_g}g</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </DashboardSectionCard>
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
