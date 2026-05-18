@@ -17,7 +17,7 @@ export default function RunningPage() {
           <img 
             src="/images/phoneSteps.svg" 
             alt="Running App Interface" 
-            className="w-full max-w-[500px] lg:max-w-[450px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
+            className="w-full max-w-[1000px] lg:max-w-[1000px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
             draggable="false"
           />
         </motion.div>
@@ -34,7 +34,7 @@ export default function RunningPage() {
             className="text-[var(--text-primary)] text-[60px] sm:text-[80px] md:text-[100px] lg:text-[110px] leading-[0.9] tracking-wide m-0 uppercase"
             style={{ fontFamily: "'Anton', sans-serif" }}
           >
-            TRACK YOUR<br />RUNNING
+            TRACK YOUR<br />ACTIVITY
           </h1>
           
           {/* Paragraph Description */}

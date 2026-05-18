@@ -77,7 +77,7 @@ export default function CaloriesPage() {
           <img 
             src="/images/phoneCalories.svg" 
             alt="Calories App Interface" 
-            className="w-full max-w-[650px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
+            className="w-full max-w-[700px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
             draggable="false"
           />
         </motion.div>
