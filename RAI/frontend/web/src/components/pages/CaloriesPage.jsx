@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom"; 
+import PrimaryButton from "../ui/PrimaryButton";
 
 export default function CaloriesPage() {
   const navigate = useNavigate(); 
@@ -14,7 +15,7 @@ export default function CaloriesPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden">
+    <div className="relative min-h-screen w-full flex flex-col items-center bg-[var(--background)] overflow-x-hidden">
 
       {/* Main Content Layout */}
       <div className="flex flex-col lg:flex-row items-center justify-between w-full max-w-[1700px] px-8 lg:px-16 pt-32 lg:pt-0 min-h-screen flex-1 gap-12 lg:gap-8">
@@ -28,7 +29,7 @@ export default function CaloriesPage() {
         >
           {/* Header */}
           <h1 
-            className="text-white text-[70px] sm:text-[90px] md:text-[110px] lg:text-[130px] leading-[0.9] tracking-wide m-0"
+            className="text-[var(--text-primary)] text-[70px] sm:text-[90px] md:text-[110px] lg:text-[130px] leading-[0.9] tracking-wide m-0"
             style={{ fontFamily: "'Anton', sans-serif" }}
           >
             TRACK<br />CALORIES
@@ -36,7 +37,7 @@ export default function CaloriesPage() {
           
           {/* Paragraph Description */}
           <p 
-            className="text-gray-300 text-lg sm:text-xl mt-6 leading-relaxed"
+            className="text-[var(--muted)] text-lg sm:text-xl mt-6 leading-relaxed"
             style={{ fontFamily: "'Anonymous Pro', monospace" }}
           >
             Stay on track, stay accountable. Whether you're aiming for a deficit or a surplus, our intuitive tracker helps you hit your daily goals with ease. Watch your progress unfold as you master your nutrition one meal at a time.
@@ -44,37 +45,26 @@ export default function CaloriesPage() {
 
           {/* Feature List */}
           <ul className="mt-8 flex flex-col gap-4 w-full" style={{ fontFamily: "'Anonymous Pro', monospace" }}>
-            
             <li className="flex items-start gap-3">
-              <p className="text-gray-300 text-lg sm:text-xl">
-                <span className="text-white font-bold tracking-wide">Instant Logging :</span> Barcode scanning & quick add.
+              <p className="text-[var(--muted)] text-lg sm:text-xl">
+                <span className="text-[var(--accent)] font-bold tracking-wide">Instant Logging :</span> Barcode scanning & quick add.
               </p>
             </li>
-
             <li className="flex items-start gap-3">
-              <p className="text-gray-300 text-lg sm:text-xl">
-                <span className="text-white font-bold tracking-wide">Macro Tracking :</span> Protein, Carbs, Fats at a glance.
+              <p className="text-[var(--muted)] text-lg sm:text-xl">
+                <span className="text-[var(--accent)] font-bold tracking-wide">Macro Tracking :</span> Protein, Carbs, Fats at a glance.
               </p>
             </li>
-
             <li className="flex items-start gap-3">
-              <p className="text-gray-300 text-lg sm:text-xl">
-                <span className="text-white font-bold tracking-wide">Goal Setting :</span> Tailor targets to your specific journey.
+              <p className="text-[var(--muted)] text-lg sm:text-xl">
+                <span className="text-[var(--accent)] font-bold tracking-wide">Goal Setting :</span> Tailor targets to your specific journey.
               </p>
             </li>
-
           </ul>
           
-          {/* Action Button z dodanim onClick dogodkom */}
-          <motion.button 
-            onClick={handleStartTracking}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="cursor-pointer mt-12 bg-blue-600 text-white px-10 py-4 rounded-3xl text-xl sm:text-2xl font-bold shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(10,10,100,0.3)] transition-shadow"
-            style={{ fontFamily: "'Anonymous Pro', monospace" }}
-          >
+          <PrimaryButton onClick={handleStartTracking} className="mt-12" style={{ fontFamily: "'Anonymous Pro', monospace" }}>
             START TRACKING
-          </motion.button>
+          </PrimaryButton>
         </motion.div>
 
         {/* Right Column: Phone Image */}

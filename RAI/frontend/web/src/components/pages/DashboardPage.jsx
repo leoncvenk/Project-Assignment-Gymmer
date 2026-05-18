@@ -13,7 +13,6 @@ export default function DashboardPage() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
  
-  // Stanja za urejanje profila
   const [editFormData, setEditFormData] = useState({
     height: '', weight: '', targetWeight: '', age: '',
     sex: 'male', activityLevel: 'sedentary', goalType: 'maintain_weight'
@@ -22,7 +21,6 @@ export default function DashboardPage() {
   const [editSuccess, setEditSuccess] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
-  // Stanja za spremembo gesla
   const [securityFormData, setSecurityFormData] = useState({ currentPassword: '', newPassword: '' });
   const [securityError, setSecurityError] = useState(null);
   const [securitySuccess, setSecuritySuccess] = useState(false);
@@ -99,7 +97,6 @@ export default function DashboardPage() {
     };
   }, [navigate, handleLogout, resetLogoutTimer]); 
 
-  // --- LOGIKA ZA UREJANJE PROFILA ---
   const handleEditChange = (e) => {
     setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
     setEditSuccess(false);
@@ -172,7 +169,6 @@ export default function DashboardPage() {
     }
   };
 
-  // --- LOGIKA ZA SPREMEMBO GESLA ---
   const handleSecurityChange = (e) => {
     setSecurityFormData({ ...securityFormData, [e.target.name]: e.target.value });
     setSecuritySuccess(false);
@@ -344,7 +340,7 @@ export default function DashboardPage() {
         <motion.button
           whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
           type="submit" disabled={editLoading}
-          className={`w-full bg-[var(--accent)] text-[var(--text-inverse)] py-3 rounded-xl text-sm font-bold mt-4 shadow-[0_0_15px_var(--accent)] opacity-80 transition-all ${editLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--accent-hover)] hover:opacity-100 hover:shadow-[0_0_25px_var(--accent)] cursor-pointer'}`}
+          className={`w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--text-inverse)] py-3 rounded-xl text-sm font-bold mt-4 transition-all ${editLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         >
           {editLoading ? 'SAVING...' : 'SAVE CHANGES'}
         </motion.button>
@@ -405,7 +401,7 @@ export default function DashboardPage() {
           whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
           type="submit" 
           disabled={securityLoading}
-          className={`bg-[var(--accent)] text-[var(--text-inverse)] px-6 py-2.5 rounded-xl text-sm font-bold mt-4 shadow-lg transition-all ${securityLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--accent-hover)] cursor-pointer'}`}
+          className={`bg-[var(--accent)] text-[var(--text-inverse)] px-6 py-2.5 rounded-xl text-sm font-bold mt-4 transition-all ${securityLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--accent-hover)] cursor-pointer'}`}
         >
           {securityLoading ? 'UPDATING...' : 'Update Password'}
         </motion.button>
@@ -415,7 +411,6 @@ export default function DashboardPage() {
 
   const renderConnections = () => (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-
       <h3 className="text-xl text-[var(--text-primary)] font-bold tracking-wide">Connected Accounts</h3>
       <div className="space-y-3 max-w-md">
         <div className="flex items-center justify-between p-4 bg-[var(--surface-dark)] border border-[var(--border)] rounded-2xl">
@@ -450,10 +445,10 @@ export default function DashboardPage() {
           initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}
           className="w-full md:w-72 flex-shrink-0"
         >
-          <div className="bg-[var(--surface)]/90 backdrop-blur-md border border-[var(--border)] rounded-3xl p-6 shadow-2xl flex flex-col items-center">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl flex flex-col items-center">
            
             <div className="relative group cursor-pointer">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[var(--accent)] to-[var(--card-highlight)] p-1">
+              <div className="w-24 h-24 rounded-full bg-[var(--accent)] p-1">
                 <div className="w-full h-full bg-[var(--surface-dark)] rounded-full flex items-center justify-center overflow-hidden">
                   <User className="h-10 w-10 text-[var(--muted)]" />
                 </div>
@@ -494,7 +489,7 @@ export default function DashboardPage() {
         {/* RIGHT CONTENT AREA */}
         <motion.div
           initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex-1 bg-[var(--surface)]/90 backdrop-blur-md border border-[var(--border)] rounded-3xl p-6 md:p-10 shadow-2xl"
+          className="flex-1 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-6 md:p-10 shadow-2xl"
         >
           <AnimatePresence mode="wait">
             <div key={activeTab}>
