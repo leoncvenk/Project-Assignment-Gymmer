@@ -9,6 +9,7 @@ import { getAuthToken } from 'lib/auth';
 import { getDashboard, getWeeklyNutritionDashboard } from 'lib/dashboard';
 import { DashboardResponse, WeeklyNutritionDashboardResponse } from 'types/dashboard';
 import { router, useFocusEffect } from 'expo-router';
+import { prepareWeeklyTrendDisplay } from 'utils/weekly-trends';
 
 function formatMealTitle(mealType: string) {
   return mealType
@@ -76,6 +77,9 @@ export default function NutritionScreen() {
   }
 
   const targets = dashboard.targets;
+  const weeklyTrendDisplay = weeklyDashboard
+    ? prepareWeeklyTrendDisplay(weeklyDashboard.days)
+    : null;
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -176,29 +180,59 @@ export default function NutritionScreen() {
           </View>
         </DashboardSectionCard>
 
-        {weeklyDashboard ? (
+        {weeklyTrendDisplay ? (
           <View className="mt-8">
             <DashboardSectionCard
               title="Weekly Trends"
               subtitle="Nutrition totals across the current week.">
               <View className="gap-4">
-                {weeklyDashboard.days.map((day) => (
+                <View className="mb-5 rounded-2xl border border-accent bg-accent/10 p-5">
+                  <Text className="text-sm font-semibold text-accent">Weekly adherence</Text>
+
+                  <Text className="mt-2 text-4xl font-bold text-text">
+                    {weeklyTrendDisplay.summary.overallAdherencePercent}%
+                  </Text>
+
+                  <Text className="mt-2 text-sm text-muted">
+                    {weeklyTrendDisplay.summary.targetHitDays} / 7 days near target
+                  </Text>
+
+                  <View className="mt-4 flex-row gap-4">
+                    <Text className="text-sm text-muted">
+                      Avg {weeklyTrendDisplay.summary.averageCalories} kcal
+                    </Text>
+
+                    <Text className="text-sm text-muted">
+                      Avg P {weeklyTrendDisplay.summary.averageProtein}g
+                    </Text>
+                  </View>
+                </View>
+                {weeklyTrendDisplay.days.map((day) => (
                   <View
                     key={day.date}
                     className="rounded-2xl border border-muted bg-background p-4">
-                    <View className="flex-row items-center justify-between">
-                      <Text className="font-semibold text-text">{day.date}</Text>
+                    <View className="mb-3 flex-row items-center justify-between">
+                      <Text className="w-10 font-semibold text-text">{day.shortLabel}</Text>
 
                       <Text className="text-sm font-semibold text-accent">
-                        {day.calories_percent ?? 0}%
+                        {day.adherencePercent}%
                       </Text>
                     </View>
 
+                    <View className="h-3 overflow-hidden rounded-full bg-muted/30">
+                      <View
+                        className="h-3 rounded-full bg-accent"
+                        style={{
+                          width: `${day.adherencePercent}%`,
+                        }}
+                      />
+                    </View>
+
                     <View className="mt-3 flex-row flex-wrap gap-4">
-                      <Text className="text-sm text-muted">{day.total_calories} kcal</Text>
-                      <Text className="text-sm text-muted">P {day.total_protein_g}g</Text>
-                      <Text className="text-sm text-muted">C {day.total_carbs_g}g</Text>
-                      <Text className="text-sm text-muted">F {day.total_fat_g}g</Text>
+                      <Text className="text-sm text-muted">{day.calories} kcal</Text>
+                      <Text className="text-sm text-muted">P {day.protein}g</Text>
+                      <Text className="text-sm text-muted">C {day.carbs}g</Text>
+                      <Text className="text-sm text-muted">F {day.fats}g</Text>
                     </View>
                   </View>
                 ))}
