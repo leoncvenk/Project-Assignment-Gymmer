@@ -1,0 +1,33 @@
+                   all        930       1328      0.929      0.847      0.893      0.825
+Barbell rod holder_vertical         11         12          1      0.878      0.915       0.81
+COMMERCIAL FLEX MOTION TRAINER         23         27      0.958      0.839      0.902      0.796
+Chin Up Dipping machine         24         24      0.957      0.925      0.992      0.944
+          Indoor Rower         24         25      0.855       0.96      0.945      0.842
+           Multi press         24         24          1      0.934      0.955      0.927
+        Recumbent Bike         56         57      0.964      0.965       0.98       0.94
+           Squat Stand         25         27      0.961      0.909       0.94      0.894
+adjustable weight bench         30         31      0.898      0.968      0.984      0.904
+             bananabag         19         23      0.958      0.993      0.993      0.854
+               barbell         24         28      0.986      0.857      0.886      0.845
+           battle-rope          2          2          1          0      0.495      0.446
+           bench-press         55         58      0.961      0.897      0.911      0.804
+             box_stair         47         54       0.95      0.963      0.991      0.931
+             club_ball         24         69      0.914      0.942      0.948      0.898
+          delt_machine         33         34      0.989      0.971      0.975       0.94
+             dumb-bell         33         59      0.907      0.576      0.789      0.685
+          dumbell-rack         16         16      0.912      0.647      0.788      0.679
+       eliptical-cycle         53         75      0.925      0.707      0.808      0.739
+              gym_ball         10         24      0.484      0.822      0.699      0.559
+               gym_mat         22         48      0.961       0.75      0.748      0.676
+         helix_trainer         17         21      0.953      0.714      0.762      0.698
+           kettle-ball         34         81      0.835      0.889      0.931      0.886
+ lat pull down machine         42         43      0.968      0.977      0.975      0.935
+             leg-press         37         37      0.986      0.973      0.975      0.948
+         medicine-ball         30         93      0.848      0.842      0.895      0.822
+               push up         31         63      0.948      0.864      0.938      0.889
+seated _leg_curl_extension         38         38      0.971          1      0.995      0.966
+      seated ab crunch         18         19          1      0.915      0.945      0.851
+    skipping with rope         33         40      0.961      0.775      0.845      0.811
+         smith machine         23         24      0.939      0.917       0.94       0.86
+             spin bike         91        114      0.958      0.797      0.847      0.756
+             treadmill         26         38      0.819      0.947      0.895      0.861
