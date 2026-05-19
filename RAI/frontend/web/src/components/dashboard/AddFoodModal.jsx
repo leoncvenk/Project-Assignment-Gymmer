@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion} from 'framer-motion';
 import { Search, X, AlertCircle } from 'lucide-react';
 
 export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded }) {
@@ -14,17 +14,22 @@ export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded })
   const [error, setError] = useState(null);
 
   // ZAKLEP DRSENJA OZADJA
+  const resetForm = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setSelectedFood(null);
+    setMode('search');
+    setError(null);
+    setQuantity('');
+  };
+
+  // V useEffect za zaklep drsenja:
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
-      // Resetiraj state, ko se zapre
-      setSearchQuery('');
-      setSearchResults([]);
-      setSelectedFood(null);
-      setMode('search');
-      setError(null);
+      resetForm(); // Tukaj pokličeš reset
     }
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
@@ -74,7 +79,9 @@ export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded })
       } else {
         setError("Failed to add food entry.");
       }
-    } catch (err) { setError("Network error."); }
+    } catch (err) {
+      console.error(err);
+      setError("Network error."); }
     finally { setLoading(false); }
   };
 
