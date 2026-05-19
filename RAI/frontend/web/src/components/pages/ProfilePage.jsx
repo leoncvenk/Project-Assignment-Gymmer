@@ -117,20 +117,20 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] overflow-x-hidden pt-24 pb-12">
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_top,_var(--surface)_0%,_var(--background)_45%,_var(--surface-dark)_100%)] overflow-x-hidden px-4 pt-24 pb-12 text-[var(--text-primary)]">
       
       <motion.div 
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-        className="w-full max-w-lg px-6 z-10"
+        className="w-full max-w-2xl z-10"
         style={{ fontFamily: "'Anonymous Pro', monospace" }}
       >
-        <div className="bg-[#1a1a1a]/80 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-full">
+        <div className="w-full rounded-3xl border border-[var(--border)] bg-[var(--surface-dark)]/90 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur-md sm:p-8">
           
-          <div className="text-left mb-6">
-            <h2 className="text-2xl text-white font-bold tracking-wide mb-1">Complete Profile</h2>
-            <p className="text-gray-400 text-xs leading-relaxed">Fill in all details to sync with Gymmer's backend.</p>
+          <div className="mb-7 text-left">
+            <h2 className="mb-2 font-['Chopsic'] text-3xl font-normal tracking-wide text-[var(--text-primary)] sm:text-4xl">Complete Profile</h2>
+            <p className="max-w-md text-sm leading-relaxed text-[var(--muted)]">Fill in all details to sync with Gymmer's backend.</p>
           </div>
 
           {/* Prikaz napak nad obrazcem */}
@@ -142,58 +142,58 @@ export default function ProfilePage() {
                 exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-xl text-xs flex items-center gap-3">
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <div className="flex items-center gap-3 rounded-2xl border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-400">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-400" />
                   <span>{error}</span>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             
             {/* Height & Weight */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-300">Height (cm)</label>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Height (cm)</label>
                 <div className="relative">
-                  <Ruler className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <input type="number" name="height" value={formData.height} onChange={handleChange} required className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white" placeholder="180" />
+                  <Ruler className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--accent)]" />
+                  <input type="number" name="height" value={formData.height} onChange={handleChange} required className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 pl-11 text-sm text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--muted)]/60 focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20" placeholder="180" />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-300">Weight (kg)</label>
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Weight (kg)</label>
                 <div className="relative">
-                  <Weight className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <input type="number" name="weight" value={formData.weight} onChange={handleChange} required className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white" placeholder="75" />
+                  <Weight className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--accent)]" />
+                  <input type="number" name="weight" value={formData.weight} onChange={handleChange} required className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 pl-11 text-sm text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--muted)]/60 focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20" placeholder="75" />
                 </div>
               </div>
             </div>
 
             {/* Target Weight & Age */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-300">Goal Weight (kg)</label>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Goal Weight (kg)</label>
                 <div className="relative">
-                  <Target className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <input type="number" name="targetWeight" value={formData.targetWeight} onChange={handleChange} required className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white" placeholder="70" />
+                  <Target className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--accent)]" />
+                  <input type="number" name="targetWeight" value={formData.targetWeight} onChange={handleChange} required className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 pl-11 text-sm text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--muted)]/60 focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20" placeholder="70" />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-300">Age</label>
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Age</label>
                 <div className="relative">
-                  <Heart className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <input type="number" name="age" value={formData.age} onChange={handleChange} required className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white" placeholder="25" />
+                  <Heart className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--accent)]" />
+                  <input type="number" name="age" value={formData.age} onChange={handleChange} required className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 pl-11 text-sm text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--muted)]/60 focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20" placeholder="25" />
                 </div>
               </div>
             </div>
 
             {/* Sex Selection */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-gray-300">Sex</label>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Sex</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                <select name="sex" value={formData.sex} onChange={handleChange} className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white appearance-none [color-scheme:dark]">
+                <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--accent)]" />
+                <select name="sex" value={formData.sex} onChange={handleChange} className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 pl-11 text-sm text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--muted)]/60 focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 appearance-none [color-scheme:dark]">
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                 </select>
@@ -201,11 +201,11 @@ export default function ProfilePage() {
             </div>
 
             {/* Activity Level */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-gray-300">Activity Level</label>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Activity Level</label>
               <div className="relative">
-                <Activity className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                <select name="activityLevel" value={formData.activityLevel} onChange={handleChange} className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white appearance-none [color-scheme:dark]">
+                <Activity className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--accent)]" />
+                <select name="activityLevel" value={formData.activityLevel} onChange={handleChange} className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 pl-11 text-sm text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--muted)]/60 focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 appearance-none [color-scheme:dark]">
                   <option value="sedentary">Sedentary (No exercise)</option>
                   <option value="light">Lightly Active (1-3 days/week)</option>
                   <option value="moderate">Moderately Active (3-5 days/week)</option>
@@ -216,11 +216,11 @@ export default function ProfilePage() {
             </div>
 
             {/* Goal Type */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-gray-300">Primary Goal</label>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Primary Goal</label>
               <div className="relative">
-                <Settings className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                <select name="goalType" value={formData.goalType} onChange={handleChange} className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 text-sm text-white appearance-none [color-scheme:dark]">
+                <Settings className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--accent)]" />
+                <select name="goalType" value={formData.goalType} onChange={handleChange} className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 pl-11 text-sm text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--muted)]/60 focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 appearance-none [color-scheme:dark]">
                   <option value="lose_weight">Lose Weight</option>
                   <option value="maintain_weight">Maintain Weight</option>
                   <option value="gain_weight">Gain Weight</option>
@@ -231,7 +231,7 @@ export default function ProfilePage() {
             <motion.button 
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
               type="submit" disabled={loading}
-              className={`w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-bold mt-4 shadow-[0_0_15px_rgba(37,99,235,0.4)] transition-all ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] cursor-pointer'}`}
+              className={`mt-6 w-full rounded-2xl bg-[var(--accent)] py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-[var(--text-inverse)] shadow-[0_0_22px_rgba(0,169,127,0.35)] transition-all ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:bg-[var(--accent-hover)] hover:shadow-[0_0_30px_rgba(0,169,127,0.55)]'}`}
             >
               {loading ? 'SAVING...' : 'COMPLETE SETUP'}
             </motion.button>
