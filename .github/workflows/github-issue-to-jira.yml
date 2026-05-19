@@ -1,0 +1,103 @@
+name: GitHub Issue to Jira Task
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  create-jira-task:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create Jira task from GitHub issue
+        id: create_jira
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          GH_ISSUE_TITLE: ${{ github.event.issue.title }}
+          GH_ISSUE_BODY: ${{ github.event.issue.body }}
+          GH_ISSUE_URL: ${{ github.event.issue.html_url }}
+        run: |
+          DESCRIPTION=$(jq -n \
+            --arg body "${GH_ISSUE_BODY}" \
+            --arg url "${GH_ISSUE_URL}" \
+            '{
+              type: "doc",
+              version: 1,
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "GitHub Issue: "
+                    },
+                    {
+                      type: "text",
+                      text: $url
+                    }
+                  ]
+                },
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: $body
+                    }
+                  ]
+                }
+              ]
+            }')
+
+          RESPONSE=$(curl -s -X POST \
+            -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \
+            -H "Accept: application/json" \
+            -H "Content-Type: application/json" \
+            "$JIRA_BASE_URL/rest/api/3/issue" \
+            --data "$(jq -n \
+              --arg summary "$GH_ISSUE_TITLE" \
+              --argjson description "$DESCRIPTION" \
+              '{
+                fields: {
+                  project: {
+                    key: "KAN"
+                  },
+                  summary: $summary,
+                  description: $description,
+                  issuetype: {
+                    name: "Task"
+                  }
+                }
+              }')")
+
+          echo "$RESPONSE"
+
+          JIRA_KEY=$(echo "$RESPONSE" | jq -r '.key')
+
+          if [ "$JIRA_KEY" = "null" ] || [ -z "$JIRA_KEY" ]; then
+            echo "Jira task was not created."
+            exit 1
+          fi
+
+          echo "jira_key=$JIRA_KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Comment Jira key on GitHub issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jiraKey = "${{ steps.create_jira.outputs.jira_key }}";
+            const jiraBaseUrl = "${{ secrets.JIRA_BASE_URL }}";
+            const issueUrl = `${jiraBaseUrl}/browse/${jiraKey}`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Created Jira task: [${jiraKey}](${issueUrl})\n\nUse this key in branch names, commits and pull requests. Example: \`${jiraKey}-ime-funkcionalnosti\``
+            });
