@@ -1,32 +1,24 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  User, Settings, Link as LinkIcon, LogOut, 
-  Camera, Activity, Ruler, Weight, Target, Shield, Mail,
-  AlertCircle, CheckCircle, Heart
-} from 'lucide-react';
+
+// Novi modularni uvozi
+import DashboardSidebar from '../dashboard/DashboardSidebar';
+import ProfileOverviewTab from '../dashboard/ProfileOverviewTab';
+import NutritionOverviewTab from '../dashboard/NutritionOverviewTab';
+import MealsTab from '../dashboard/MealsTab';
+import ActivitiesTab from '../dashboard/ActivitiesTab';
+import SecurityTab from '../dashboard/SecurityTab';
+import ConnectionsTab from '../dashboard/ConnectionsTab';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  // ZELO POMEMBNO: Privzeti zavihek je zdaj 'profile'
+  const [activeTab, setActiveTab] = useState('profile');
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
- 
-  const [editFormData, setEditFormData] = useState({
-    height: '', weight: '', targetWeight: '', age: '',
-    sex: 'male', activityLevel: 'sedentary', goalType: 'maintain_weight'
-  });
-  const [editError, setEditError] = useState(null);
-  const [editSuccess, setEditSuccess] = useState(false);
-  const [editLoading, setEditLoading] = useState(false);
-
-  const [securityFormData, setSecurityFormData] = useState({ currentPassword: '', newPassword: '' });
-  const [securityError, setSecurityError] = useState(null);
-  const [securitySuccess, setSecuritySuccess] = useState(false);
-  const [securityLoading, setSecurityLoading] = useState(false);
-
   const logoutTimerRef = useRef(null);
+
   const handleLogout = useCallback(() => {
     localStorage.removeItem('access_token');
     navigate('/profile');
@@ -57,7 +49,6 @@ export default function DashboardPage() {
         const userRes = await fetch("http://127.0.0.1:8000/auth/me", {
           headers: { "Authorization": `Bearer ${token}` }
         });
-       
         const profileRes = await fetch("http://127.0.0.1:8000/users/me/profile", {
           headers: { "Authorization": `Bearer ${token}` }
         });
@@ -65,23 +56,12 @@ export default function DashboardPage() {
         if (userRes.ok && profileRes.ok) {
           const userBaseData = await userRes.json();
           const userProfileData = await profileRes.json();
-         
           setUserData({ ...userBaseData, profile: userProfileData });
-         
-          setEditFormData({
-            height: userProfileData.height_cm || '',
-            weight: userProfileData.weight_kg || '',
-            targetWeight: userProfileData.goal_weight_kg || '',
-            age: userProfileData.age || '',
-            sex: userProfileData.sex || 'male',
-            activityLevel: userProfileData.activity_level || 'sedentary',
-            goalType: userProfileData.goal_type || 'maintain_weight'
-          });
         } else {
           handleLogout();
         }
       } catch (error) {
-        console.error("Napaka pri pridobivanju podatkov:", error);
+        console.error("Napaka:", error);
       } finally {
         setLoading(false);
       }
@@ -97,411 +77,40 @@ export default function DashboardPage() {
     };
   }, [navigate, handleLogout, resetLogoutTimer]); 
 
-  const handleEditChange = (e) => {
-    setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
-    setEditSuccess(false);
-  };
-
-  const validateEditInputs = () => {
-    const h = parseFloat(editFormData.height);
-    const w = parseFloat(editFormData.weight);
-    const tw = parseFloat(editFormData.targetWeight);
-    const a = parseInt(editFormData.age);
-
-    if (h < 100 || h > 250) return "Height must be between 100 cm and 250 cm.";
-    if (w < 40 || w > 300) return "Weight must be between 40 kg and 300 kg.";
-    if (tw < 40 || tw > 300) return "Goal weight must be between 40 kg and 300 kg.";
-    if (a < 15 || a > 99) return "Age must be between 15 and 99 years.";
-
-    if (editFormData.goalType === 'lose_weight' && tw >= w) return "For weight loss, goal weight must be lower than current weight.";
-    if (editFormData.goalType === 'gain_weight' && tw <= w) return "For weight gain, goal weight must be higher than current weight.";
-    return null;
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    setEditError(null);
-    setEditSuccess(false);
-
-    const validationError = validateEditInputs();
-    if (validationError) {
-      setEditError(validationError);
-      return;
-    }
-
-    setEditLoading(true);
-
-    const payload = {
-      height_cm: parseFloat(editFormData.height),
-      weight_kg: parseFloat(editFormData.weight),
-      goal_weight_kg: parseFloat(editFormData.targetWeight),
-      age: parseInt(editFormData.age),
-      sex: editFormData.sex,
-      activity_level: editFormData.activityLevel,
-      goal_type: editFormData.goalType
-    };
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/users/me/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('access_token')}`
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        setEditError("Failed to update profile. Please try again.");
-        setEditLoading(false);
-        return;
-      }
-
-      setUserData(prev => ({ ...prev, profile: payload }));
-      setEditSuccess(true);
-      setTimeout(() => setEditSuccess(false), 3000);
-
-    } catch (err) { 
-      console.error(err); 
-      setEditError("Network error. Is your backend running?");
-    } finally {
-      setEditLoading(false);
-    }
-  };
-
-  const handleSecurityChange = (e) => {
-    setSecurityFormData({ ...securityFormData, [e.target.name]: e.target.value });
-    setSecuritySuccess(false);
-    setSecurityError(null);
-  };
-
-  const handleSecuritySubmit = async (e) => {
-    e.preventDefault();
-    setSecurityError(null);
-    setSecuritySuccess(false);
-
-    if (securityFormData.newPassword.length < 8) {
-      setSecurityError("New password must be at least 8 characters long.");
-      return;
-    }
-
-    setSecurityLoading(true);
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/auth/change-password", {
-        method: "PUT", 
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('access_token')}`
-        },
-        body: JSON.stringify({
-          current_password: securityFormData.currentPassword,
-          new_password: securityFormData.newPassword
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        setSecurityError(data.detail || "Failed to update password. Check your current password.");
-        setSecurityLoading(false);
-        return;
-      }
-
-      setSecuritySuccess(true);
-      setSecurityFormData({ currentPassword: '', newPassword: '' }); 
-      setTimeout(() => setSecuritySuccess(false), 3000);
-
-    } catch (err) {
-      console.error(err);
-      setSecurityError("Network error. Is your backend running?");
-    } finally {
-      setSecurityLoading(false);
-    }
-  };
-
-  const renderOverview = () => (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <h3 className="text-xl text-[var(--text-primary)] font-bold tracking-wide">My Overview</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Height", value: userData?.profile?.height_cm || "?", unit: "cm", icon: Ruler },
-          { label: "Weight", value: userData?.profile?.weight_kg || "?", unit: "kg", icon: Weight },
-          { label: "Goal", value: userData?.profile?.goal_weight_kg || "?", unit: "kg", icon: Target },
-          { label: "Activity", value: userData?.profile?.activity_level?.replace('_', ' ') || "?", unit: "", icon: Activity }
-        ].map((stat, i) => (
-          <div key={i} className="bg-[var(--surface-dark)] border border-[var(--border)] rounded-2xl p-4 flex flex-col items-center justify-center text-center">
-            <stat.icon className="h-6 w-6 text-[var(--accent)] mb-2" />
-            <span className="text-xs text-[var(--muted)] uppercase tracking-wider">{stat.label}</span>
-            <span className="text-xl text-[var(--text-primary)] font-bold mt-1 capitalize">
-              {stat.value} <span className="text-sm font-normal text-[var(--muted)]">{stat.unit}</span>
-            </span>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  );
-
-  const renderEditProfile = () => (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div className="text-left">
-        <h3 className="text-xl text-[var(--text-primary)] font-bold tracking-wide">Edit Profile</h3>
-        <p className="text-[var(--muted)] text-sm mt-1">Update your personal information and goals.</p>
-      </div>
-
-      <AnimatePresence>
-        {editError && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-            <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-xl text-sm flex items-center gap-3">
-              <AlertCircle className="h-4 w-4 flex-shrink-0" /><span>{editError}</span>
-            </div>
-          </motion.div>
-        )}
-        {editSuccess && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-            <div className="bg-[var(--accent)]/10 border border-[var(--accent)]/50 text-[var(--accent)] p-3 rounded-xl text-sm flex items-center gap-3">
-              <CheckCircle className="h-4 w-4 flex-shrink-0" /><span>Profile updated successfully!</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <form onSubmit={handleEditSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-xs text-[var(--muted)]">Height (cm)</label>
-            <div className="relative">
-              <Ruler className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted)]" />
-              <input type="number" name="height" value={editFormData.height} onChange={handleEditChange} required className="w-full bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-2.5 pl-10 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] outline-none transition-colors" />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs text-[var(--muted)]">Weight (kg)</label>
-            <div className="relative">
-              <Weight className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted)]" />
-              <input type="number" name="weight" value={editFormData.weight} onChange={handleEditChange} required className="w-full bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-2.5 pl-10 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] outline-none transition-colors" />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-xs text-[var(--muted)]">Goal Weight (kg)</label>
-            <div className="relative">
-              <Target className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted)]" />
-              <input type="number" name="targetWeight" value={editFormData.targetWeight} onChange={handleEditChange} required className="w-full bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-2.5 pl-10 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] outline-none transition-colors" />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs text-[var(--muted)]">Age</label>
-            <div className="relative">
-              <Heart className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted)]" />
-              <input type="number" name="age" value={editFormData.age} onChange={handleEditChange} required className="w-full bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-2.5 pl-10 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] outline-none transition-colors" />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-xs text-[var(--muted)]">Sex</label>
-          <div className="relative">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted)]" />
-            <select name="sex" value={editFormData.sex} onChange={handleEditChange} className="w-full bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-2.5 pl-10 text-sm text-[var(--text-primary)] appearance-none [color-scheme:dark] focus:border-[var(--accent)] outline-none transition-colors">
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-xs text-[var(--muted)]">Activity Level</label>
-          <div className="relative">
-            <Activity className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted)]" />
-            <select name="activityLevel" value={editFormData.activityLevel} onChange={handleEditChange} className="w-full bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-2.5 pl-10 text-sm text-[var(--text-primary)] appearance-none [color-scheme:dark] focus:border-[var(--accent)] outline-none transition-colors">
-              <option value="sedentary">Sedentary (No exercise)</option>
-              <option value="light">Lightly Active (1-3 days/week)</option>
-              <option value="moderate">Moderately Active (3-5 days/week)</option>
-              <option value="active">Active (6-7 days/week)</option>
-              <option value="very_active">Very Active (Physical job/2x training)</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-xs text-[var(--muted)]">Primary Goal</label>
-          <div className="relative">
-            <Settings className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted)]" />
-            <select name="goalType" value={editFormData.goalType} onChange={handleEditChange} className="w-full bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-2.5 pl-10 text-sm text-[var(--text-primary)] appearance-none [color-scheme:dark] focus:border-[var(--accent)] outline-none transition-colors">
-              <option value="lose_weight">Lose Weight</option>
-              <option value="maintain_weight">Maintain Weight</option>
-              <option value="gain_weight">Gain Weight</option>
-            </select>
-          </div>
-        </div>
-
-        <motion.button
-          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-          type="submit" disabled={editLoading}
-          className={`w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--text-inverse)] py-3 rounded-xl text-sm font-bold mt-4 transition-all ${editLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-        >
-          {editLoading ? 'SAVING...' : 'SAVE CHANGES'}
-        </motion.button>
-      </form>
-    </motion.div>
-  );
-
-  const renderSecurity = () => (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div className="text-left">
-        <h3 className="text-xl text-[var(--text-primary)] font-bold tracking-wide">Security & Password</h3>
-        <p className="text-[var(--muted)] text-sm mt-1">Update your password to keep your account secure.</p>
-      </div>
-
-      <AnimatePresence>
-        {securityError && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-            <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-xl text-sm flex items-center gap-3">
-              <AlertCircle className="h-4 w-4 flex-shrink-0" /><span>{securityError}</span>
-            </div>
-          </motion.div>
-        )}
-        {securitySuccess && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-            <div className="bg-[var(--accent)]/10 border border-[var(--accent)]/50 text-[var(--accent)] p-3 rounded-xl text-sm flex items-center gap-3">
-              <CheckCircle className="h-4 w-4 flex-shrink-0" /><span>Password updated successfully!</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <form className="space-y-4 max-w-md" onSubmit={handleSecuritySubmit}>
-        <div>
-          <label className="text-xs text-[var(--muted)]">Current Password</label>
-          <input 
-            type="password" 
-            name="currentPassword"
-            value={securityFormData.currentPassword}
-            onChange={handleSecurityChange}
-            placeholder="••••••••" 
-            required
-            className="w-full mt-1 bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] outline-none transition-colors" 
-          />
-        </div>
-        <div>
-          <label className="text-xs text-[var(--muted)]">New Password</label>
-          <input 
-            type="password" 
-            name="newPassword"
-            value={securityFormData.newPassword}
-            onChange={handleSecurityChange}
-            placeholder="••••••••" 
-            required
-            className="w-full mt-1 bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] outline-none transition-colors" 
-          />
-        </div>
-        <motion.button 
-          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-          type="submit" 
-          disabled={securityLoading}
-          className={`bg-[var(--accent)] text-[var(--text-inverse)] px-6 py-2.5 rounded-xl text-sm font-bold mt-4 transition-all ${securityLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--accent-hover)] cursor-pointer'}`}
-        >
-          {securityLoading ? 'UPDATING...' : 'Update Password'}
-        </motion.button>
-      </form>
-    </motion.div>
-  );
-
-  const renderConnections = () => (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <h3 className="text-xl text-[var(--text-primary)] font-bold tracking-wide">Connected Accounts</h3>
-      <div className="space-y-3 max-w-md">
-        <div className="flex items-center justify-between p-4 bg-[var(--surface-dark)] border border-[var(--border)] rounded-2xl">
-          <div className="flex items-center gap-3">
-            <img src="https://svgl.app/library/google.svg" alt="Google" className="w-6 h-6" />
-            <span className="text-sm text-[var(--text-primary)] font-medium">Google</span>
-          </div>
-          <button className="text-xs text-[var(--accent)] hover:text-[var(--text-primary)] transition cursor-pointer">Connect</button>
-        </div>
-        <div className="flex items-center justify-between p-4 bg-[var(--surface-dark)] border border-[var(--border)] rounded-2xl">
-          <div className="flex items-center gap-3">
-            <img src="https://svgl.app/library/apple_dark.svg" alt="Apple" className="w-6 h-6" />
-            <span className="text-sm text-[var(--text-primary)] font-medium">Apple</span>
-          </div>
-          <button className="text-xs text-[var(--muted)] cursor-not-allowed">Coming Soon</button>
-        </div>
-      </div>
-    </motion.div>
-  );
-
   if (loading) {
     return <div className="min-h-screen bg-[var(--background)] flex items-center justify-center text-[var(--text-primary)] font-mono">LOADING GYMMER...</div>;
   }
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col bg-[var(--background)] overflow-x-hidden pt-24 pb-12" style={{ fontFamily: "'Anonymous Pro', monospace" }}>
-     
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 flex flex-col md:flex-row gap-8 z-10">
-       
-        {/* LEFT SIDEBAR */}
-        <motion.div
-          initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}
-          className="w-full md:w-72 flex-shrink-0"
-        >
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl flex flex-col items-center">
-           
-            <div className="relative group cursor-pointer">
-              <div className="w-24 h-24 rounded-full bg-[var(--accent)] p-1">
-                <div className="w-full h-full bg-[var(--surface-dark)] rounded-full flex items-center justify-center overflow-hidden">
-                  <User className="h-10 w-10 text-[var(--muted)]" />
-                </div>
-              </div>
-              <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera className="h-6 w-6 text-[var(--text-primary)]" />
-              </div>
-            </div>
-           
-            <h2 className="mt-4 text-xl text-[var(--text-primary)] font-bold tracking-wide">@{userData?.username || "gymmer"}</h2>
-            <p className="text-xs text-[var(--muted)] flex items-center mt-1"><Mail className="h-3 w-3 mr-1" />{userData?.email}</p>
+    <div className="relative w-full h-screen flex gap-6 p-4 sm:p-6 lg:p-8 bg-[var(--background)] overflow-hidden font-mono">
+      
+      {/* LEVI MENI */}
+      <DashboardSidebar 
+        userData={userData} 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onLogout={handleLogout} 
+      />
 
-            <div className="w-full h-px bg-[var(--border)] my-6 opacity-50"></div>
-
-            <nav className="w-full flex flex-col gap-2">
-              <button onClick={() => setActiveTab('overview')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${activeTab === 'overview' ? 'bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30' : 'text-[var(--muted)] hover:bg-[var(--surface-dark)] hover:text-[var(--text-primary)] border border-transparent'}`}>
-                <Activity className="h-4 w-4" /> Overview
-              </button>
-              <button onClick={() => setActiveTab('edit')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${activeTab === 'edit' ? 'bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30' : 'text-[var(--muted)] hover:bg-[var(--surface-dark)] hover:text-[var(--text-primary)] border border-transparent'}`}>
-                <Settings className="h-4 w-4" /> Edit Profile
-              </button>
-              <button onClick={() => setActiveTab('security')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${activeTab === 'security' ? 'bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30' : 'text-[var(--muted)] hover:bg-[var(--surface-dark)] hover:text-[var(--text-primary)] border border-transparent'}`}>
-                <Shield className="h-4 w-4" /> Security
-              </button>
-              <button onClick={() => setActiveTab('connections')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${activeTab === 'connections' ? 'bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30' : 'text-[var(--muted)] hover:bg-[var(--surface-dark)] hover:text-[var(--text-primary)] border border-transparent'}`}>
-                <LinkIcon className="h-4 w-4" /> Connections
-              </button>
-            </nav>
-
-            <div className="w-full h-px bg-[var(--border)] my-6 opacity-50"></div>
-
-            <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 hover:border-red-500/30 border border-transparent transition-all cursor-pointer">
-              <LogOut className="h-4 w-4" /> Sign Out
-            </button>
-          </div>
-        </motion.div>
-
-        {/* RIGHT CONTENT AREA */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex-1 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-6 md:p-10 shadow-2xl"
-        >
+      {/* GLAVNA VSEBINA */}
+      <motion.main
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, delay: 0.2 }}
+        className="flex-1 h-full bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-8 md:p-10 overflow-y-auto shadow-2xl custom-scrollbar"
+      >
+        <div className="w-full"> 
           <AnimatePresence mode="wait">
             <div key={activeTab}>
-              {activeTab === 'overview' && renderOverview()}
-              {activeTab === 'edit' && renderEditProfile()}
-              {activeTab === 'security' && renderSecurity()}
-              {activeTab === 'connections' && renderConnections()}
+              {activeTab === 'profile' && <ProfileOverviewTab userData={userData} setUserData={setUserData} />}
+              {activeTab === 'nutrition' && <NutritionOverviewTab />}
+              {activeTab === 'meals' && <MealsTab />}
+              {activeTab === 'activities' && <ActivitiesTab />}
+              {activeTab === 'security' && <SecurityTab />}
+              {activeTab === 'connections' && <ConnectionsTab />}
             </div>
           </AnimatePresence>
-        </motion.div>
+        </div>
+      </motion.main>
 
-      </div>
     </div>
   );
 }
