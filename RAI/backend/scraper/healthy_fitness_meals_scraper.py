@@ -44,15 +44,21 @@ def get_category_recipes(category_name, category_url):
 
     return recipes
 
+def get_all_categories():
+    all_recipes = {}
+
+    for category_name, category_url in CATEGORIES.items():
+        recipes = get_category_recipes(category_name, category_url)
+        all_recipes[category_name] = recipes
+
+    return all_recipes
 
 if __name__ == "__main__":
+    all_recipes = get_all_categories()
 
-    recipes = get_category_recipes(
-        "high_protein",
-        CATEGORIES["high_protein"]
-    )
+    for category_name, recipes in all_recipes.items():
+        print(f"\n{category_name.upper()}")
+        print(f"Najdenih receptov: {len(recipes)}")
 
-    print(f"Najdenih receptov: {len(recipes)}")
-
-    for recipe in recipes:
-        print(recipe)
+        for recipe in recipes:
+            print(f"- {recipe['title']} ({recipe['url']})")
