@@ -3,7 +3,7 @@ import numpy as np
 import sys
 from PIL import Image, ImageOps
 
-def process_image(image_path):
+def process_image(image_path, is_gym=False):
     # Uporabimo knjižnico PIL (Pillow), ki ima vgrajeno varno funkcijo za popravek EXIF rotacije.
     try:
         pil_img = Image.open(image_path)
@@ -29,22 +29,18 @@ def process_image(image_path):
     # in CLAHE nanesemo samo na L (Luminance - svetlost) kanal.
     lab = cv.cvtColor(image, cv.COLOR_BGR2LAB)
     l_channel, a, b = cv.split(lab)
-    
     clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     cl = clahe.apply(l_channel)
-    
     # Združimo obdelan L kanal nazaj z originalnima a in b barvnima kanaloma
     merged_lab = cv.merge((cl, a, b))
     image = cv.cvtColor(merged_lab, cv.COLOR_LAB2BGR)
 
     # 3. Odstranjevanje šuma (Denoising)
-    # Rahel Gaussov filter (5x5 kernel), ki odstrani digitalni šum, a ohrani pomembne robove
-
-    # IMPORTANT: 
-    # Ne uporabljamo preveč agresivnih filtrov, 
-    # da ne izgubimo detajlov hrane, ki so ključni za YOLO.
-    # Pri testiranju če ne bo vredu odstranimo ta korak ali zmanjšamo kernel na (3, 3).
-    image = cv.GaussianBlur(image, (5, 5), 0)
+    # Gaussov filter uporabimo SAMO, če ni gym model
+    if not is_gym:
+        image = cv.GaussianBlur(image, (5, 5), 0)
+    else:
+        print("DEBUG: Preskakujem Gaussian Blur za gym model.")
 
     return image
 
@@ -55,7 +51,8 @@ if __name__ == "__main__":
         sys.exit(1)
 
     image_path = sys.argv[1]
-    processed_image = process_image(image_path)
+    # Privzeto nastavimo False, če kličemo skripto direktno
+    processed_image = process_image(image_path, is_gym=False)
 
     if processed_image is not None:
         cv.imshow("Processed Image", processed_image)

@@ -4,11 +4,10 @@ import sys
 import cv2 as cv
 
 from process import process_image 
-from process_gym import GymProcessor
 
 def predict_food(image_path, model_path):
     print("Processing image...")
-    img = process_image(image_path)
+    img = process_image(image_path, is_gym=False)
     
     if img is None:
         return json.dumps({"error": "Image could not be loaded or processed."})
@@ -49,8 +48,8 @@ def predict_food(image_path, model_path):
 
 def predict_gym(image_path, model_path):
     print("Processing image...")
-    gym_proc = GymProcessor()
-    img = gym_proc.process_image(image_path)
+    # Uporabimo univerzalno funkcijo process_image namesto GymProcessor
+    img = process_image(image_path, is_gym=True)
     
     if img is None:
         return json.dumps({"error": "Image could not be loaded or processed."})
