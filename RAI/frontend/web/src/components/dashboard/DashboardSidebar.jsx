@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { User, Camera, Mail, Activity, Settings, Shield, Link as LinkIcon, LogOut, Apple, Dumbbell, PieChart, Utensils } from 'lucide-react';
+import { User, Camera, Mail, Shield, Link as LinkIcon, LogOut, Dumbbell, PieChart, Utensils } from 'lucide-react';
 
 export default function DashboardSidebar({ userData, activeTab, setActiveTab, onLogout }) {
   return (
