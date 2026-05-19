@@ -1,5 +1,6 @@
 import requests
 import html
+import json
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://healthyfitnessmeals.com"
@@ -53,8 +54,14 @@ def get_all_categories():
 
     return all_recipes
 
+def save_to_json(data, filename):
+    with open(filename, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
+
 if __name__ == "__main__":
     all_recipes = get_all_categories()
+
+    save_to_json(all_recipes, "recipes.json")
 
     for category_name, recipes in all_recipes.items():
         print(f"\n{category_name.upper()}")
