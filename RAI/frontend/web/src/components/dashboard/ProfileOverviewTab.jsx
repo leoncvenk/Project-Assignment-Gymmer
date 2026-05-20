@@ -69,7 +69,7 @@ export default function ProfileOverviewTab({ userData, setUserData }) {
       setUserData(prev => ({ ...prev, profile: payload }));
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err) { 
+    } catch {
       setError("Network error. Is your backend running?");
     } finally {
       setLoading(false);
