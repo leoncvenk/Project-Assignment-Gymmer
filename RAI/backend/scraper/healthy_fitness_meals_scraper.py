@@ -5,54 +5,141 @@ from bs4 import BeautifulSoup
 
 BASE_URL = "https://healthyfitnessmeals.com"
 
-CATEGORIES = {
-    "high_protein": "https://healthyfitnessmeals.com/category/high-protein/",
-    "fan_favorites": "https://healthyfitnessmeals.com/category/my-favorites/",
-    "all_recipes": "https://healthyfitnessmeals.com/recipe-index/",
-}
-
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
 
 CATEGORIES = {
-    "high_protein":
-        "https://healthyfitnessmeals.com/wp-json/wp/v2/posts?per_page=10&search=protein",
+    "high_protein": {
+        "base_url": "https://healthyfitnessmeals.com/category/high-protein/",
+        "pages": 16
+    },
 
-    "fan_favourite":
-        "https://healthyfitnessmeals.com/wp-json/wp/v2/posts?per_page=10",
+    "my_favorites": {
+        "base_url": "https://healthyfitnessmeals.com/category/my-favorites/",
+        "pages": 4
+    },
 
-    "all_recipes":
-        "https://healthyfitnessmeals.com/wp-json/wp/v2/posts?per_page=20"
+    "all_recipes": {
+        "base_url": "https://healthyfitnessmeals.com/blog/",
+        "pages": 92
+    }
 }
 
-def get_category_recipes(category_name, category_url):
-    response = requests.get(category_url, headers=HEADERS)
 
-    data = response.json()
+def get_category_recipes(category_name, category_config, limit=10, page=1):
+    base_url = category_config["base_url"]
+
+    if page <= 1:
+        page_url = base_url
+    else:
+        page_url = f"{base_url}page/{page}/"
+
+    response = requests.get(page_url, headers=HEADERS)
+
+    if response.status_code != 200:
+        print(f"Napaka pri kategoriji {category_name}: {response.status_code}")
+        return []
+
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    recipe_links = soup.select("article a[href]")
 
     recipes = []
+    seen_urls = set()
 
-    for recipe in data:
-        title = html.unescape(recipe["title"]["rendered"]).replace("\xa0", " ")
-        url = recipe["link"]
+    for recipe in recipe_links:
+
+        title = html.unescape(
+            recipe.get_text(" ", strip=True)
+        ).replace("\xa0", " ")
+
+        url = recipe.get("href")
+
+        article = recipe.find_parent("article")
+        image = article.find("img") if article else None
+
+        image_url = None
+
+        if image:
+            image_url = image.get("data-lazy-src")
+            
+            if not image_url:
+                image_url = image.get("data-src")
+
+            if not image_url:
+                srcset = image.get("srcset")
+                if srcset:
+                    image_url = srcset.split(",")[0].strip().split(" ")[0]
+
+            if not image_url:
+                src = image.get("src")
+                if src and not src.startswith("data:image"):
+                    image_url = src
+
+        if not title or not url:
+            continue
+
+        if not url.startswith(BASE_URL):
+            continue
+
+        # preskoči category linke
+        if "/category/" in url:
+            continue
+
+        # preskoči roundup/list članke
+        title_lower = title.lower()
+        url_lower = url.lower()
+
+        blacklist = [
+            "recipes",
+            "roundup",
+            "collection",
+            "ideas",
+            "best-",
+            "side-dishes"
+        ]
+
+        if any(word in title_lower for word in blacklist):
+            continue
+
+        if any(word in url_lower for word in blacklist):
+            continue
+
+        # preskoči duplicate
+        if url in seen_urls:
+            continue
+
+        seen_urls.add(url)
 
         recipes.append({
             "title": title,
             "url": url,
+            "image_url": image_url,
             "category": category_name
         })
 
+        if len(recipes) >= limit:
+            break
+
     return recipes
 
-def get_all_categories():
+
+def get_all_categories(limit=10, page=1):
     all_recipes = {}
 
-    for category_name, category_url in CATEGORIES.items():
-        recipes = get_category_recipes(category_name, category_url)
+    for category_name, category_config in CATEGORIES.items():
+        recipes = get_category_recipes(
+            category_name,
+            category_config,
+            limit=limit,
+            page=page
+        )
+
         all_recipes[category_name] = recipes
 
     return all_recipes
+
 
 def get_recipe_details(recipe):
 
@@ -119,19 +206,29 @@ def get_recipe_details(recipe):
 
     return recipe
 
+
 def save_to_json(data, filename):
     with open(filename, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
 
+
 if __name__ == "__main__":
+
+    LIMIT = 5
+    PAGE = 3
 
     all_recipes = {}
 
-    for category_name, category_url in CATEGORIES.items():
+    for category_name, category_config in CATEGORIES.items():
 
         print(f"\n{category_name.upper()}")
 
-        recipes = get_category_recipes(category_name, category_url)
+        recipes = get_category_recipes(
+            category_name,
+            category_config,
+            limit=LIMIT,
+            page=PAGE
+        )
 
         print(f"Najdenih receptov: {len(recipes)}")
 
@@ -147,9 +244,6 @@ if __name__ == "__main__":
 
         all_recipes[category_name] = detailed_recipes
 
-    import json
-
-    with open("recipes.json", "w", encoding="utf-8") as f:
-        json.dump(all_recipes, f, indent=4, ensure_ascii=False)
+    save_to_json(all_recipes, "recipes.json")
 
     print("\nPodatki shranjeni v recipes.json")
