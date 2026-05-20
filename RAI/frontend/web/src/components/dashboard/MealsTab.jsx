@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Utensils, Plus } from 'lucide-react';
 import AddFoodModal from './AddFoodModal';
 
@@ -28,7 +28,11 @@ export default function MealsTab() {
   }, [getHeaders]);
 
   useEffect(() => {
-    fetchMealsData();
+    const timer = setTimeout(() => {
+      fetchMealsData();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [fetchMealsData]);
 
   const meals = ['breakfast', 'lunch', 'dinner', 'snack', 'unspecified'];
