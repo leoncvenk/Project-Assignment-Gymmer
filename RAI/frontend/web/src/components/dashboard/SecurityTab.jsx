@@ -66,7 +66,7 @@ export default function SecurityTab() {
       setSuccess(true);
       setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' }); 
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
+    } catch {
       setError("Network error.");
     } finally {
       setLoading(false);
