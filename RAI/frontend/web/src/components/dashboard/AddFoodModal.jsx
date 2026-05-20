@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion} from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Search, X, AlertCircle } from 'lucide-react';
 
 export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded }) {
@@ -23,15 +23,18 @@ export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded })
     setQuantity('');
   };
 
-  // V useEffect za zaklep drsenja:
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  // V useEffect ostane samo zaklep drsenja ozadja
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
+    document.body.style.overflow = isOpen ? 'hidden' : 'unset';
+
+    return () => {
       document.body.style.overflow = 'unset';
-      resetForm(); // Tukaj pokličeš reset
-    }
-    return () => { document.body.style.overflow = 'unset'; };
+    };
   }, [isOpen]);
 
   const getHeaders = () => ({
@@ -56,10 +59,17 @@ export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded })
         }
       }, 500);
       return () => clearTimeout(delay);
-    } else {
-      setSearchResults([]);
     }
   }, [searchQuery, mode]);
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (value.trim().length <= 2) {
+      setSearchResults([]);
+    }
+  };
 
   const handleSubmitEntry = async () => {
     if (!quantity || quantity <= 0) {
@@ -75,7 +85,7 @@ export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded })
       });
       if (res.ok) {
         onFoodAdded();
-        onClose();
+        handleClose();
       } else {
         setError("Failed to add food entry.");
       }
@@ -108,7 +118,7 @@ export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded })
       } else {
         setError("Failed to create food.");
       }
-    } catch (err) { setError("Network error."); }
+    } catch { setError("Network error."); }
     finally { setLoading(false); }
   };
 
@@ -123,7 +133,7 @@ export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded })
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
         className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative"
       >
-        <button onClick={onClose} className="absolute top-6 right-6 text-[var(--muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer bg-[var(--surface-dark)] p-2 rounded-full">
+        <button onClick={handleClose} className="absolute top-6 right-6 text-[var(--muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer bg-[var(--surface-dark)] p-2 rounded-full">
           <X className="h-5 w-5" />
         </button>
 
@@ -137,7 +147,7 @@ export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded })
               <>
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted)]" />
-                  <input type="text" placeholder="Search foods (e.g. Banana)..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-3 pl-11 pr-4 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors" />
+                  <input type="text" placeholder="Search foods (e.g. Banana)..." value={searchQuery} onChange={handleSearchChange} className="w-full bg-[var(--surface-dark)] border border-[var(--border)] rounded-xl py-3 pl-11 pr-4 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors" />
                 </div>
                 
                 <div className="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
