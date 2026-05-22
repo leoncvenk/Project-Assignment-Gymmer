@@ -95,35 +95,44 @@ export default function RecipesPage() {
                 {categoryLabels[selectedCategory]}
                 </h2>
 
+                {recipes.length === 0 ? (
+                <div className="bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-8 text-center">
+                    <h3 className="text-xl text-white mb-2">No recipes found</h3>
+                    <p className="text-gray-300 text-sm">
+                    There are currently no recipes available in this category.
+                    </p>
+                </div>
+                ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {visibleRecipes.map((recipe) => (
+                    {visibleRecipes.map((recipe) => (
                     <motion.button
-                    key={recipe.url}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedRecipe(recipe)}
-                    className="flex gap-5 items-center bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-4 text-left hover:border-[#10b981] hover:bg-[#242424] transition"
+                        key={recipe.url}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setSelectedRecipe(recipe)}
+                        className="flex gap-5 items-center bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-4 text-left hover:border-[#10b981] hover:bg-[#242424] transition"
                     >
-                    {recipe.image_url && (
+                        {recipe.image_url && (
                         <img
-                        src={recipe.image_url}
-                        alt={recipe.title}
-                        onError={(event) => {
+                            src={recipe.image_url}
+                            alt={recipe.title}
+                            onError={(event) => {
                             event.currentTarget.style.display = "none";
-                        }}
-                        className="w-28 h-28 object-cover rounded-xl"
+                            }}
+                            className="w-28 h-28 object-cover rounded-xl"
                         />
-                    )}
+                        )}
 
-                    <div>
+                        <div>
                         <h3 className="text-xl text-white">{recipe.title}</h3>
                         <p className="text-gray-300 mt-2 text-sm">
-                        {recipe.calories || "N/A"} kcal · {recipe.protein || "N/A"} g protein
+                            {recipe.calories || "N/A"} kcal · {recipe.protein || "N/A"} g protein
                         </p>
-                    </div>
+                        </div>
                     </motion.button>
-                ))}
+                    ))}
                 </div>
+                )}
 
                 {visibleCount < recipes.length && (
                 <div className="flex justify-center mt-8">
@@ -154,6 +163,16 @@ export default function RecipesPage() {
                 </button>
 
                 <h2 className="text-4xl mb-6">{selectedRecipe.title}</h2>
+                {selectedRecipe.url && (
+                <a
+                    href={selectedRecipe.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block mb-6 bg-[#10b981] text-black px-6 py-3 rounded-xl font-bold hover:bg-[#34d399] transition"
+                >
+                    View original recipe
+                </a>
+                )}
 
                 {selectedRecipe.image_url && (
                 <img
