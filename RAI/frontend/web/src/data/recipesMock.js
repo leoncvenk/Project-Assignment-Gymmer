@@ -25,7 +25,7 @@ const recipesMock = {
     {
       title: "Mongolian Chicken",
       url: "https://healthyfitnessmeals.com/mongolian-chicken/",
-      image_url: "https://healthyfitnessmeals.com/wp-content/uploads/2022/08/Mongolian-chicken-6-600x600.jpg",
+      image_url: "https://healthyfitnessmeals.com/wp-content/uploads/2022/10/Ground-turkey-chili-6-600x600.jpg",
       category: "my_favorites",
       ingredients: [
         "1.5 pound boneless skinless chicken breast",

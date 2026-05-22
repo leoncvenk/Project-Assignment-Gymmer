@@ -101,11 +101,14 @@ export default function RecipesPage() {
                     className="flex gap-5 items-center bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 text-left hover:border-blue-500 transition"
                   >
                     {recipe.image_url && (
-                      <img
-                        src={recipe.image_url}
-                        alt={recipe.title}
-                        className="w-28 h-28 object-cover rounded-2xl"
-                      />
+                        <img
+                            src={recipe.image_url}
+                            alt={recipe.title}
+                            onError={(event) => {
+                                event.currentTarget.style.display = "none";
+                            }}
+                            className="w-28 h-28 object-cover rounded-2xl"
+                        />
                     )}
 
                     <div>
@@ -148,9 +151,12 @@ export default function RecipesPage() {
 
               {selectedRecipe.image_url && (
                 <img
-                  src={selectedRecipe.image_url}
-                  alt={selectedRecipe.title}
-                  className="w-full max-h-[360px] object-cover rounded-3xl mb-8"
+                    src={selectedRecipe.image_url}
+                    alt={selectedRecipe.title}
+                    onError={(event) => {
+                        event.currentTarget.style.display = "none";
+                    }}
+                    className="w-full max-h-[360px] object-cover rounded-3xl mb-8"
                 />
               )}
 
