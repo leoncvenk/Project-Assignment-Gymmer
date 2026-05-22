@@ -4,7 +4,7 @@ import recipesMock from "../../data/recipesMock";
 
 const categoryLabels = {
   high_protein: "High Protein",
-  my_favorites: "My Favorites",
+  my_favorites: "Favorites",
   all_recipes: "All Recipes",
 };
 
@@ -32,161 +32,167 @@ export default function RecipesPage() {
     setSelectedRecipe(null);
   };
 
-  return (
-    <div className="min-h-screen w-full bg-[radial-gradient(circle_at_center,_#3a3a3a_0%,_#111111_70%,_#050505_100%)] text-white px-6 py-10 font-mono">
-      <div className="max-w-6xl mx-auto">
-
+    return (
+    <div className="min-h-screen w-full bg-[#1f1f1f] text-white px-6 py-10 font-mono">
+        <div className="max-w-7xl mx-auto">
         <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl md:text-7xl mb-10"
-          style={{ fontFamily: "'Anton', sans-serif" }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl md:text-7xl mb-10 text-center"
+            style={{ fontFamily: "'Anton', sans-serif" }}
         >
-          RECIPES
+            RECIPES
         </motion.h1>
 
         <AnimatePresence mode="wait">
-          {!selectedCategory && (
+            {!selectedCategory && (
             <motion.div
-              key="categories"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                key="categories"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="bg-[#464456] border border-[#666475] rounded-3xl p-8 shadow-2xl"
             >
-              {categories.map((category) => (
-                <motion.button
-                  key={category}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => openCategory(category)}
-                  className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-8 text-left shadow-2xl hover:border-blue-500 transition"
-                >
-                  <h2 className="text-2xl mb-3 text-white">
-                    {categoryLabels[category]}
-                  </h2>
-                  <p className="text-gray-400">
-                    Browse {categoryLabels[category].toLowerCase()} recipes.
-                  </p>
-                </motion.button>
-              ))}
+                <h2 className="text-xl mb-6">Choose Recipe Category</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {categories.map((category) => (
+                    <motion.button
+                    key={category}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => openCategory(category)}
+                    className="bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-8 text-left shadow-lg hover:border-[#10b981] hover:bg-[#242424] transition"
+                    >
+                    <h3 className="text-2xl mb-3 text-white">
+                        {categoryLabels[category]}
+                    </h3>
+                    <p className="text-gray-300 text-sm">
+                        Browse {categoryLabels[category].toLowerCase()} recipes.
+                    </p>
+                    </motion.button>
+                ))}
+                </div>
             </motion.div>
-          )}
+            )}
 
-          {selectedCategory && !selectedRecipe && (
+            {selectedCategory && !selectedRecipe && (
             <motion.div
-              key="recipe-list"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+                key="recipe-list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="bg-[#464456] border border-[#666475] rounded-3xl p-8 shadow-2xl"
             >
-              <button
+                <button
                 onClick={backToCategories}
-                className="mb-6 text-blue-400 hover:text-blue-300"
-              >
+                className="mb-6 text-[#10b981] hover:text-[#34d399] transition"
+                >
                 ← Back to categories
-              </button>
+                </button>
 
-              <h2 className="text-3xl mb-6">
+                <h2 className="text-3xl mb-6">
                 {categoryLabels[selectedCategory]}
-              </h2>
+                </h2>
 
-              <div className="flex flex-col gap-5">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 {visibleRecipes.map((recipe) => (
-                  <motion.button
+                    <motion.button
                     key={recipe.url}
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedRecipe(recipe)}
-                    className="flex gap-5 items-center bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 text-left hover:border-blue-500 transition"
-                  >
+                    className="flex gap-5 items-center bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-4 text-left hover:border-[#10b981] hover:bg-[#242424] transition"
+                    >
                     {recipe.image_url && (
                         <img
-                            src={recipe.image_url}
-                            alt={recipe.title}
-                            onError={(event) => {
-                                event.currentTarget.style.display = "none";
-                            }}
-                            className="w-28 h-28 object-cover rounded-2xl"
+                        src={recipe.image_url}
+                        alt={recipe.title}
+                        onError={(event) => {
+                            event.currentTarget.style.display = "none";
+                        }}
+                        className="w-28 h-28 object-cover rounded-xl"
                         />
                     )}
 
                     <div>
-                      <h3 className="text-xl text-white">{recipe.title}</h3>
-                      <p className="text-gray-400 mt-2">
+                        <h3 className="text-xl text-white">{recipe.title}</h3>
+                        <p className="text-gray-300 mt-2 text-sm">
                         {recipe.calories || "N/A"} kcal · {recipe.protein || "N/A"} g protein
-                      </p>
+                        </p>
                     </div>
-                  </motion.button>
+                    </motion.button>
                 ))}
-              </div>
+                </div>
 
-              {visibleCount < recipes.length && (
+                {visibleCount < recipes.length && (
                 <button
-                  onClick={() => setVisibleCount((count) => count + 10)}
-                  className="mt-8 bg-blue-600 px-8 py-3 rounded-2xl font-bold hover:bg-blue-500 transition"
+                    onClick={() => setVisibleCount((count) => count + 10)}
+                    className="mt-8 bg-[#10b981] text-black px-8 py-3 rounded-xl font-bold hover:bg-[#34d399] transition"
                 >
-                  More
+                    More
                 </button>
-              )}
+                )}
             </motion.div>
-          )}
+            )}
 
-          {selectedRecipe && (
+            {selectedRecipe && (
             <motion.div
-              key="recipe-detail"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-8 shadow-2xl"
+                key="recipe-detail"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="bg-[#464456] border border-[#666475] rounded-3xl p-8 shadow-2xl"
             >
-              <button
+                <button
                 onClick={backToRecipes}
-                className="mb-6 text-blue-400 hover:text-blue-300"
-              >
+                className="mb-6 text-[#10b981] hover:text-[#34d399] transition"
+                >
                 ← Back to recipes
-              </button>
+                </button>
 
-              <h2 className="text-4xl mb-4">{selectedRecipe.title}</h2>
+                <h2 className="text-4xl mb-6">{selectedRecipe.title}</h2>
 
-              {selectedRecipe.image_url && (
+                {selectedRecipe.image_url && (
                 <img
                     src={selectedRecipe.image_url}
                     alt={selectedRecipe.title}
                     onError={(event) => {
-                        event.currentTarget.style.display = "none";
+                    event.currentTarget.style.display = "none";
                     }}
-                    className="w-full max-h-[360px] object-cover rounded-3xl mb-8"
+                    className="w-full max-h-[380px] object-cover rounded-2xl mb-8 border border-[#5f5d6d]"
                 />
-              )}
+                )}
 
-              <section className="mb-8">
-                <h3 className="text-2xl mb-3 text-blue-400">Nutrition</h3>
-                <p>{selectedRecipe.calories || "N/A"} kcal</p>
-                <p>{selectedRecipe.protein || "N/A"} g protein</p>
-              </section>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <section className="bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-5">
+                    <h3 className="text-xl mb-3 text-[#10b981]">Nutrition</h3>
+                    <p>{selectedRecipe.calories || "N/A"} kcal</p>
+                    <p>{selectedRecipe.protein || "N/A"} g protein</p>
+                </section>
 
-              <section className="mb-8">
-                <h3 className="text-2xl mb-3 text-blue-400">Ingredients</h3>
-                <ul className="list-disc list-inside text-gray-300 space-y-2">
-                  {selectedRecipe.ingredients.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </section>
+                <section className="lg:col-span-2 bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-5">
+                    <h3 className="text-xl mb-3 text-[#10b981]">Ingredients</h3>
+                    <ul className="list-disc list-inside text-gray-300 space-y-2">
+                    {(selectedRecipe.ingredients || []).map((item, index) => (
+                        <li key={index}>{item}</li>
+                    ))}
+                    </ul>
+                </section>
+                </div>
 
-              <section>
-                <h3 className="text-2xl mb-3 text-blue-400">Instructions</h3>
+                <section className="bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-5">
+                <h3 className="text-xl mb-3 text-[#10b981]">Instructions</h3>
                 <ol className="list-decimal list-inside text-gray-300 space-y-3">
-                  {selectedRecipe.instructions.map((item, index) => (
+                    {(selectedRecipe.instructions || []).map((item, index) => (
                     <li key={index}>{item}</li>
-                  ))}
+                    ))}
                 </ol>
-              </section>
+                </section>
             </motion.div>
-          )}
+            )}
         </AnimatePresence>
-      </div>
+        </div>
     </div>
-  );
+    );
 }
