@@ -11,6 +11,7 @@ import ProfilePage from './components/pages/ProfilePage';
 import PrivacyPolicyPage from './components/pages/PrivacyPolicyPage';
 import TermsOfServicePage from './components/pages/TermsOfServicePage';
 import DashboardPage from './components/pages/DashboardPage'; 
+import RecipesPage from './components/pages/RecipesPage';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/tos" element={<TermsOfServicePage />} />
         <Route path="/profile-setup" element={<ProfilePage />} />
         <Route path="/food" element={<CaloriesPage />} /> 
+        <Route path="/recipes" element={<RecipesPage />} />
         <Route path="/running" element={<RunningPage />} />
         <Route path="/workout" element={<BottomPage />} />
         <Route path="/dashboard" element={<DashboardPage />} /> 
