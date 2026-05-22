@@ -1,11 +1,24 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import recipesMock from "../../data/recipesMock";
 
 const categoryLabels = {
+  my_collection: "My Collection",
   high_protein: "High Protein",
-  my_favorites: "Favorites",
+  my_favorites: "Most Popular",
   all_recipes: "All Recipes",
+};
+
+const getUniqueRecipesByUrl = (recipes) => {
+  const uniqueRecipes = new Map();
+
+  recipes.forEach((recipe) => {
+    if (recipe?.url && !uniqueRecipes.has(recipe.url)) {
+      uniqueRecipes.set(recipe.url, recipe);
+    }
+  });
+
+  return Array.from(uniqueRecipes.values());
 };
 
 export default function RecipesPage() {
@@ -13,8 +26,52 @@ export default function RecipesPage() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [visibleCount, setVisibleCount] = useState(10);
 
-  const categories = Object.keys(recipesMock);
-  const recipes = selectedCategory ? recipesMock[selectedCategory] || [] : [];
+  const [likedRecipeUrls, setLikedRecipeUrls] = useState(() => {
+    try {
+      const savedCollection = localStorage.getItem("gymmerRecipeCollection");
+      return savedCollection ? JSON.parse(savedCollection) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(
+      "gymmerRecipeCollection",
+      JSON.stringify(likedRecipeUrls)
+    );
+  }, [likedRecipeUrls]);
+
+  const categories = [
+    "my_collection",
+    "high_protein",
+    "my_favorites",
+    "all_recipes",
+  ];
+
+  const allUniqueRecipes = useMemo(() => {
+    return getUniqueRecipesByUrl([
+      ...(recipesMock.high_protein || []),
+      ...(recipesMock.my_favorites || []),
+      ...(recipesMock.all_recipes || []),
+    ]);
+  }, []);
+
+  const recipesByUrl = useMemo(() => {
+    return new Map(allUniqueRecipes.map((recipe) => [recipe.url, recipe]));
+  }, [allUniqueRecipes]);
+
+  const myCollectionRecipes = likedRecipeUrls
+    .map((url) => recipesByUrl.get(url))
+    .filter(Boolean);
+
+  const recipes =
+    selectedCategory === "my_collection"
+      ? myCollectionRecipes
+      : selectedCategory
+        ? recipesMock[selectedCategory] || []
+        : [];
+
   const visibleRecipes = recipes.slice(0, visibleCount);
 
   const openCategory = (category) => {
@@ -30,6 +87,22 @@ export default function RecipesPage() {
 
   const backToRecipes = () => {
     setSelectedRecipe(null);
+  };
+
+  const toggleRecipeLike = (recipe) => {
+    setLikedRecipeUrls((currentUrls) => {
+      const isAlreadyLiked = currentUrls.includes(recipe.url);
+
+      if (isAlreadyLiked) {
+        return currentUrls.filter((url) => url !== recipe.url);
+      }
+
+      return [recipe.url, ...currentUrls];
+    });
+  };
+
+  const isRecipeLiked = (recipe) => {
+    return likedRecipeUrls.includes(recipe.url);
   };
 
     return (
@@ -55,7 +128,7 @@ export default function RecipesPage() {
             >
                 <h2 className="text-xl mb-6">Choose Recipe Category</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {categories.map((category) => (
                     <motion.button
                     key={category}
@@ -68,7 +141,13 @@ export default function RecipesPage() {
                         {categoryLabels[category]}
                     </h3>
                     <p className="text-gray-300 text-sm">
-                        Browse {categoryLabels[category].toLowerCase()} recipes.
+                    {category === "my_collection"
+                        ? "Your favorite recipes."
+                        : category === "all_recipes"
+                        ? "Browse all recipes."
+                        : category === "my_favorites"
+                            ? "Browse most popular recipes."
+                            : `Browse ${categoryLabels[category].toLowerCase()} recipes.`}
                     </p>
                     </motion.button>
                 ))}
@@ -97,21 +176,44 @@ export default function RecipesPage() {
 
                 {recipes.length === 0 ? (
                 <div className="bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-8 text-center">
-                    <h3 className="text-xl text-white mb-2">No recipes found</h3>
+                    <h3 className="text-xl text-white mb-2">
+                    {selectedCategory === "my_collection"
+                        ? "Your collection is empty"
+                        : "No recipes found"}
+                    </h3>
+
                     <p className="text-gray-300 text-sm">
-                    There are currently no recipes available in this category.
+                    {selectedCategory === "my_collection"
+                        ? "Click the heart icon on any recipe to save it here."
+                        : "There are currently no recipes available in this category."}
                     </p>
                 </div>
                 ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                     {visibleRecipes.map((recipe) => (
-                    <motion.button
+                    <motion.div
                         key={recipe.url}
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setSelectedRecipe(recipe)}
-                        className="flex gap-5 items-center bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-4 text-left hover:border-[#10b981] hover:bg-[#242424] transition"
+                        className="relative flex gap-5 items-center bg-[#1f1f1f] border border-[#5f5d6d] rounded-2xl p-4 pr-14 text-left hover:border-[#10b981] hover:bg-[#242424] transition cursor-pointer"
                     >
+                        <button
+                        type="button"
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            toggleRecipeLike(recipe);
+                        }}
+                        className="absolute right-4 top-4 text-[#10b981] text-2xl leading-none hover:scale-110 transition"
+                        aria-label={
+                            isRecipeLiked(recipe)
+                            ? "Remove from collection"
+                            : "Add to collection"
+                        }
+                        >
+                        {isRecipeLiked(recipe) ? "♥" : "♡"}
+                        </button>
+
                         {recipe.image_url && (
                         <img
                             src={recipe.image_url}
@@ -126,10 +228,11 @@ export default function RecipesPage() {
                         <div>
                         <h3 className="text-xl text-white">{recipe.title}</h3>
                         <p className="text-gray-300 mt-2 text-sm">
-                            {recipe.calories || "N/A"} kcal · {recipe.protein || "N/A"} g protein
+                            {recipe.calories || "N/A"} kcal ·{" "}
+                            {recipe.protein || "N/A"} g protein
                         </p>
                         </div>
-                    </motion.button>
+                    </motion.div>
                     ))}
                 </div>
                 )}
@@ -162,7 +265,23 @@ export default function RecipesPage() {
                 ← Back to recipes
                 </button>
 
-                <h2 className="text-4xl mb-6">{selectedRecipe.title}</h2>
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-6">
+                <h2 className="text-4xl">{selectedRecipe.title}</h2>
+
+                <button
+                    type="button"
+                    onClick={() => toggleRecipeLike(selectedRecipe)}
+                    className="self-start text-[#10b981] text-3xl leading-none hover:scale-110 transition"
+                    aria-label={
+                    isRecipeLiked(selectedRecipe)
+                        ? "Remove from collection"
+                        : "Add to collection"
+                    }
+                >
+                    {isRecipeLiked(selectedRecipe) ? "♥" : "♡"}
+                </button>
+                </div>
+
                 {selectedRecipe.url && (
                 <a
                     href={selectedRecipe.url}
