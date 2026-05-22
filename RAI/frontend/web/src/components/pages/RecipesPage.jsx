@@ -126,12 +126,14 @@ export default function RecipesPage() {
                 </div>
 
                 {visibleCount < recipes.length && (
-                <button
+                <div className="flex justify-center mt-8">
+                    <button
                     onClick={() => setVisibleCount((count) => count + 10)}
-                    className="mt-8 bg-[#10b981] text-black px-8 py-3 rounded-xl font-bold hover:bg-[#34d399] transition"
-                >
+                    className="bg-[#10b981] text-black px-10 py-3 rounded-xl font-bold hover:bg-[#34d399] transition"
+                    >
                     More
-                </button>
+                    </button>
+                </div>
                 )}
             </motion.div>
             )}
