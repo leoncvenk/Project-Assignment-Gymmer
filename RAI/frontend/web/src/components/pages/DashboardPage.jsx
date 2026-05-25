@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Novi modularni uvozi
-import DashboardSidebar from '../dashboard/DashboardSidebar';
+import DashboardSidebar from '../dashboard-layout/DashboardSidebar';
 import ProfileOverviewTab from '../dashboard/ProfileOverviewTab';
 import NutritionOverviewTab from '../dashboard/NutritionOverviewTab';
 import MealsTab from '../dashboard/MealsTab';
