@@ -2,9 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Novi modularni uvozi
 import DashboardSidebar from '../dashboard-layout/DashboardSidebar';
-import ProfileOverviewTab from '../dashboard/ProfileOverviewTab';
+import HomeScreen from '../dashboard-layout/HomeScreen';
 import NutritionOverviewTab from '../dashboard/NutritionOverviewTab';
 import MealsTab from '../dashboard/MealsTab';
 import ActivitiesTab from '../dashboard/ActivitiesTab';
@@ -13,7 +12,6 @@ import ConnectionsTab from '../dashboard/ConnectionsTab';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  // ZELO POMEMBNO: Privzeti zavihek je zdaj 'profile'
   const [activeTab, setActiveTab] = useState('profile');
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -66,7 +64,7 @@ export default function DashboardPage() {
         setLoading(false);
       }
     };
-
+    
     fetchUserData();
 
     return () => {
@@ -78,38 +76,51 @@ export default function DashboardPage() {
   }, [navigate, handleLogout, resetLogoutTimer]); 
 
   if (loading) {
-    return <div className="min-h-screen bg-[var(--background)] flex items-center justify-center text-[var(--text-primary)] font-mono">LOADING GYMMER...</div>;
+    return (
+      <div className="h-screen w-full bg-[#2b2b2b] flex items-center justify-center text-white font-mono">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-white border-t-[#00a97f] rounded-full"
+        />
+      </div>
+    );
   }
 
   return (
-    <div className="relative w-full h-screen flex gap-6 p-4 sm:p-6 lg:p-8 bg-[var(--background)] overflow-hidden font-mono">
+    // Removed the pt-6 pr-6 and changed to standard h-screen flex container
+    <div className="flex h-screen w-full bg-[#2b2b2b] font-sans overflow-hidden">
       
-      {/* LEVI MENI */}
-      <DashboardSidebar 
-        userData={userData} 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        onLogout={handleLogout} 
-      />
+      {/* SIDEBAR */}
+      <div className="flex-shrink-0 h-full z-10 border-r border-[#413f4f]">
+         <DashboardSidebar 
+          userData={userData} 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          onLogout={handleLogout} 
+        />
+      </div>
 
-      {/* GLAVNA VSEBINA */}
-      <motion.main
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, delay: 0.2 }}
-        className="flex-1 h-full bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-8 md:p-10 overflow-y-auto shadow-2xl custom-scrollbar"
-      >
-        <div className="w-full"> 
-          <AnimatePresence mode="wait">
-            <div key={activeTab}>
-              {activeTab === 'profile' && <ProfileOverviewTab userData={userData} setUserData={setUserData} />}
-              {activeTab === 'nutrition' && <NutritionOverviewTab />}
-              {activeTab === 'meals' && <MealsTab />}
-              {activeTab === 'activities' && <ActivitiesTab />}
-              {activeTab === 'security' && <SecurityTab />}
-              {activeTab === 'connections' && <ConnectionsTab />}
-            </div>
-          </AnimatePresence>
-        </div>
-      </motion.main>
+      {/* MAIN CONTENT AREA - Removed border-radius so it sits flush to the edges */}
+      <main className="flex-1 h-full bg-[#ffffff] overflow-hidden z-0 relative flex flex-col">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="w-full h-full flex flex-col"
+          >
+            {activeTab === 'profile' && <HomeScreen userData={userData} setUserData={setUserData} />}
+            {activeTab === 'nutrition' && <NutritionOverviewTab />}
+            {activeTab === 'meals' && <MealsTab />}
+            {activeTab === 'activities' && <ActivitiesTab />}
+            {activeTab === 'security' && <SecurityTab />}
+            {activeTab === 'connections' && <ConnectionsTab />}
+          </motion.div>
+        </AnimatePresence>
+      </main>
 
     </div>
   );

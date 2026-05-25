@@ -36,7 +36,7 @@ export default function DashboardSidebar() {
           alt="Gymmer Logo" 
           className="w-8 h-8 object-contain"
         />
-        <span className="font-semibold text-lg text-[#ffffff]">Gymmer</span>
+        <span className="font-semibold text-lg text-[#ffffff]">GYMMER</span>
       </div>
 
       {/* Main Navigation */}
