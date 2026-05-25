@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, 
   LayoutDashboard, 
@@ -10,22 +10,31 @@ import {
   X, 
   Play, 
   ChevronsUpDown,
-  User 
+  User,
+  LogOut 
 } from 'lucide-react';
 
-export default function DashboardSidebar({ userData }) {
+export default function DashboardSidebar({ userData, activeTab, setActiveTab, onLogout }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  // Close the profile menu automatically if the sidebar collapses
+  useEffect(() => {
+    if (!isHovered) {
+      setIsProfileMenuOpen(false);
+    }
+  }, [isHovered]);
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', active: true },
-    { icon: Apple, label: 'Food Analytics' },
-    { icon: ChefHat, label: 'Recipes' },
-    { icon: Dumbbell, label: 'Activities' },
+    { id: 'profile', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'nutrition', icon: Apple, label: 'Food Analytics' },
+    { id: 'meals', icon: ChefHat, label: 'Recipes' },
+    { id: 'activities', icon: Dumbbell, label: 'Activities' },
   ];
 
   const bottomNavItems = [
-    { icon: LifeBuoy, label: 'Support' },
-    { icon: Settings, label: 'Settings' },
+    { id: 'support', icon: LifeBuoy, label: 'Support' },
+    { id: 'settings', icon: Settings, label: 'Settings' },
   ];
 
   return (
@@ -50,22 +59,22 @@ export default function DashboardSidebar({ userData }) {
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 space-y-1.5 overflow-hidden">
-        {navItems.map((item, index) => (
-          <a
-            key={index}
-            href="#"
-            className={`flex items-center rounded-md transition-colors ${
-              item.active 
+      <nav className="flex-1 space-y-1.5 overflow-hidden mt-2">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab?.(item.id)}
+            className={`w-full flex items-center rounded-md transition-colors ${
+              activeTab === item.id || (item.id === 'profile' && !activeTab)
                 ? 'bg-[#3f3f4f] text-white shadow-sm' 
                 : 'text-[#e5e5e5] hover:bg-[#3f3f4f]/60'
             } ${isHovered ? 'px-3 py-2.5 mx-4 justify-start' : 'w-12 h-12 mx-auto justify-center'}`}
           >
-            <item.icon className={`w-5 h-5 flex-shrink-0 ${item.active ? 'text-white' : 'text-[#e5e5e5]'}`} strokeWidth={1.5} />
+            <item.icon className={`w-5 h-5 flex-shrink-0 ${activeTab === item.id ? 'text-white' : 'text-[#e5e5e5]'}`} strokeWidth={1.5} />
             <span className={`text-sm whitespace-nowrap transition-all duration-300 ${isHovered ? 'ml-3 opacity-100 w-auto' : 'opacity-0 w-0'}`}>
               {item.label}
             </span>
-          </a>
+          </button>
         ))}
       </nav>
 
@@ -74,23 +83,54 @@ export default function DashboardSidebar({ userData }) {
         
         {/* Bottom Navigation */}
         <div className="space-y-1.5">
-          {bottomNavItems.map((item, index) => (
-            <a
-              key={index}
-              href="#"
-              className={`flex items-center rounded-md text-[#e5e5e5] hover:bg-[#3f3f4f]/60 transition-colors ${isHovered ? 'px-3 py-2 mx-4 justify-start' : 'w-12 h-12 mx-auto justify-center'}`}
+          {bottomNavItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab?.(item.id)}
+              className={`w-full flex items-center rounded-md text-[#e5e5e5] hover:bg-[#3f3f4f]/60 transition-colors ${isHovered ? 'px-3 py-2 mx-4 justify-start' : 'w-12 h-12 mx-auto justify-center'}`}
             >
               <item.icon className="w-5 h-5 flex-shrink-0 text-[#e5e5e5]" strokeWidth={1.5} />
               <span className={`text-sm whitespace-nowrap transition-all duration-300 ${isHovered ? 'ml-3 opacity-100 w-auto' : 'opacity-0 w-0'}`}>
                 {item.label}
               </span>
-            </a>
+            </button>
           ))}
         </div>
 
         {/* User Profile */}
-        <div className={`pt-3 border-t border-[#3f3f4f]/50 transition-all duration-300 ${isHovered ? 'mx-4' : 'mx-2'}`}>
-          <div className={`flex items-center hover:bg-[#3f3f4f]/60 rounded-md cursor-pointer transition-colors group ${isHovered ? 'p-2 justify-between' : 'w-12 h-12 mx-auto justify-center'}`}>
+        <div className={`pt-3 border-t border-[#3f3f4f]/50 transition-all duration-300 relative ${isHovered ? 'mx-4' : 'mx-2'}`}>
+          
+          {/* Pop-up Menu */}
+          {isProfileMenuOpen && isHovered && (
+            <div className="absolute bottom-[calc(100%+8px)] left-0 w-full bg-[#1e1e1e] border border-[#3f3f4f] rounded-lg shadow-xl overflow-hidden py-1 z-50 flex flex-col transform transition-all">
+              <button 
+                onClick={() => {
+                  setActiveTab?.('profile');
+                  setIsProfileMenuOpen(false);
+                }}
+                className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#e5e5e5] hover:bg-[#3f3f4f]/80 transition-colors w-full text-left"
+              >
+                <User className="w-4 h-4 text-[#a1a1aa]" />
+                Profile
+              </button>
+              <div className="h-[1px] w-full bg-[#3f3f4f]/50 my-0.5"></div>
+              <button 
+                onClick={onLogout}
+                className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#ff5252] hover:bg-[#ff5252]/10 transition-colors w-full text-left"
+              >
+                <LogOut className="w-4 h-4" />
+                Log out
+              </button>
+            </div>
+          )}
+
+          {/* Profile Trigger button */}
+          <div 
+            onClick={() => isHovered && setIsProfileMenuOpen(!isProfileMenuOpen)}
+            className={`flex items-center rounded-md cursor-pointer transition-colors group ${
+              isProfileMenuOpen ? 'bg-[#3f3f4f]/80' : 'hover:bg-[#3f3f4f]/60'
+            } ${isHovered ? 'p-2 justify-between' : 'w-12 h-12 mx-auto justify-center'}`}
+          >
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="relative flex-shrink-0">
                 {userData?.profileImage ? (
@@ -115,7 +155,9 @@ export default function DashboardSidebar({ userData }) {
                 </span>
               </div>
             </div>
-            {isHovered && <ChevronsUpDown className="w-4 h-4 text-[#a1a1aa] group-hover:text-white flex-shrink-0" />}
+            {isHovered && (
+              <ChevronsUpDown className={`w-4 h-4 flex-shrink-0 transition-colors ${isProfileMenuOpen ? 'text-white' : 'text-[#a1a1aa] group-hover:text-white'}`} />
+            )}
           </div>
         </div>
         

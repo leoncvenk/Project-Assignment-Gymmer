@@ -19,7 +19,8 @@ export default function DashboardPage() {
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('access_token');
-    navigate('/profile');
+    // Redirect user to the LandingPage
+    navigate('/');
   }, [navigate]);
 
   const resetLogoutTimer = useCallback(() => {
@@ -33,7 +34,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) {
-      navigate('/profile');
+      navigate('/');
       return;
     }
 
@@ -90,7 +91,7 @@ export default function DashboardPage() {
   return (
     <div className="flex h-screen w-full bg-[#2b2b2b] font-sans overflow-hidden">
       
-      {/* SIDEBAR - Now acts as a standard flex item */}
+      {/* SIDEBAR */}
       <DashboardSidebar 
         userData={userData} 
         activeTab={activeTab} 
