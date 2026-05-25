@@ -1,15 +1,14 @@
 import React from 'react';
 import { 
   Calendar, 
-  Filter, 
   UserPlus, 
   Edit3, 
-  MoreVertical, 
   ArrowUpRight,
   TrendingUp,
   Activity,
   Flame,
-  Clock
+  Clock,
+  ArrowRight
 } from 'lucide-react';
 
 export default function HomeScreen() {
@@ -110,7 +109,6 @@ export default function HomeScreen() {
       <div className="flex-shrink-0 mb-5">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-semibold">Quick Actions</h3>
-          <MoreVertical className="w-3.5 h-3.5 text-gray-400 cursor-pointer hover:text-gray-600" />
         </div>
         
         <div className="grid grid-cols-2 gap-4">
@@ -143,7 +141,10 @@ export default function HomeScreen() {
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
           <div className="flex items-center justify-between mb-2 flex-shrink-0">
             <h3 className="text-xs font-semibold">Trending Recipes</h3>
-            <MoreVertical className="w-3.5 h-3.5 text-gray-400 cursor-pointer hover:text-gray-600" />
+            <button className="flex items-center gap-1 text-[10px] font-semibold text-[#00a97f] hover:text-[#008a68] transition-colors group">
+              All recipes
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-200" />
+            </button>
           </div>
           
           <div className="flex-1 min-h-0 grid grid-cols-2 gap-4">

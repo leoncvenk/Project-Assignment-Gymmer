@@ -88,21 +88,18 @@ export default function DashboardPage() {
   }
 
   return (
-    // Removed the pt-6 pr-6 and changed to standard h-screen flex container
     <div className="flex h-screen w-full bg-[#2b2b2b] font-sans overflow-hidden">
       
-      {/* SIDEBAR */}
-      <div className="flex-shrink-0 h-full z-10 border-r border-[#413f4f]">
-         <DashboardSidebar 
-          userData={userData} 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
-          onLogout={handleLogout} 
-        />
-      </div>
+      {/* SIDEBAR - Now acts as a standard flex item */}
+      <DashboardSidebar 
+        userData={userData} 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onLogout={handleLogout} 
+      />
 
-      {/* MAIN CONTENT AREA - Removed border-radius so it sits flush to the edges */}
-      <main className="flex-1 h-full bg-[#ffffff] overflow-hidden z-0 relative flex flex-col">
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 h-full bg-[#ffffff] overflow-hidden relative flex flex-col">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
