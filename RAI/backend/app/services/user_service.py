@@ -1,7 +1,6 @@
 from dataclasses import asdict
 from datetime import datetime, timezone
 from uuid import uuid4
-from pymongo import ReturnDocument
 
 from app.core.database import get_db
 from app.core.security import hash_password
@@ -58,6 +57,14 @@ class UserService:
         await self.collection.insert_one(asdict(user))
 
         return user
+
+    async def get_user_by_username(self, username: str) -> User | None:
+        document = await self.collection.find_one({"username": username})
+
+        if document is None:
+            return None
+
+        return _user_from_document(document)
 
     async def get_user_by_email(self, email: str) -> User | None:
         document = await self.collection.find_one({"email": email.lower().strip()})

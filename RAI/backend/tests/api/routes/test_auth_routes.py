@@ -176,3 +176,213 @@ async def test_auth_me_missing_token_returns_401(client):
     response = await client.get("/auth/me")
 
     assert response.status_code == 401
+
+@pytest.mark.asyncio
+async def test_update_me_updates_username(client):
+    email = unique_email()
+
+    await client.post(
+        "/auth/register",
+        json={
+            "username": "luka",
+            "email": email,
+            "password": "password123",
+        },
+    )
+
+    login = await client.post(
+        "/auth/login",
+        json={
+            "email": email,
+            "password": "password123",
+        },
+    )
+
+    token = login.json()["access_token"]
+
+    response = await client.patch(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "username": "updated-luka",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["username"] == "updated-luka"
+    assert data["email"] == email
+
+
+@pytest.mark.asyncio
+async def test_update_me_updates_email(client):
+    email = unique_email()
+    new_email = unique_email()
+
+    await client.post(
+        "/auth/register",
+        json={
+            "username": "luka",
+            "email": email,
+            "password": "password123",
+        },
+    )
+
+    login = await client.post(
+        "/auth/login",
+        json={
+            "email": email,
+            "password": "password123",
+        },
+    )
+
+    token = login.json()["access_token"]
+
+    response = await client.patch(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "email": new_email,
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["username"] == "luka"
+    assert data["email"] == new_email
+
+
+@pytest.mark.asyncio
+async def test_update_me_rejects_duplicate_username(client):
+    first_email = unique_email()
+    second_email = unique_email()
+
+    await client.post(
+        "/auth/register",
+        json={
+            "username": "first-user",
+            "email": first_email,
+            "password": "password123",
+        },
+    )
+
+    await client.post(
+        "/auth/register",
+        json={
+            "username": "second-user",
+            "email": second_email,
+            "password": "password123",
+        },
+    )
+
+    login = await client.post(
+        "/auth/login",
+        json={
+            "email": second_email,
+            "password": "password123",
+        },
+    )
+
+    token = login.json()["access_token"]
+
+    response = await client.patch(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "username": "first-user",
+        },
+    )
+
+    assert response.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_update_me_rejects_duplicate_email(client):
+    first_email = unique_email()
+    second_email = unique_email()
+
+    await client.post(
+        "/auth/register",
+        json={
+            "username": "first-user",
+            "email": first_email,
+            "password": "password123",
+        },
+    )
+
+    await client.post(
+        "/auth/register",
+        json={
+            "username": "second-user",
+            "email": second_email,
+            "password": "password123",
+        },
+    )
+
+    login = await client.post(
+        "/auth/login",
+        json={
+            "email": second_email,
+            "password": "password123",
+        },
+    )
+
+    token = login.json()["access_token"]
+
+    response = await client.patch(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "email": first_email,
+        },
+    )
+
+    assert response.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_update_me_requires_auth(client):
+    response = await client.patch(
+        "/auth/me",
+        json={
+            "username": "updated-luka",
+        },
+    )
+
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_update_me_rejects_invalid_username(client):
+    email = unique_email()
+
+    await client.post(
+        "/auth/register",
+        json={
+            "username": "luka",
+            "email": email,
+            "password": "password123",
+        },
+    )
+
+    login = await client.post(
+        "/auth/login",
+        json={
+            "email": email,
+            "password": "password123",
+        },
+    )
+
+    token = login.json()["access_token"]
+
+    response = await client.patch(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "username": "  ",
+        },
+    )
+
+    assert response.status_code == 422
