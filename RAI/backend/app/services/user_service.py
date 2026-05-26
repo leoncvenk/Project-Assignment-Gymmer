@@ -1,6 +1,7 @@
 from dataclasses import asdict
 from datetime import datetime, timezone
 from uuid import uuid4
+from pymongo import ReturnDocument
 
 from app.core.database import get_db
 from app.core.security import hash_password
@@ -85,3 +86,13 @@ class UserService:
             {"id": user_id},
             {"$set": {"hashed_password": new_hashed_password, "updated_at": _now()}},
         )
+
+    async def update_user(self, user_id: str, updates: dict) -> User | None:
+        updates["updated_at"] = datetime.now(timezone.utc)
+
+        await self.collection.update_one(
+            {"id": user_id},
+            {"$set": updates},
+        )
+
+        return await self.get_user_by_id(user_id)
