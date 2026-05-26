@@ -7,8 +7,7 @@ import HomeScreen from '../dashboard-layout/HomeScreen';
 import NutritionOverviewTab from '../dashboard/NutritionOverviewTab';
 import MealsTab from '../dashboard/MealsTab';
 import ActivitiesTab from '../dashboard/ActivitiesTab';
-import SecurityTab from '../dashboard/SecurityTab';
-import ConnectionsTab from '../dashboard/ConnectionsTab';
+import Settings from '../dashboard-layout/Settings';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -108,14 +107,13 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="w-full h-full flex flex-col"
+            className="w-full h-full flex flex-col overflow-y-auto"
           >
             {activeTab === 'profile' && <HomeScreen userData={userData} setUserData={setUserData} />}
+            {activeTab === 'settings' && <Settings userData={userData} setUserData={setUserData} />}
             {activeTab === 'nutrition' && <NutritionOverviewTab />}
             {activeTab === 'meals' && <MealsTab />}
             {activeTab === 'activities' && <ActivitiesTab />}
-            {activeTab === 'security' && <SecurityTab />}
-            {activeTab === 'connections' && <ConnectionsTab />}
           </motion.div>
         </AnimatePresence>
       </main>

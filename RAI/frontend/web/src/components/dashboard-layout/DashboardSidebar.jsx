@@ -104,17 +104,6 @@ export default function DashboardSidebar({ userData, activeTab, setActiveTab, on
           {isProfileMenuOpen && isHovered && (
             <div className="absolute bottom-[calc(100%+8px)] left-0 w-full bg-[#1e1e1e] border border-[#3f3f4f] rounded-lg shadow-xl overflow-hidden py-1 z-50 flex flex-col transform transition-all">
               <button 
-                onClick={() => {
-                  setActiveTab?.('profile');
-                  setIsProfileMenuOpen(false);
-                }}
-                className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#e5e5e5] hover:bg-[#3f3f4f]/80 transition-colors w-full text-left"
-              >
-                <User className="w-4 h-4 text-[#a1a1aa]" />
-                Profile
-              </button>
-              <div className="h-[1px] w-full bg-[#3f3f4f]/50 my-0.5"></div>
-              <button 
                 onClick={onLogout}
                 className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#ff5252] hover:bg-[#ff5252]/10 transition-colors w-full text-left"
               >
