@@ -1,5 +1,36 @@
 from app.models.recipe import NutritionalValues, Recipe
+from dataclasses import asdict
 
+from app.core.database import get_db
+from app.models.recipe import NutritionalValues, Recipe
+
+RECIPES_COLLECTION = "recipes"
+
+def _recipe_from_document(document: dict) -> Recipe:
+    nutrition = document["nutritional_values"]
+
+    return Recipe(
+        id=document["id"],
+        title=document["title"],
+        url=document["url"],
+        image_url=document["image_url"],
+        categories=document["categories"],
+        ingredients=document["ingredients"],
+        instructions=document["instructions"],
+        nutritional_values=NutritionalValues(
+            calories=nutrition["calories"],
+            protein_g=nutrition["protein_g"],
+            carbs_g=nutrition["carbs_g"],
+            fat_g=nutrition["fat_g"],
+        ),
+    )
+
+@property
+def collection(self):
+    return get_db()[RECIPES_COLLECTION]
+
+def _recipe_to_document(recipe: Recipe) -> dict:
+    return asdict(recipe)
 
 class RecipeService:
     def __init__(self):
