@@ -58,6 +58,14 @@ class UserService:
 
         return user
 
+    async def get_user_by_username(self, username: str) -> User | None:
+        document = await self.collection.find_one({"username": username})
+
+        if document is None:
+            return None
+
+        return _user_from_document(document)
+
     async def get_user_by_email(self, email: str) -> User | None:
         document = await self.collection.find_one({"email": email.lower().strip()})
 
@@ -85,3 +93,13 @@ class UserService:
             {"id": user_id},
             {"$set": {"hashed_password": new_hashed_password, "updated_at": _now()}},
         )
+
+    async def update_user(self, user_id: str, updates: dict) -> User | None:
+        updates["updated_at"] = datetime.now(timezone.utc)
+
+        await self.collection.update_one(
+            {"id": user_id},
+            {"$set": updates},
+        )
+
+        return await self.get_user_by_id(user_id)
