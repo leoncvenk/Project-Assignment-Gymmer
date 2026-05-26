@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
-from app.schemas.auth_schema import LoginSchema, TokenSchema, ChangePasswordSchema
+from app.schemas.auth_schema import LoginSchema, TokenSchema, ChangePasswordSchema, UpdateAccountSchema
 from app.schemas.user_schema import CreateUserSchema, UserResponseSchema
 from app.services.auth_service import AuthService
 from app.models.user import User
@@ -60,6 +60,36 @@ async def login(data: LoginSchema):
 )
 async def get_me(current_user: User = Depends(get_authenticated_user)):
     return current_user
+
+@router.patch(
+    "/me",
+    response_model=UserResponseSchema,
+    summary="Update current authenticated user",
+    description="Updates editable account fields for the currently authenticated user.",
+)
+async def update_me(
+    data: UpdateAccountSchema,
+    current_user: User = Depends(get_authenticated_user),
+):
+    try:
+        updated_user = await auth_service.update_authenticated_user(
+            current_user,
+            data,
+        )
+
+        return updated_user
+
+    except ValueError as e:
+        if str(e) in ["Username already exists", "Email already exists"]:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(e),
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 @router.put(
     "/change-password",
