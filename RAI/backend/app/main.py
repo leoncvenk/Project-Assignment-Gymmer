@@ -18,6 +18,7 @@ from app.routes.dashboard import (
 from app.routes.food_recognition import (
     router as food_recognition_router,
 )
+from app.routes.recipes import router as recipes_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -51,3 +52,4 @@ app.include_router(nutrition_summary_router)
 app.include_router(nutrition_targets_router)
 app.include_router(dashboard_router)
 app.include_router(food_recognition_router)
+app.include_router(recipes_router)
