@@ -1,8 +1,49 @@
 import pytest
+import pytest_asyncio
+
+from app.core.database import get_db
+from app.services.recipe_service import RECIPES_COLLECTION
+
+
+@pytest_asyncio.fixture
+async def seeded_recipes():
+    db = get_db()
+
+    await db[RECIPES_COLLECTION].delete_many({})
+
+    await db[RECIPES_COLLECTION].insert_many(
+        [
+            {
+                "id": "ground-turkey-chili",
+                "title": "Ground Turkey Chili",
+                "url": "https://healthyfitnessmeals.com/ground-turkey-chili/",
+                "image_url": "https://healthyfitnessmeals.com/wp-content/uploads/2023/09/Ground-turkey-chili-8.jpg",
+                "categories": ["high_protein", "most_popular"],
+                "ingredients": [
+                    "1 tablespoon olive oil",
+                    "1 medium onion",
+                ],
+                "instructions": [
+                    "Heat olive oil.",
+                    "Add onion.",
+                ],
+                "nutritional_values": {
+                    "calories": 444,
+                    "protein_g": 37,
+                    "carbs_g": 20,
+                    "fat_g": 12,
+                },
+            }
+        ]
+    )
+
+    yield
+
+    await db[RECIPES_COLLECTION].delete_many({})
 
 
 @pytest.mark.asyncio
-async def test_list_recipes_returns_paginated_response(client):
+async def test_list_recipes_returns_paginated_response(client, seeded_recipes):
     response = await client.get("/recipes?page=1&limit=10")
 
     assert response.status_code == 200
@@ -17,7 +58,7 @@ async def test_list_recipes_returns_paginated_response(client):
 
 
 @pytest.mark.asyncio
-async def test_list_recipes_filters_by_category(client):
+async def test_list_recipes_filters_by_category(client, seeded_recipes):
     response = await client.get("/recipes?category=high_protein&page=1&limit=10")
 
     assert response.status_code == 200
@@ -45,7 +86,7 @@ async def test_list_recipes_rejects_invalid_limit(client):
 
 
 @pytest.mark.asyncio
-async def test_get_recipe_by_id_returns_recipe(client):
+async def test_get_recipe_by_id_returns_recipe(client, seeded_recipes):
     list_response = await client.get("/recipes?page=1&limit=10")
     recipe_id = list_response.json()["recipes"][0]["id"]
 
