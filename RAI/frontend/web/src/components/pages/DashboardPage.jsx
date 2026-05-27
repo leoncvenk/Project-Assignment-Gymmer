@@ -7,7 +7,8 @@ import HomeScreen from '../dashboard-layout/HomeScreen';
 import NutritionMealsPage from '../dashboard-layout/NutritionMealsPage';
 import ActivitiesTab from '../dashboard-layout/ActivitiesTab';
 import Settings from '../dashboard-layout/Settings';
-import RecipesPage from '../dashboard-layout/RecipesPage'; // Import the newly relocated page
+import RecipesPage from '../dashboard-layout/RecipesPage';
+import SupportTab from '../dashboard-layout/SupportTab';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -112,9 +113,8 @@ export default function DashboardPage() {
             {activeTab === 'settings' && <Settings userData={userData} setUserData={setUserData} />}
             {activeTab === 'nutrition' && <NutritionMealsPage />}
             {activeTab === 'activities' && <ActivitiesTab />}
-            
-            {/* Added the Recipes Page mapping to the 'meals' tab ID from the sidebar */}
             {activeTab === 'meals' && <RecipesPage />}
+            {activeTab === 'support' && <SupportTab />}
           </motion.div>
         </AnimatePresence>
       </main>
