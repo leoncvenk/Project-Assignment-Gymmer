@@ -108,7 +108,7 @@ export default function DashboardPage() {
             transition={{ duration: 0.2 }}
             className="w-full h-full flex flex-col overflow-y-auto custom-scrollbar"
           >
-            {activeTab === 'profile' && <HomeScreen userData={userData} setUserData={setUserData} />}
+            {activeTab === 'profile' && <HomeScreen userData={userData} setUserData={setUserData} setActiveTab={setActiveTab} />}
             {activeTab === 'settings' && <Settings userData={userData} setUserData={setUserData} />}
             {activeTab === 'nutrition' && <NutritionMealsPage />}
             {activeTab === 'activities' && <ActivitiesTab />}

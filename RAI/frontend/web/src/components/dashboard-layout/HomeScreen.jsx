@@ -11,7 +11,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-export default function HomeScreen() {
+export default function HomeScreen({ setActiveTab }) {
   // Hardcoded to empty array to show the empty state
   const friends = []; 
 
@@ -26,7 +26,7 @@ export default function HomeScreen() {
             {['24 hours', '7 days', '30 days', '12 months'].map((tab, idx) => (
               <button 
                 key={idx}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
                   idx === 0 
                     ? 'bg-gray-100 text-[#2b2b2b] shadow-sm' 
                     : 'text-gray-500 hover:text-[#2b2b2b]'
@@ -39,7 +39,7 @@ export default function HomeScreen() {
         </div>
 
         <div className="flex items-center gap-3 self-end">
-          <button className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-md shadow-sm text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+          <button className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-md shadow-sm text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
             <Calendar className="w-3.5 h-3.5 text-gray-500" />
             May 25, 2026 – June 5, 2026
           </button>
@@ -112,7 +112,10 @@ export default function HomeScreen() {
         </div>
         
         <div className="grid grid-cols-2 gap-4">
-          <button className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all bg-white text-left group">
+          <button 
+            onClick={() => setActiveTab?.('activities')}
+            className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all bg-white text-left group cursor-pointer"
+          >
             <div className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center flex-shrink-0 bg-white group-hover:bg-gray-50">
               <UserPlus className="w-4 h-4 text-gray-600" />
             </div>
@@ -122,7 +125,10 @@ export default function HomeScreen() {
             </div>
           </button>
           
-          <button className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all bg-white text-left group">
+          <button 
+            onClick={() => setActiveTab?.('nutrition')}
+            className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all bg-white text-left group cursor-pointer"
+          >
             <div className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center flex-shrink-0 bg-white group-hover:bg-gray-50">
               <Edit3 className="w-4 h-4 text-gray-600" />
             </div>
@@ -141,7 +147,10 @@ export default function HomeScreen() {
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
           <div className="flex items-center justify-between mb-2 flex-shrink-0">
             <h3 className="text-xs font-semibold">Trending Recipes</h3>
-            <button className="flex items-center gap-1 text-[10px] font-semibold text-[#00a97f] hover:text-[#008a68] transition-colors group">
+            <button 
+              onClick={() => setActiveTab?.('meals')}
+              className="flex items-center gap-1 text-[10px] font-semibold text-[#00a97f] hover:text-[#008a68] transition-colors group cursor-pointer"
+            >
               All recipes
               <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-200" />
             </button>
@@ -220,7 +229,7 @@ export default function HomeScreen() {
               <div className="flex flex-col items-center justify-center h-full text-center space-y-3 pb-6">
                 <span className="text-4xl" role="img" aria-label="sad">😔</span>
                 <p className="text-xs text-gray-500 px-4">You don't have any friends added yet.</p>
-                <button className="text-xs font-semibold text-[#00a97f] hover:text-[#008a68] transition-colors">
+                <button className="text-xs font-semibold text-[#00a97f] hover:text-[#008a68] transition-colors cursor-pointer">
                   Add Friends
                 </button>
               </div>
