@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import DashboardSidebar from '../dashboard-layout/DashboardSidebar';
 import HomeScreen from '../dashboard-layout/HomeScreen';
-import NutritionOverviewTab from '../dashboard/NutritionOverviewTab';
-import MealsTab from '../dashboard/MealsTab';
+import NutritionMealsPage from '../dashboard-layout/NutritionMealsPage';
 import ActivitiesTab from '../dashboard/ActivitiesTab';
 import Settings from '../dashboard-layout/Settings';
 
@@ -18,7 +17,6 @@ export default function DashboardPage() {
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('access_token');
-    // Redirect user to the LandingPage
     navigate('/');
   }, [navigate]);
 
@@ -111,8 +109,10 @@ export default function DashboardPage() {
           >
             {activeTab === 'profile' && <HomeScreen userData={userData} setUserData={setUserData} />}
             {activeTab === 'settings' && <Settings userData={userData} setUserData={setUserData} />}
-            {activeTab === 'nutrition' && <NutritionOverviewTab />}
-            {activeTab === 'meals' && <MealsTab />}
+            
+            {/* 2. Replaced the separate tabs with the new consolidated page */}
+            {activeTab === 'nutrition' && <NutritionMealsPage />}
+            
             {activeTab === 'activities' && <ActivitiesTab />}
           </motion.div>
         </AnimatePresence>
