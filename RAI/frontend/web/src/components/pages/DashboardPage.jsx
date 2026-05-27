@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DashboardSidebar from '../dashboard-layout/DashboardSidebar';
 import HomeScreen from '../dashboard-layout/HomeScreen';
 import NutritionMealsPage from '../dashboard-layout/NutritionMealsPage';
-import ActivitiesTab from '../dashboard/ActivitiesTab';
+import ActivitiesTab from '../dashboard-layout/ActivitiesTab';
 import Settings from '../dashboard-layout/Settings';
 import RecipesPage from '../dashboard-layout/RecipesPage'; // Import the newly relocated page
 
