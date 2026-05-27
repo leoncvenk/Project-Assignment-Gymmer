@@ -7,6 +7,7 @@ import HomeScreen from '../dashboard-layout/HomeScreen';
 import NutritionMealsPage from '../dashboard-layout/NutritionMealsPage';
 import ActivitiesTab from '../dashboard/ActivitiesTab';
 import Settings from '../dashboard-layout/Settings';
+import RecipesPage from '../dashboard-layout/RecipesPage'; // Import the newly relocated page
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -105,15 +106,15 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="w-full h-full flex flex-col overflow-y-auto"
+            className="w-full h-full flex flex-col overflow-y-auto custom-scrollbar"
           >
             {activeTab === 'profile' && <HomeScreen userData={userData} setUserData={setUserData} />}
             {activeTab === 'settings' && <Settings userData={userData} setUserData={setUserData} />}
-            
-            {/* 2. Replaced the separate tabs with the new consolidated page */}
             {activeTab === 'nutrition' && <NutritionMealsPage />}
-            
             {activeTab === 'activities' && <ActivitiesTab />}
+            
+            {/* Added the Recipes Page mapping to the 'meals' tab ID from the sidebar */}
+            {activeTab === 'meals' && <RecipesPage />}
           </motion.div>
         </AnimatePresence>
       </main>
