@@ -1,6 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, Mail, AlertCircle, CheckCircle, User } from 'lucide-react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
+const buildImageUrl = (imageUrl) => {
+  if (!imageUrl) return null;
+  if (imageUrl.startsWith('http')) return imageUrl;
+  return `${API_BASE_URL}${imageUrl}`;
+};
 
 export default function SettingsDetails({ userData, setUserData }) {
   const [detailsFormData, setDetailsFormData] = useState({
@@ -9,6 +17,8 @@ export default function SettingsDetails({ userData, setUserData }) {
   const [detailsError, setDetailsError] = useState(null);
   const [detailsSuccess, setDetailsSuccess] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (userData?.username) {
@@ -35,8 +45,8 @@ export default function SettingsDetails({ userData, setUserData }) {
     setDetailsLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/users/me", {
-        method: "PUT", 
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        method: "PATCH", 
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem('access_token')}`
@@ -59,6 +69,64 @@ export default function SettingsDetails({ userData, setUserData }) {
     } finally {
       setDetailsLoading(false);
     }
+  };
+
+  const handleProfileImageUpload = async (file) => {
+    if (!file) return;
+
+    const allowedTypes = ['image/svg+xml', 'image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+
+    if (!allowedTypes.includes(file.type)) {
+      setDetailsError('Only SVG, PNG, JPG and GIF images are allowed.');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setDetailsError('Profile image must be smaller than 2 MB.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setImageUploading(true);
+    setDetailsError(null);
+    setDetailsSuccess(false);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me/profile-image`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setDetailsError(data.detail || 'Failed to upload profile image.');
+        return;
+      }
+
+      setUserData(prev => ({
+        ...prev,
+        ...data,
+        profileImage: buildImageUrl(data.profile_image_url),
+      }));
+
+      setDetailsSuccess(true);
+      setTimeout(() => setDetailsSuccess(false), 3000);
+    } catch {
+      setDetailsError('Network error. Is your backend running?');
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    handleProfileImageUpload(e.dataTransfer.files?.[0]);
   };
 
   return (
@@ -151,12 +219,30 @@ export default function SettingsDetails({ userData, setUserData }) {
                 </div>
               )}
 
-              <div className="flex-1 w-full border-2 border-dashed border-[#e5e5e5] rounded-2xl p-6 flex flex-col items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer group">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/svg+xml,image/png,image/jpeg,image/gif"
+                className="hidden"
+                onChange={(e) => handleProfileImageUpload(e.target.files?.[0])}
+              />
+
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => fileInputRef.current?.click()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                className={`flex-1 w-full border-2 border-dashed border-[#e5e5e5] rounded-2xl p-6 flex flex-col items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer group ${imageUploading ? 'opacity-60 pointer-events-none' : ''}`}
+              >
                 <div className="w-10 h-10 bg-white border border-[#e5e5e5] rounded-full flex items-center justify-center mb-3 group-hover:shadow-sm transition-all">
                   <UploadCloud className="w-5 h-5 text-[#2b2b2b]" />
                 </div>
-                <p className="text-sm text-[#2b2b2b]"><span className="text-[#00a97f] font-semibold">Click to upload</span> or drag and drop</p>
-                <p className="text-xs text-[#c5c5c5] mt-1">SVG, PNG, JPG or GIF (max. 800x400px)</p>
+                <p className="text-sm text-[#2b2b2b]"><span className="text-[#00a97f] font-semibold">{imageUploading ? 'Uploading...' : 'Click to upload'}</span> or drag and drop</p>
+                <p className="text-xs text-[#c5c5c5] mt-1">SVG, PNG, JPG or GIF (max. 2 MB)</p>
               </div>
             </div>
           </div>

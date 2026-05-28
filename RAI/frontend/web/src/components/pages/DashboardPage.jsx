@@ -10,6 +10,14 @@ import Settings from '../dashboard-layout/Settings';
 import RecipesPage from '../dashboard-layout/RecipesPage';
 import SupportTab from '../dashboard-layout/SupportTab';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
+const buildImageUrl = (imageUrl) => {
+  if (!imageUrl) return null;
+  if (imageUrl.startsWith('http')) return imageUrl;
+  return `${API_BASE_URL}${imageUrl}`;
+};
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
@@ -54,7 +62,11 @@ export default function DashboardPage() {
         if (userRes.ok && profileRes.ok) {
           const userBaseData = await userRes.json();
           const userProfileData = await profileRes.json();
-          setUserData({ ...userBaseData, profile: userProfileData });
+          setUserData({
+            ...userBaseData,
+            profileImage: buildImageUrl(userBaseData.profile_image_url),
+            profile: userProfileData
+          });
         } else {
           handleLogout();
         }
