@@ -24,6 +24,7 @@ def _user_from_document(document: dict) -> User:
         profile_completed=document.get("profile_completed", False),
         created_at=document["created_at"],
         updated_at=document["updated_at"],
+        profile_image_url=document.get("profile_image_url"),
     )
 
 

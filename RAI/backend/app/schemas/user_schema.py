@@ -20,3 +20,4 @@ class UserResponseSchema(BaseModel):
     email: EmailStr
     roles: list[str]
     profile_completed: bool
+    profile_image_url: str | None = None

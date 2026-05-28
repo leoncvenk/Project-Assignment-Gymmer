@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.routes.health import router as health_router 
 from app.routes.foods import router as foods_router
@@ -23,6 +26,10 @@ from app.routes.recipes import router as recipes_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+UPLOADS_DIR = Path("uploads")
+UPLOADS_DIR.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
