@@ -54,3 +54,21 @@ Skripta se bo avtenticirala pri Roboflow API-ju, ustvarila projektne mape in sam
 
 ### Pomembno za razvijalce: 
 Pred vsakim potiskom kode (git push) preverite, da sta mapi venv/ ter datoteka .env vpisani v vašem .gitignore dokumentu!
+
+## Generiranje teme profila
+Modul `profile_theme.py` iz naložene profilne slike ustvari preprosto vizualno temo profila.
+
+Za obdelavo slike uporablja OpenCV postopke, s katerimi:
+- naloži in normalizira vhodno sliko,
+- zmanjša sliko za hitrejšo obdelavo,
+- odstrani zelo temne, zelo svetle in premalo nasičene piksle,
+- z algoritmom K-means izračuna dominantno barvo slike,
+- ustvari sekundarno barvo za banner gradient,
+- glede na svetlost ozadja izbere berljivo barvo besedila.
+
+Dobljeni rezultat se lahko uporabi v spletni ali mobilni aplikaciji za samodejno ustvarjanje personaliziranega bannerja uporabniškega profila.
+
+Primer uporabe:
+
+```bash
+python profile_theme.py test-images/burger.jpg
