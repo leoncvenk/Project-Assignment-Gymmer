@@ -1,6 +1,6 @@
 # Gymmer CV - Modul za prepoznavo hrane in fitnes opreme
 
-Ta repozitorij vsebuje kodo za pripravo podatkov in učenje modela računalniškega vida **YOLOv8** za prepoznavo hrane in fitnes opreme v aplikaciji **Gymmer**.
+Ta repozitorij vsebuje kodo za pripravo podatkov in učenje modela računalniškega vida **YOLOv11** za prepoznavo hrane in fitnes opreme v aplikaciji **Gymmer**.
 
 Trenutno je implementiran sistem za samodejen zajem in pripravo označenega podatkovnega nabora s platforme **Roboflow** ter **FastAPI** strežnik za integracijo z aplikacijo.
 
