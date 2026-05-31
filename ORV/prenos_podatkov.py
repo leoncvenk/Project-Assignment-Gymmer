@@ -8,9 +8,10 @@ load_dotenv()
 api_kljuc = os.getenv("ROBOFLOW_API_KEY")
 
 rf = Roboflow(api_key=api_kljuc)
-project = rf.workspace("food-becxj").project("complete-food")
+project = rf.workspace("ime-uporabnika").project("ime-projekta")
 version = project.version(1)
-dataset = version.download("yolov8")
+dataset = version.download("yolov11")
 
 print("Podatki so preneseni v:", dataset.location)
+
                 
