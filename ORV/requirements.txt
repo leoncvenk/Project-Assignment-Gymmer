@@ -3,3 +3,7 @@ roboflow
 python-dotenv
 opencv-python
 Pillow
+httpx
+fastapi
+uvicorn
+python-multipart
