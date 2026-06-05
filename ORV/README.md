@@ -1,182 +1,160 @@
-# Gymmer CV - Modul za prepoznavo hrane in fitnes opreme
+# ORV
 
-Ta repozitorij vsebuje kodo za pripravo podatkov in učenje modela računalniškega vida **YOLOv11** za prepoznavo hrane in fitnes opreme v aplikaciji **Gymmer**.
+## Setup
 
-Trenutno je implementiran sistem za samodejen zajem in pripravo označenega podatkovnega nabora s platforme **Roboflow** ter **FastAPI** strežnik za integracijo z aplikacijo.
+1.  **Set up the Python environment** 
+*Ensure you have Python 3.12+ installed.*
+    ```Bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows: venv\\Scripts\\activate
+    pip install -r requirements.txt
+    ```
+    _(Required packages: `fastapi`, `uvicorn`, `ultralytics`, `opencv-python`, `numpy`, `Pillow`, `python-dotenv`, `roboflow`)_
+    
+4.  **Configure Environment Variables** Create a `.env` file in the root directory to download Roboflow datasets:
+   
+    
+    
+    ```Code snippet
+    ROBOFLOW_API_KEY=your_api_key_here
+    ```
+    
 
----
+##  Usage
 
-## 1. Pridobitev Roboflow API ključa
+### 1. Starting the API Server
 
-Za prenos podatkovnega nabora potrebuješ osebni API ključ.
+Run the FastAPI application locally:
 
-1. Ustvari račun in se prijavi na [Roboflow](https://app.roboflow.com/).
-2. V spodnjem levem kotu klikni na svojo profilno ikono in izberi **Settings**.
-3. V levem meniju pod svojim delovnim prostorom (**Workspace**) klikni na **Roboflow API**.
-4. Pod razdelkom **Private API Key** klikni na ikono za kopiranje (**Copy**).
 
-> **Pozor:** Tega ključa nikoli ne deli javno!
-
----
-
-## 2. Priprava lokalnega okolja
-
-Za izolacijo knjižnic uporabljamo Python navidezno okolje `venv`.
-
-Sledite spodnjim korakom v terminalu:
-
-```bash
-# 1. Ustvari navidezno okolje z imenom "venv"
-python -m venv venv
+```Bash
+python api.py
+# or directly via uvicorn:
+# uvicorn api:app --host 127.0.0.1 --port 8001 --reload
 ```
 
-Aktivacija navideznega okolja:
+The API will be available at `http://127.0.0.1:8001`. Interactive API documentation can be accessed at `http://127.0.0.1:8001/docs`.
 
-```bash
-# Linux/macOS:
-source venv/bin/activate
+### 2. Command Line Inference
+
+You can test the models directly from the CLI without spinning up the server:
+
+
+
+```Bash
+# For Food Detection
+python main.py path/to/image.jpg food
+
+# For Gym Equipment Detection
+python main.py path/to/image.jpg gym
 ```
 
-```bash
-# Windows CMD/PowerShell:
-venv\Scripts\activate
+_Results will be printed as JSON, and images with bounding boxes will be saved to the `test-images/` or `runs/detect/` directories._
+
+### 3. Profile Theme Generation
+
+Extract aesthetic UI themes from an image:
+
+
+
+```Bash
+python profile_theme.py path/to/profile_pic.jpg
 ```
 
-> Opomba: Ko je okolje aktivirano, se bo v terminalu pred tvojim uporabniškim imenom pojavil napis `(venv)`.
+Returns a JSON object with a dominant hex color, a secondary complementary color, a calculated text color (black/white based on luminance), and a CSS gradient string.
 
----
+##  API Endpoints
 
-## 3. Namestitev odvisnosti
+### `POST /predict/food`
 
-Ko je navidezno okolje aktivirano, namesti potrebne knjižnice za prenos podatkov, branje okoljskih spremenljivk in zagon API strežnika:
+Upload an image of a meal to detect food items.
 
-```bash
-pip install -r requirements.txt
+-   **Confidence Threshold**: `> 10%`
+    
+-   **Response Format**:
+    
+    ```JSON
+    {
+        "found": [
+            {"food": "Pizza", "confidence": 0.85},
+            {"food": "Tomato", "confidence": 0.62}
+        ]
+    }
+    ```
+    
+
+### `POST /predict/gym`
+
+Upload an image of gym equipment.
+
+-   **Confidence Threshold**: `> 50%`
+    
+-   **Response Format**:
+    
+    
+    
+    ```JSON
+    {
+        "found": [
+            {"item": "treadmill", "confidence": 0.92}
+        ]
+    }
+    ```
+    
+
+##  Model Training
+
+### Dataset Acquisition
+
+The dataset is managed via Roboflow. Run `prenos_podatkov.py` to pull the latest version of the `yolov11` formatted data.
+
+### Training the Model
+
+We utilize the `YOLO11m` (Medium) architecture for an optimal balance of speed and accuracy.
+
+
+
+```Bash
+python train.py
 ```
 
-Če katera od knjižnic še ni vključena v `requirements.txt`, jih lahko namestiš tudi ročno:
+**Training Parameters used (`train.py`):**
 
-```bash
-pip install roboflow python-dotenv fastapi uvicorn python-multipart
-```
+-   **Epochs**: 150
+    
+-   **Image Size**: 640px
+    
+-   **Batch Size**: 8
+    
+-   **Patience**: 25 (Early stopping)
+    
+-   **Device**: 0 (Dedicated GPU)
+    
 
----
+_(To resume an interrupted training session, run `python resume.py`)_
 
-## 4. Konfiguracija varnostnih spremenljivk
+### Performance (Food Model)
 
-API ključa ne smemo trdo kodirati v skripte, zato uporabljamo `.env` datoteko, ki je ignorirana s strani Gita.
+Based on the latest training session:
 
-V korenski mapi projekta ustvari datoteko z natančnim imenom:
+-   **mAP50**: `0.633` overall across 9,339 images and 23,881 instances.
+    
+-   **Top Performing Classes**: Rice (`0.815`), French Fries (`0.815`), Mung Bean Sprouts (`0.927`), Pizza (`0.781`).
+    
 
-```bash
-.env
-```
+##  Project Structure
 
-Vanjo prilepi svoj API ključ v naslednjem formatu, brez presledkov okoli enačaja:
 
-```env
-ROBOFLOW_API_KEY="tvoj_skrivni_api_kljuc_tukaj"
-```
 
----
-
-## 5. Zagon skripte za prenos podatkov
-
-Ko so nameščeni vsi paketi in je nastavljen `.env` dokument, zaženi skripto:
-
-```bash
-python prenos_podatkov.py
-```
-
-Skripta se bo avtenticirala pri Roboflow API-ju, ustvarila projektne mape in samodejno prenesla podatkovni nabor slik ter datoteko `data.yaml` v formatu, pripravljenem za YOLOv8.
-
-### Pomembno za razvijalce
-
-Pred vsakim potiskom kode preverite, da sta mapa `venv/` in datoteka `.env` vpisani v `.gitignore` dokument:
-
-```gitignore
-venv/
-.env
-```
-
----
-
-## 6. Zagon API strežnika
-
-Za integracijo z mobilno aplikacijo Gymmer je na voljo **FastAPI** strežnik, ki na enem mestu obdeluje prepoznavo hrane in fitnes opreme.
-
-Za zagon strežnika v aktiviranem okolju poženite:
-
-```bash
-uvicorn api:app --host 127.0.0.1 --port 8001 --reload
-```
-
-Strežnik bo dostopen na lokalnem naslovu.
-
-Za priročno preizkušanje API-ja preko Swagger UI odprite brskalnik na naslovu:
-
-```text
-http://127.0.0.1:8001/docs
-```
-
----
-
-## 7. API končne točke
-
-Na voljo sta dve ločeni končni točki. Obe uporabljata `POST` zahtevek z naloženo sliko.
-
-### Detekcija hrane
-
-```http
-POST /predict/food
-```
-
-Ta končna točka se uporablja za prepoznavo hrane.
-
-### Detekcija fitnes opreme
-
-```http
-POST /predict/gym
-```
-
-Ta končna točka se uporablja za prepoznavo fitnes opreme.
-
----
-
-## 8. Primer JSON odgovora
-
-Ob uspešni prepoznavi API vrne strukturiran JSON format, ki se lahko v bazi uporabi za nadaljnjo logiko, na primer za izračun kalorij ali izbiro vaje.
-
-```json
-{
-    "found": [
-        {
-            "item": "lat pull down machine",
-            "confidence": 0.73
-        }
-    ]
-}
-```
-
----
-
-## 9. Generiranje teme profila
-
-Modul `profile_theme.py` iz naložene profilne slike ustvari preprosto vizualno temo profila.
-
-Za obdelavo slike uporablja OpenCV postopke, s katerimi:
-
-* naloži in normalizira vhodno sliko,
-* zmanjša sliko za hitrejšo obdelavo,
-* odstrani zelo temne, zelo svetle in premalo nasičene piksle,
-* z algoritmom K-means izračuna dominantno barvo slike,
-* ustvari sekundarno barvo za banner gradient,
-* glede na svetlost ozadja izbere berljivo barvo besedila.
-
-Dobljeni rezultat se lahko uporabi v spletni ali mobilni aplikaciji za samodejno ustvarjanje personaliziranega bannerja uporabniškega profila.
-
-Primer uporabe:
-
-```bash
-python profile_theme.py test-images/burger.jpg
+```Plaintext
+├── api.py               # FastAPI server setup and routes
+├── main.py              # Core YOLO inference and JSON formatting logic
+├── process.py           # Image preprocessing (CLAHE, Denoising, Resize)
+├── profile_theme.py     # UI/UX utility for dominant color extraction
+├── train.py             # YOLO11 model training configuration
+├── resume.py            # Utility to resume training from last.pt
+├── prenos_podatkov.py   # Roboflow API script for dataset download
+└── models/
+    ├── food/best.pt     # Compiled Food weights
+    └── gym/best.pt      # Compiled Gym weights
 ```

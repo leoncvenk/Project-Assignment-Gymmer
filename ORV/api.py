@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Pomožna funkcija, da ne piševa dvakrat iste kode za shranjevanje slik
+# Pomožna funkcija, za shranjevanje slik
 def process_upload(file: UploadFile, predict_function, model_path):
     temp_dir = "test-images"
     os.makedirs(temp_dir, exist_ok=True)
