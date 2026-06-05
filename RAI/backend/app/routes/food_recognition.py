@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 
 from app.schemas.food_recognition_schema import (
+    FoodRecognitionCandidateSchema,
     FoodRecognitionPredictionSchema,
-    FoodRecognitionResponseSchema,
+    FoodRecognitionResponseSchema
 )
 from app.services.food_recognition_service import FoodRecognitionService
 from app.core.security import get_current_user_id
@@ -33,7 +34,13 @@ async def recognize_foods(
             FoodRecognitionPredictionSchema(
                 label=result.label,
                 confidence=result.confidence,
-                candidates=result.candidates,
+                candidates=[
+                    FoodRecognitionCandidateSchema.model_validate(
+                        candidate,
+                        from_attributes=True,
+                    )
+                    for candidate in result.candidates
+                ],
             )
             for result in results
         ]
