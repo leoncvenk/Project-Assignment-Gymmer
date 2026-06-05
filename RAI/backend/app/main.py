@@ -9,6 +9,7 @@ from app.core.database import connect_to_mongo, close_mongo_connection
 from app.routes.auth import router as auth_router
 from app.routes.user_profile import router as user_profile_router
 from app.routes.food_entries import router as food_entries_router
+from app.routes import devices
 from app.routes.nutrition_summary import (
     router as nutrition_summary_router,
 )
@@ -60,3 +61,4 @@ app.include_router(nutrition_targets_router)
 app.include_router(dashboard_router)
 app.include_router(food_recognition_router)
 app.include_router(recipes_router)
+app.include_router(devices.router, prefix="/api", tags=["devices"])

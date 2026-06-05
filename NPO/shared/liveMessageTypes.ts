@@ -36,3 +36,14 @@ export type ActivityMessage = {
     activityType?: ActivityType
     timestamp: string;
 };
+
+export interface HealthDataPayload {
+  userId: string;
+  timestamp: string; // ISO 8601 format
+  deviceOs: 'ios' | 'android';
+  metrics: {
+    heartRateBpm: number | null;
+    dailySteps: number;
+    activeCaloriesKcal: number;
+  };
+}

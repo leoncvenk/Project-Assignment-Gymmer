@@ -84,7 +84,7 @@ export default function ProfileSetupScreen() {
     }
 
     redirectCompletedUser();
-  });
+  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-background">
