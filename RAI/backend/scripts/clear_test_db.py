@@ -2,11 +2,17 @@ import asyncio
 import os
 
 from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 async def main():
     mongo_uri = os.environ["MONGO_URI"]
-    db_name = os.environ["DB_NAME"]
+    db_name = os.environ["TEST_DB_NAME"]
+
+    if db_name in {"gymmer", "prod", "production"} or not db_name.startswith("rai_test_"):
+        raise RuntimeError(f"Refusing to clear unsafe database: {db_name}")
 
     client = AsyncIOMotorClient(mongo_uri)
     db = client[db_name]
