@@ -1,4 +1,7 @@
+import os
 from uuid import uuid4
+
+os.environ["DB_NAME"] = "gymmer_test"
 
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
