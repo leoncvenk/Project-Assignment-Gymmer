@@ -55,20 +55,11 @@ export default function FoodEntryModal() {
     setIsCreatingFood(false);
   }
 
-  async function handlePickFoodImage() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-    });
-
-    if (result.canceled) {
-      return;
-    }
-
+  async function recognizeFoodFromImageUri(imageUri: string) {
     try {
       setIsRecognizingFood(true);
 
-      const recognition = await recognizeFoodImage(result.assets[0].uri);
+      const recognition = await recognizeFoodImage(imageUri);
 
       const candidates = recognition.predictions.flatMap((prediction) => prediction.candidates);
 
@@ -80,6 +71,17 @@ export default function FoodEntryModal() {
     } finally {
       setIsRecognizingFood(false);
     }
+  }
+
+  async function handlePickFoodImage() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    await recognizeFoodFromImageUri(result.assets[0].uri);
   }
 
   async function handleCreateEntry() {
@@ -95,6 +97,23 @@ export default function FoodEntryModal() {
     });
 
     router.back();
+  }
+
+  async function handleTakeFoodPhoto() {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    await recognizeFoodFromImageUri(result.assets[0].uri);
   }
 
   useEffect(() => {
@@ -157,6 +176,7 @@ export default function FoodEntryModal() {
                 selectedFood={selectedFood}
                 quantityG={quantityG}
                 isSearching={isSearching}
+                isRecognizingFood={isRecognizingFood}
                 showFallbackActions={showFallbackActions}
                 onQueryChange={(value) => {
                   setQuery(value);
@@ -171,6 +191,8 @@ export default function FoodEntryModal() {
                 onScanBarcode={() => {}}
                 onCreateFoodManually={() => setIsCreatingFood(true)}
                 onCreateEntry={handleCreateEntry}
+                onPickFoodImage={handlePickFoodImage}
+                onTakeFoodPhoto={handleTakeFoodPhoto}
               />
             )}
           </View>
