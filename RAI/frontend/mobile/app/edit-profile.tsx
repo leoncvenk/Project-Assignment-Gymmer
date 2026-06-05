@@ -8,7 +8,7 @@ import { isAxiosError } from 'axios';
 import AuthTextInput from 'components/forms/AuthTextInput';
 import PrimaryButton from 'components/ui/PrimaryButton';
 import { getAuthToken } from 'lib/auth';
-import { getProfile, updateProfile } from 'lib/profile'; 
+import { getProfile, updateProfile } from 'lib/profile';
 import { ActivityLevel, GoalType, Sex } from 'types/profile';
 
 export default function EditProfileScreen() {
@@ -44,7 +44,7 @@ export default function EditProfileScreen() {
         if (!token) return;
 
         const profileData = await getProfile(token);
-        
+
         // Polja se napolnijo s trenutnimi podatki
         setHeightCm(profileData.height_cm?.toString() || '');
         setWeightKg(profileData.weight_kg?.toString() || '');
@@ -53,7 +53,6 @@ export default function EditProfileScreen() {
         setSex(profileData.sex || 'male');
         setActivityLevel(profileData.activity_level || 'moderate');
         setGoalType(profileData.goal_type || 'lose_weight');
-
       } catch (error) {
         console.error('Napaka pri nalaganju podatkov profila:', error);
       } finally {
@@ -64,7 +63,7 @@ export default function EditProfileScreen() {
     fetchCurrentProfile();
   }, []);
 
-async function handleSave() {
+  async function handleSave() {
     if (!heightCm || !weightKg || !goalWeightKg || !age) {
       Alert.alert('Missing fields', 'Fill in all profile fields.');
       return;
@@ -83,14 +82,14 @@ async function handleSave() {
         activity_level: activityLevel,
         goal_type: goalType,
       };
-      
-      console.log("Pošiljam podatke:", data); 
-      
+
+      console.log('Pošiljam podatke:', data);
+
       await updateProfile(token, data);
       router.back();
     } catch (error: any) {
-      console.log("PODROBNA NAPAKA:", error);
-      
+      console.log('PODROBNA NAPAKA:', error);
+
       if (isAxiosError(error)) {
         Alert.alert('Update failed', JSON.stringify(error.response?.data ?? error.message));
       } else {
@@ -109,11 +108,7 @@ async function handleSave() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="flex-row items-center px-6 py-4">
-        <ArrowLeft 
-          size={24} 
-          color="#f2f2f2" 
-          onPress={() => router.back()} 
-        />
+        <ArrowLeft size={24} color="#f2f2f2" onPress={() => router.back()} />
         <Text className="ml-4 text-xl font-bold text-text">Edit Profile</Text>
       </View>
 
@@ -121,7 +116,6 @@ async function handleSave() {
         className="flex-1 px-6"
         contentContainerClassName="py-4"
         showsVerticalScrollIndicator={false}>
-        
         <View className="mb-6">
           <Text className="text-base text-muted">
             Update your body stats to recalculate your nutrition targets.
@@ -167,13 +161,19 @@ async function handleSave() {
               <TouchableOpacity
                 onPress={() => setSex('male')}
                 className={`flex-1 rounded-xl border px-4 py-4 ${sex === 'male' ? 'border-accent bg-card' : 'border-muted bg-white'}`}>
-                <Text className={`text-center font-semibold ${sex === 'male' ? 'text-textOnDark' : 'text-text'}`}>Male</Text>
+                <Text
+                  className={`text-center font-semibold ${sex === 'male' ? 'text-textOnDark' : 'text-text'}`}>
+                  Male
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setSex('female')}
                 className={`flex-1 rounded-xl border px-4 py-4 ${sex === 'female' ? 'border-accent bg-card' : 'border-muted bg-white'}`}>
-                <Text className={`text-center font-semibold ${sex === 'female' ? 'text-textOnDark' : 'text-text'}`}>Female</Text>
+                <Text
+                  className={`text-center font-semibold ${sex === 'female' ? 'text-textOnDark' : 'text-text'}`}>
+                  Female
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -186,9 +186,12 @@ async function handleSave() {
                   key={option.value}
                   onPress={() => setActivityLevel(option.value)}
                   className={`rounded-xl border px-4 py-4 ${
-                    activityLevel === option.value ? 'border-accent bg-card' : 'border-muted bg-white'
+                    activityLevel === option.value
+                      ? 'border-accent bg-card'
+                      : 'border-muted bg-white'
                   }`}>
-                  <Text className={`font-medium ${activityLevel === option.value ? 'text-textOnDark' : 'text-text'}`}>
+                  <Text
+                    className={`font-medium ${activityLevel === option.value ? 'text-textOnDark' : 'text-text'}`}>
                     {option.label}
                   </Text>
                 </TouchableOpacity>
@@ -204,7 +207,8 @@ async function handleSave() {
                   key={option.value}
                   onPress={() => setGoalType(option.value)}
                   className={`rounded-xl border px-4 py-4 ${goalType === option.value ? 'border-accent bg-card' : 'border-muted bg-white'}`}>
-                  <Text className={`font-medium ${goalType === option.value ? 'text-textOnDark' : 'text-text'}`}>
+                  <Text
+                    className={`font-medium ${goalType === option.value ? 'text-textOnDark' : 'text-text'}`}>
                     {option.label}
                   </Text>
                 </TouchableOpacity>
@@ -216,16 +220,15 @@ async function handleSave() {
         {/* GUMBI NA DNU (Shrani in Prekliči) */}
         <View className="mb-10 mt-6 gap-3">
           <PrimaryButton title="Save changes" onPress={handleSave} />
-          
-<TouchableOpacity 
-            onPress={() => router.back()} 
+
+          <TouchableOpacity
+            onPress={() => router.back()}
             className="rounded-2xl border border-sidebar bg-sidebar py-4">
             <Text className="text-center text-base font-semibold text-white">
               Cancel without saving
             </Text>
           </TouchableOpacity>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );

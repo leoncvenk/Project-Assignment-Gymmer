@@ -19,11 +19,7 @@ const EMPTY_DAILY_METRICS: DailyMetrics = {
 function getTodayTimeRange() {
   const now = new Date();
 
-  const startOfDay = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate()
-  ).toISOString();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
 
   const endOfDay = now.toISOString();
 
@@ -82,10 +78,7 @@ function getHealthConnect() {
   }
 }
 
-function initAppleHealthKit(
-  AppleHealthKit: any,
-  permissions: HealthKitPermissions
-): Promise<void> {
+function initAppleHealthKit(AppleHealthKit: any, permissions: HealthKitPermissions): Promise<void> {
   return new Promise((resolve, reject) => {
     AppleHealthKit.initHealthKit(permissions, (error: string | null) => {
       if (error) {
@@ -199,23 +192,16 @@ export async function getDailyMetrics(): Promise<DailyMetrics> {
       });
 
       metrics.dailySteps = Math.round(
-        stepsResult.records.reduce(
-          (total: number, record: any) => total + (record.count ?? 0),
-          0
-        )
+        stepsResult.records.reduce((total: number, record: any) => total + (record.count ?? 0), 0)
       );
 
-      const caloriesResult = await HealthConnect.readRecords(
-        'ActiveCaloriesBurned',
-        {
-          timeRangeFilter,
-        }
-      );
+      const caloriesResult = await HealthConnect.readRecords('ActiveCaloriesBurned', {
+        timeRangeFilter,
+      });
 
       metrics.activeCaloriesKcal = Math.round(
         caloriesResult.records.reduce(
-          (total: number, record: any) =>
-            total + (record.energy?.inKilocalories ?? 0),
+          (total: number, record: any) => total + (record.energy?.inKilocalories ?? 0),
           0
         )
       );
@@ -317,8 +303,7 @@ export async function getCurrentHeartRate(): Promise<HeartRateResult> {
         };
       }
 
-      const latestRecord =
-        heartRateResult.records[heartRateResult.records.length - 1];
+      const latestRecord = heartRateResult.records[heartRateResult.records.length - 1];
 
       if (!latestRecord.samples || latestRecord.samples.length === 0) {
         return {
@@ -326,8 +311,7 @@ export async function getCurrentHeartRate(): Promise<HeartRateResult> {
         };
       }
 
-      const latestSample =
-        latestRecord.samples[latestRecord.samples.length - 1];
+      const latestSample = latestRecord.samples[latestRecord.samples.length - 1];
 
       return {
         heartRateBpm: latestSample.beatsPerMinute ?? null,

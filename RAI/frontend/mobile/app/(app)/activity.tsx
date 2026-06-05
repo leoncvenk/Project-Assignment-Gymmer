@@ -29,9 +29,7 @@ export default function ActivityScreen() {
       // Prebere vse naprave trenutnega userja
       const devices = await getConnectedDevices(token);
 
-      const active = Array.isArray(devices)
-        ? devices.filter((device) => device.is_active)
-        : [];
+      const active = Array.isArray(devices) ? devices.filter((device) => device.is_active) : [];
 
       setActiveDevices(active);
     } catch (error) {
@@ -63,8 +61,7 @@ export default function ActivityScreen() {
           paddingTop: 32,
           paddingBottom: layout.floatingTabBarSafePadding + 140,
         }}
-        showsVerticalScrollIndicator={false}
-      >
+        showsVerticalScrollIndicator={false}>
         <View className="mb-8">
           <Text className="text-4xl font-bold text-text">Live Activity</Text>
 
@@ -108,14 +105,11 @@ export default function ActivityScreen() {
         <View className="mb-6">
           <DashboardSectionCard
             title="Live Route"
-            subtitle="Real-time route tracking will appear here."
-          >
+            subtitle="Real-time route tracking will appear here.">
             <View className="h-56 items-center justify-center rounded-3xl bg-card">
               <MapPinned size={42} color="#00a97f" />
 
-              <Text className="mt-4 text-lg font-semibold text-textOnDark">
-                No active route
-              </Text>
+              <Text className="mt-4 text-lg font-semibold text-textOnDark">No active route</Text>
 
               <Text className="mt-2 text-center text-sm text-muted">
                 Start an activity to begin GPS tracking.
@@ -127,14 +121,11 @@ export default function ActivityScreen() {
         <View className="mb-8">
           <DashboardSectionCard
             title="Connected Devices"
-            subtitle="Heartbeat and device state will be shown here."
-          >
+            subtitle="Heartbeat and device state will be shown here.">
             <View className="rounded-2xl border border-muted bg-background p-4">
               {activeDevices.length === 0 ? (
                 <View>
-                  <Text className="font-semibold text-text">
-                    No active devices connected
-                  </Text>
+                  <Text className="font-semibold text-text">No active devices connected</Text>
 
                   <Text className="mt-1 text-sm text-muted">
                     Waiting for active device heartbeat.
@@ -150,15 +141,12 @@ export default function ActivityScreen() {
                   {activeDevices.map((device) => (
                     <View
                       key={device.id}
-                      className="mb-3 rounded-xl border border-muted bg-white p-3"
-                    >
+                      className="mb-3 rounded-xl border border-muted bg-white p-3">
                       <Text className="font-semibold text-text">
                         {device.name || 'Unknown device'}
                       </Text>
 
-                      <Text className="mt-1 text-sm text-muted">
-                        Tip: {device.device_type}
-                      </Text>
+                      <Text className="mt-1 text-sm text-muted">Tip: {device.device_type}</Text>
 
                       {device.os_name ? (
                         <Text className="mt-1 text-xs text-muted">
@@ -168,8 +156,7 @@ export default function ActivityScreen() {
 
                       {device.last_connected ? (
                         <Text className="mt-1 text-xs text-muted">
-                          Zadnja povezava:{' '}
-                          {new Date(device.last_connected).toLocaleString()}
+                          Zadnja povezava: {new Date(device.last_connected).toLocaleString()}
                         </Text>
                       ) : null}
                     </View>

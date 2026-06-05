@@ -2,20 +2,10 @@ import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import {
-  ArrowLeft,
-  Smartphone,
-  Watch,
-  Headphones,
-  HelpCircle,
-} from 'lucide-react-native';
+import { ArrowLeft, Smartphone, Watch, Headphones, HelpCircle } from 'lucide-react-native';
 
 import { getAuthToken } from 'lib/auth';
-import {
-  getConnectedDevices,
-  heartbeatCurrentPhone,
-  registerCurrentPhone,
-} from 'lib/devices';
+import { getConnectedDevices, heartbeatCurrentPhone, registerCurrentPhone } from 'lib/devices';
 
 const HEARTBEAT_INTERVAL_MS = 30000;
 
@@ -42,22 +32,14 @@ function DeviceCard({ device }: { device: any }) {
       </View>
 
       <View className="ml-4 flex-1">
-        <Text className="text-base font-bold text-white">
-          {device.name || 'Unknown phone'}
-        </Text>
+        <Text className="text-base font-bold text-white">{device.name || 'Unknown phone'}</Text>
 
-        <Text className="mt-1 text-sm text-gray-200">
-          Tip: {device.device_type}
-        </Text>
+        <Text className="mt-1 text-sm text-gray-200">Tip: {device.device_type}</Text>
 
         {device.is_active ? (
-          <Text className="mt-1 text-xs font-semibold text-green-300">
-            Aktivna
-          </Text>
+          <Text className="mt-1 text-xs font-semibold text-green-300">Aktivna</Text>
         ) : (
-          <Text className="mt-1 text-xs text-gray-400">
-            Registrirana
-          </Text>
+          <Text className="mt-1 text-xs text-gray-400">Registrirana</Text>
         )}
 
         {device.os_name && (
@@ -74,8 +56,7 @@ function DeviceCard({ device }: { device: any }) {
 
         {device.last_connected && (
           <Text className="mt-1 text-xs text-gray-400">
-            Zadnja povezava:{' '}
-            {new Date(device.last_connected).toLocaleString()}
+            Zadnja povezava: {new Date(device.last_connected).toLocaleString()}
           </Text>
         )}
       </View>
@@ -164,9 +145,7 @@ export default function ConnectedDevicesScreen() {
       <View className="flex-row items-center px-6 py-4">
         <ArrowLeft size={24} color="#f2f2f2" onPress={() => router.back()} />
 
-        <Text className="ml-4 text-xl font-bold text-text">
-          Connected Devices
-        </Text>
+        <Text className="ml-4 text-xl font-bold text-text">Connected Devices</Text>
       </View>
 
       {loading ? (
@@ -175,36 +154,22 @@ export default function ConnectedDevicesScreen() {
         </View>
       ) : (
         <ScrollView className="flex-1 px-6">
-          <Text className="mb-6 text-muted">
-            Upravljaj svoje povezane naprave.
-          </Text>
+          <Text className="mb-6 text-muted">Upravljaj svoje povezane naprave.</Text>
 
-          <Text className="mb-3 text-lg font-bold text-text">
-            Trenutno aktivne naprave
-          </Text>
+          <Text className="mb-3 text-lg font-bold text-text">Trenutno aktivne naprave</Text>
 
           {activeDevices.length === 0 ? (
-            <Text className="mb-6 text-muted">
-              Trenutno ni aktivnih naprav.
-            </Text>
+            <Text className="mb-6 text-muted">Trenutno ni aktivnih naprav.</Text>
           ) : (
-            activeDevices.map((device: any) => (
-              <DeviceCard key={device.id} device={device} />
-            ))
+            activeDevices.map((device: any) => <DeviceCard key={device.id} device={device} />)
           )}
 
-          <Text className="mb-3 mt-4 text-lg font-bold text-text">
-            Registrirane naprave
-          </Text>
+          <Text className="mb-3 mt-4 text-lg font-bold text-text">Registrirane naprave</Text>
 
           {registeredDevices.length === 0 ? (
-            <Text className="mt-2 text-muted">
-              Ni drugih registriranih naprav.
-            </Text>
+            <Text className="mt-2 text-muted">Ni drugih registriranih naprav.</Text>
           ) : (
-            registeredDevices.map((device: any) => (
-              <DeviceCard key={device.id} device={device} />
-            ))
+            registeredDevices.map((device: any) => <DeviceCard key={device.id} device={device} />)
           )}
         </ScrollView>
       )}

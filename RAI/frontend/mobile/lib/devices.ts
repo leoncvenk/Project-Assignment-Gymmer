@@ -35,29 +35,21 @@ export async function getConnectedDevices(token: string) {
 }
 
 export async function registerCurrentPhone(token: string) {
-  const response = await api.post(
-    '/api/users/me/devices',
-    getCurrentPhonePayload(),
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await api.post('/api/users/me/devices', getCurrentPhonePayload(), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 }
 
 export async function heartbeatCurrentPhone(token: string) {
-  const response = await api.patch(
-    '/api/users/me/devices/heartbeat',
-    getCurrentPhonePayload(),
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await api.patch('/api/users/me/devices/heartbeat', getCurrentPhonePayload(), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 }

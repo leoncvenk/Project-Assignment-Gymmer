@@ -1,4 +1,4 @@
-import { api } from './api'; 
+import { api } from './api';
 import { ActivityLevel, GoalType, Sex } from 'types/profile';
 
 export async function createProfile(token: string, data: any) {
@@ -15,8 +15,8 @@ export async function getProfile(token: string) {
     });
     return response.data;
   } catch (error: any) {
-    console.log("NAPAKA PRI BRANJU PROFILA - STATUS:", error.response?.status);
-    console.log("NAPAKA PRI BRANJU PROFILA - PODATKI:", error.response?.data);
+    console.log('NAPAKA PRI BRANJU PROFILA - STATUS:', error.response?.status);
+    console.log('NAPAKA PRI BRANJU PROFILA - PODATKI:', error.response?.data);
     throw error;
   }
 }

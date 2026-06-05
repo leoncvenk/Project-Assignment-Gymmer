@@ -10,13 +10,33 @@ import { layout } from 'constants/theme';
 import { getAuthToken, getCurrentUser, removeAuthToken } from 'lib/auth';
 
 const accountItems = [
-  { label: 'Edit Profile', description: 'Update body stats and goals', icon: User, route: '/edit-profile' },
-  { label: 'Nutrition Targets', description: 'Review calories and macros', icon: Target, route: '/nutrition-targets' },
-  { label: 'Connected Devices', description: 'Manage activity devices', icon: Smartphone, route: '/connected-devices' },
+  {
+    label: 'Edit Profile',
+    description: 'Update body stats and goals',
+    icon: User,
+    route: '/edit-profile',
+  },
+  {
+    label: 'Nutrition Targets',
+    description: 'Review calories and macros',
+    icon: Target,
+    route: '/nutrition-targets',
+  },
+  {
+    label: 'Connected Devices',
+    description: 'Manage activity devices',
+    icon: Smartphone,
+    route: '/connected-devices',
+  },
 ];
 
 const preferenceItems = [
-  { label: 'Notifications', description: 'Activity and nutrition reminders', icon: Bell, route: '/notifications' },
+  {
+    label: 'Notifications',
+    description: 'Activity and nutrition reminders',
+    icon: Bell,
+    route: '/notifications',
+  },
   {
     label: 'Location Permissions',
     description: 'GPS access for live activity tracking',
@@ -89,9 +109,7 @@ export default function ProfileScreen() {
               <Text className="text-2xl font-bold text-textOnDark">
                 {userData?.username ?? 'Nalaganje...'}
               </Text>
-              <Text className="mt-1 text-sm text-muted">
-                {userData?.email ?? 'Nalaganje...'}
-              </Text>
+              <Text className="mt-1 text-sm text-muted">{userData?.email ?? 'Nalaganje...'}</Text>
             </View>
           </View>
 
