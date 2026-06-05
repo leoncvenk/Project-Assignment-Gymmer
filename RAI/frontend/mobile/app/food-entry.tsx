@@ -8,6 +8,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 import FoodEntrySearchForm from 'components/food-entry/FoodEntrySearchForm';
 import ManualFoodForm from 'components/food-entry/ManualFoodForm';
@@ -15,6 +16,7 @@ import { createFood, searchFoods } from 'lib/food';
 import { Food } from 'types/food';
 import { MealType } from 'types/food-entry';
 import { createFoodEntry } from 'lib/food-entry';
+import { recognizeFoodImage } from 'lib/food-recognition';
 
 export default function FoodEntryModal() {
   const [query, setQuery] = useState('');
@@ -23,6 +25,8 @@ export default function FoodEntryModal() {
   const [quantityG, setQuantityG] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isCreatingFood, setIsCreatingFood] = useState(false);
+  const [isRecognizingFood, setIsRecognizingFood] = useState(false);
+  const [isRecognitionResult, setIsRecognitionResult] = useState(false);
   const [manualFood, setManualFood] = useState({
     name: '',
     brand: '',
@@ -51,6 +55,36 @@ export default function FoodEntryModal() {
     setIsCreatingFood(false);
   }
 
+  async function recognizeFoodFromImageUri(imageUri: string) {
+    try {
+      setIsRecognizingFood(true);
+
+      const recognition = await recognizeFoodImage(imageUri);
+
+      const candidates = recognition.predictions.flatMap((prediction) => prediction.candidates);
+
+      setFoods(candidates.slice(0, 8));
+      setSelectedFood(null);
+      setIsRecognitionResult(true);
+      setQuery(recognition.predictions.map((prediction) => prediction.label).join(', '));
+    } catch {
+      setFoods([]);
+    } finally {
+      setIsRecognizingFood(false);
+    }
+  }
+
+  async function handlePickFoodImage() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    await recognizeFoodFromImageUri(result.assets[0].uri);
+  }
+
   async function handleCreateEntry() {
     if (!selectedFood || !quantityG) {
       return;
@@ -66,8 +100,25 @@ export default function FoodEntryModal() {
     router.back();
   }
 
+  async function handleTakeFoodPhoto() {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    await recognizeFoodFromImageUri(result.assets[0].uri);
+  }
+
   useEffect(() => {
-    if (selectedFood) {
+    if (selectedFood || isRecognitionResult) {
       return;
     }
 
@@ -95,7 +146,7 @@ export default function FoodEntryModal() {
     }, 400);
 
     return () => clearTimeout(timeout);
-  }, [query, selectedFood]);
+  }, [query, selectedFood, isRecognitionResult]);
 
   const showFallbackActions =
     query.trim().length >= 2 && !isSearching && foods.length === 0 && !selectedFood;
@@ -126,12 +177,15 @@ export default function FoodEntryModal() {
                 selectedFood={selectedFood}
                 quantityG={quantityG}
                 isSearching={isSearching}
+                isRecognizingFood={isRecognizingFood}
                 showFallbackActions={showFallbackActions}
                 onQueryChange={(value) => {
+                  setIsRecognitionResult(false);
                   setQuery(value);
                   setSelectedFood(null);
                 }}
                 onSelectFood={(food) => {
+                  setIsRecognitionResult(false);
                   setSelectedFood(food);
                   setQuery(food.name);
                   setFoods([]);
@@ -140,6 +194,8 @@ export default function FoodEntryModal() {
                 onScanBarcode={() => {}}
                 onCreateFoodManually={() => setIsCreatingFood(true)}
                 onCreateEntry={handleCreateEntry}
+                onPickFoodImage={handlePickFoodImage}
+                onTakeFoodPhoto={handleTakeFoodPhoto}
               />
             )}
           </View>

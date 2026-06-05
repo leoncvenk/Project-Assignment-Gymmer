@@ -10,6 +10,7 @@ import { getDashboard, getWeeklyNutritionDashboard } from 'lib/dashboard';
 import { DashboardResponse, WeeklyNutritionDashboardResponse } from 'types/dashboard';
 import { router, useFocusEffect } from 'expo-router';
 import { prepareWeeklyTrendDisplay } from 'utils/weekly-trends';
+import { isAxiosError } from 'axios';
 
 function formatMealTitle(mealType: string) {
   return mealType
@@ -33,7 +34,7 @@ export default function NutritionScreen() {
       const token = await getAuthToken();
 
       if (!token) {
-        setError('Missing authentication token.');
+        router.replace('/(auth)/login');
         return;
       }
 
@@ -44,7 +45,12 @@ export default function NutritionScreen() {
 
       setDashboard(dailyData);
       setWeeklyDashboard(weeklyData);
-    } catch {
+    } catch (error) {
+      if (isAxiosError(error) && error.response?.status === 401) {
+        router.replace('/(auth)/login');
+        return;
+      }
+
       setError('Could not load nutrition dashboard.');
     } finally {
       setIsLoading(false);

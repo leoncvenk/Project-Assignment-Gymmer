@@ -1,4 +1,4 @@
-import { ScanBarcode } from 'lucide-react-native';
+import { Camera, ImagePlus, ScanBarcode } from 'lucide-react-native';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import PrimaryButton from 'components/ui/PrimaryButton';
@@ -13,12 +13,15 @@ type FoodEntrySearchFormProps = {
   quantityG: string;
   isSearching: boolean;
   showFallbackActions: boolean;
+  isRecognizingFood: boolean;
   onQueryChange: (value: string) => void;
   onSelectFood: (food: Food) => void;
   onQuantityChange: (value: string) => void;
   onScanBarcode: () => void;
   onCreateFoodManually: () => void;
   onCreateEntry: () => void;
+  onPickFoodImage: () => void;
+  onTakeFoodPhoto: () => void;
 };
 
 function formatMealType(mealType: string) {
@@ -32,6 +35,7 @@ export default function FoodEntrySearchForm({
   selectedFood,
   quantityG,
   isSearching,
+  isRecognizingFood,
   showFallbackActions,
   onQueryChange,
   onSelectFood,
@@ -39,6 +43,8 @@ export default function FoodEntrySearchForm({
   onScanBarcode,
   onCreateFoodManually,
   onCreateEntry,
+  onPickFoodImage,
+  onTakeFoodPhoto,
 }: FoodEntrySearchFormProps) {
   return (
     <View>
@@ -58,6 +64,36 @@ export default function FoodEntrySearchForm({
           placeholderTextColor="#c5c5c5"
           className="rounded-xl border border-muted bg-background px-4 py-4 text-text"
         />
+
+        <View className="mt-3 flex-col gap-3">
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              onPress={onPickFoodImage}
+              disabled={isRecognizingFood}
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-xl border border-accent bg-accent/10 px-4 py-3 active:bg-accent/20">
+              <ImagePlus size={18} color="#00a97f" />
+              <Text className="text-sm font-semibold text-accent">
+                {isRecognizingFood ? 'Recognizing...' : 'Gallery'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={onTakeFoodPhoto}
+              disabled={isRecognizingFood}
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-xl border border-accent bg-accent/10 px-4 py-3 active:bg-accent/20">
+              <Camera size={18} color="#00a97f" />
+              <Text className="text-sm font-semibold text-accent">Camera</Text>
+            </TouchableOpacity>
+          </View>
+          <View>
+            <TouchableOpacity
+              onPress={onScanBarcode}
+              className="flex-row items-center justify-center gap-2 rounded-xl border border-accent bg-accent/10 px-4 py-4 active:bg-accent/20">
+              <ScanBarcode size={20} color="#00a97f" />
+              <Text className="text-center text-sm font-semibold text-accent">Scan barcode</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         <View className="mt-3 gap-2">
           {isSearching ? <Text className="text-sm text-muted">Searching...</Text> : null}
@@ -84,13 +120,6 @@ export default function FoodEntrySearchForm({
 
       {showFallbackActions ? (
         <View className="mb-5 gap-3">
-          <TouchableOpacity
-            onPress={onScanBarcode}
-            className="flex-row items-center justify-center gap-2 rounded-xl border border-accent bg-accent/10 px-4 py-4 active:bg-accent/20">
-            <ScanBarcode size={20} color="#00a97f" />
-            <Text className="text-center text-sm font-semibold text-accent">Scan barcode</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity onPress={onCreateFoodManually}>
             <Text className="text-center text-sm font-semibold text-accent">
               Can&apos;t find it? Create food manually
