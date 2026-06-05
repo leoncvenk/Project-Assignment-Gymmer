@@ -1,11 +1,11 @@
 import { api } from './api';
+import { getAuthToken } from './auth';
 
-import type { FoodRecognitionResponse } from '../types/food-recognition';
+import type { FoodRecognitionResponse } from 'types/food-recognition';
 
-export async function recognizeFoodImage(
-  imageUri: string,
-  token: string
-): Promise<FoodRecognitionResponse> {
+export async function recognizeFoodImage(imageUri: string): Promise<FoodRecognitionResponse> {
+  const token = await getAuthToken();
+
   const formData = new FormData();
 
   formData.append('image', {
