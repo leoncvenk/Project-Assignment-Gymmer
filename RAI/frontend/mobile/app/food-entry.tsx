@@ -17,7 +17,6 @@ import { Food } from 'types/food';
 import { MealType } from 'types/food-entry';
 import { createFoodEntry } from 'lib/food-entry';
 import { recognizeFoodImage } from 'lib/food-recognition';
-import { getAuthToken } from 'lib/auth';
 
 export default function FoodEntryModal() {
   const [query, setQuery] = useState('');
@@ -27,6 +26,7 @@ export default function FoodEntryModal() {
   const [isSearching, setIsSearching] = useState(false);
   const [isCreatingFood, setIsCreatingFood] = useState(false);
   const [isRecognizingFood, setIsRecognizingFood] = useState(false);
+  const [isRecognitionResult, setIsRecognitionResult] = useState(false);
   const [manualFood, setManualFood] = useState({
     name: '',
     brand: '',
@@ -65,6 +65,7 @@ export default function FoodEntryModal() {
 
       setFoods(candidates.slice(0, 8));
       setSelectedFood(null);
+      setIsRecognitionResult(true);
       setQuery(recognition.predictions.map((prediction) => prediction.label).join(', '));
     } catch {
       setFoods([]);
@@ -117,7 +118,7 @@ export default function FoodEntryModal() {
   }
 
   useEffect(() => {
-    if (selectedFood) {
+    if (selectedFood || isRecognitionResult) {
       return;
     }
 
@@ -145,7 +146,7 @@ export default function FoodEntryModal() {
     }, 400);
 
     return () => clearTimeout(timeout);
-  }, [query, selectedFood]);
+  }, [query, selectedFood, isRecognitionResult]);
 
   const showFallbackActions =
     query.trim().length >= 2 && !isSearching && foods.length === 0 && !selectedFood;
@@ -179,10 +180,12 @@ export default function FoodEntryModal() {
                 isRecognizingFood={isRecognizingFood}
                 showFallbackActions={showFallbackActions}
                 onQueryChange={(value) => {
+                  setIsRecognitionResult(false);
                   setQuery(value);
                   setSelectedFood(null);
                 }}
                 onSelectFood={(food) => {
+                  setIsRecognitionResult(false);
                   setSelectedFood(food);
                   setQuery(food.name);
                   setFoods([]);
