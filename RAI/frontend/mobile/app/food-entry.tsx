@@ -8,6 +8,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 import FoodEntrySearchForm from 'components/food-entry/FoodEntrySearchForm';
 import ManualFoodForm from 'components/food-entry/ManualFoodForm';
@@ -15,6 +16,8 @@ import { createFood, searchFoods } from 'lib/food';
 import { Food } from 'types/food';
 import { MealType } from 'types/food-entry';
 import { createFoodEntry } from 'lib/food-entry';
+import { recognizeFoodImage } from 'lib/food-recognition';
+import { getAuthToken } from 'lib/auth';
 
 export default function FoodEntryModal() {
   const [query, setQuery] = useState('');
@@ -23,6 +26,7 @@ export default function FoodEntryModal() {
   const [quantityG, setQuantityG] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isCreatingFood, setIsCreatingFood] = useState(false);
+  const [isRecognizingFood, setIsRecognizingFood] = useState(false);
   const [manualFood, setManualFood] = useState({
     name: '',
     brand: '',
@@ -49,6 +53,33 @@ export default function FoodEntryModal() {
     setSelectedFood(createdFood);
     setQuery(createdFood.name);
     setIsCreatingFood(false);
+  }
+
+  async function handlePickFoodImage() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+
+    if (result.canceled) {
+      return;
+    }
+
+    try {
+      setIsRecognizingFood(true);
+
+      const recognition = await recognizeFoodImage(result.assets[0].uri);
+
+      const candidates = recognition.predictions.flatMap((prediction) => prediction.candidates);
+
+      setFoods(candidates.slice(0, 8));
+      setSelectedFood(null);
+      setQuery(recognition.predictions.map((prediction) => prediction.label).join(', '));
+    } catch {
+      setFoods([]);
+    } finally {
+      setIsRecognizingFood(false);
+    }
   }
 
   async function handleCreateEntry() {
