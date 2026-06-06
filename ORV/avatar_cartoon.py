@@ -141,6 +141,34 @@ def apply_bilateral_smoothing(
 
     return smoothed
 
+def quantize_colors(image_rgb: np.ndarray, color_count: int = 8) -> np.ndarray:
+    """
+    Reduces the number of colors in the image using K-means clustering.
+    Fewer colors create a flatter cartoon-like style.
+    """
+    pixels = image_rgb.reshape((-1, 3)).astype(np.float32)
+
+    criteria = (
+        cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER,
+        20,
+        1.0,
+    )
+
+    _, labels, centers = cv.kmeans(
+        pixels,
+        color_count,
+        None,
+        criteria,
+        3,
+        cv.KMEANS_PP_CENTERS,
+    )
+
+    centers = np.uint8(centers)
+    quantized_pixels = centers[labels.flatten()]
+    quantized_image = quantized_pixels.reshape(image_rgb.shape)
+
+    return quantized_image
+
 def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict:
     """
     Generates a cartoon-style avatar from an input image.
@@ -157,6 +185,8 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
 
     smoothed_image = apply_bilateral_smoothing(preprocessed_image)
 
+    quantized_image = quantize_colors(smoothed_image)
+
     output_path = ensure_output_dir(output_dir)
 
     avatar_output_path = create_output_path(input_path, output_path)
@@ -169,6 +199,8 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
             "method": "opencv_cartoon_avatar",
             "status": "not_implemented_yet",
             "smoothing": "bilateral_filter",
+            "color_quantization": "kmeans",
+            "color_count": 8,
             **preprocessing_metadata,
         },
     }
