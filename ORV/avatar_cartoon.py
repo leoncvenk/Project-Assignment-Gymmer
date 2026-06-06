@@ -472,6 +472,48 @@ def create_edge_mask(
 
     return final_edge_mask
 
+def create_major_feature_mask(
+    image_rgb: np.ndarray,
+    min_area: int = 250,
+    threshold_value: int = 85,
+) -> np.ndarray:
+    """
+    Detects only stronger dark facial features such as eyes, eyebrows,
+    mouth, beard and hair. This avoids too many weak skin details.
+    """
+    gray_image = cv.cvtColor(image_rgb, cv.COLOR_RGB2GRAY)
+    blurred_gray = cv.medianBlur(gray_image, 7)
+
+    # Fixed threshold: only clearly dark areas become features
+    _, feature_mask = cv.threshold(
+        blurred_gray,
+        threshold_value,
+        255,
+        cv.THRESH_BINARY_INV,
+    )
+
+    feature_mask = remove_small_components(feature_mask, min_area=min_area)
+
+    kernel = np.ones((3, 3), np.uint8)
+    feature_mask = cv.morphologyEx(feature_mask, cv.MORPH_CLOSE, kernel, iterations=1)
+    feature_mask = cv.dilate(feature_mask, kernel, iterations=1)
+
+    return feature_mask
+
+def apply_feature_mask(
+    cartoon_image: np.ndarray,
+    feature_mask: np.ndarray,
+    feature_color: tuple[int, int, int] = (20, 20, 20),
+) -> np.ndarray:
+    """
+    Applies a strong dark color to major facial features.
+    This makes eyes, eyebrows, mouth and hair more visible in vector style.
+    """
+    enhanced_image = cartoon_image.copy()
+    enhanced_image[feature_mask == 255] = feature_color
+
+    return enhanced_image
+
 def combine_colors_with_edges(
     quantized_image: np.ndarray,
     edge_mask: np.ndarray,
@@ -563,6 +605,13 @@ def generate_cartoon_avatar(
     edge_mask = create_edge_mask(smoothed_image)
     cartoon_image = combine_colors_with_edges(quantized_image, edge_mask)
 
+    feature_mask = create_major_feature_mask(
+        smoothed_image,
+        min_area=180,
+        threshold_value=20,
+    )
+    cartoon_image = apply_feature_mask(cartoon_image, feature_mask)
+
     saved_avatar_path = save_rgb_image(cartoon_image, avatar_output_path)
 
     return {
@@ -577,6 +626,7 @@ def generate_cartoon_avatar(
             "color_quantization": "kmeans",
             "color_count": int(color_count),
             "edge_detection": "adaptive_threshold_cleaned",
+            "feature_enhancement": "major_dark_features",
             "composition": "quantized_colors_with_simplified_edge_mask",
             "output_format": "png",
             **preprocessing_metadata,
