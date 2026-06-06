@@ -52,6 +52,29 @@ def load_image_rgb(image_path: str | Path) -> np.ndarray:
     except Exception as error:
         raise ValueError(f"Failed to load image: {error}") from error
 
+def resize_image(image_rgb: np.ndarray, max_size: int = 512) -> np.ndarray:
+    """
+    Resizes the image so that the longest side is at most max_size pixels.
+    Keeps the original aspect ratio.
+    """
+    height, width = image_rgb.shape[:2]
+
+    longest_side = max(height, width)
+
+    if longest_side <= max_size:
+        return image_rgb
+
+    scale = max_size / longest_side
+    new_width = int(width * scale)
+    new_height = int(height * scale)
+
+    resized = cv.resize(
+        image_rgb,
+        (new_width, new_height),
+        interpolation=cv.INTER_AREA,
+    )
+
+    return resized
 
 def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict:
     """
@@ -67,6 +90,9 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
     image_rgb = load_image_rgb(input_path)
     height, width = image_rgb.shape[:2]
 
+    resized_image = resize_image(image_rgb)
+    resized_height, resized_width = resized_image.shape[:2]
+
     output_path = ensure_output_dir(output_dir)
 
     avatar_output_path = create_output_path(input_path, output_path)
@@ -80,6 +106,8 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
             "status": "not_implemented_yet",
             "original_width": int(width),
             "original_height": int(height),
+            "resized_width": int(resized_width),
+            "resized_height": int(resized_height),
         },
     }
 
