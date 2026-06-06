@@ -1,5 +1,5 @@
 import pytest
-
+from pathlib import Path
 from avatar_cartoon import generate_cartoon_avatar, validate_avatar_parameters
 
 
@@ -31,3 +31,22 @@ def test_validate_avatar_parameters_rejects_too_large_size():
 
 def test_validate_avatar_parameters_accepts_valid_values():
     validate_avatar_parameters(color_count=8, max_size=512)
+
+def test_generate_cartoon_avatar_creates_output_file(tmp_path):
+    image_path = "test-images/burger.jpg"
+
+    result = generate_cartoon_avatar(
+        image_path,
+        output_dir=tmp_path,
+        color_count=6,
+        max_size=256,
+    )
+
+    avatar_path = Path(result["avatar_path"])
+
+    assert result["processing"]["status"] == "completed"
+    assert result["processing"]["method"] == "opencv_cartoon_avatar"
+    assert result["processing"]["color_count"] == 6
+    assert result["processing"]["max_size"] == 256
+    assert avatar_path.suffix == ".png"
+    assert avatar_path.exists()
