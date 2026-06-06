@@ -1,4 +1,7 @@
 from pathlib import Path
+import cv2 as cv
+import numpy as np
+from PIL import Image, ImageOps
 
 
 DEFAULT_OUTPUT_DIR = Path("test-images/results_avatar")
@@ -12,6 +15,23 @@ def ensure_output_dir(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> Path:
     output_path.mkdir(parents=True, exist_ok=True)
     return output_path
 
+def load_image_rgb(image_path: str | Path) -> np.ndarray:
+    """
+    Safely loads an image, fixes EXIF orientation and converts it to RGB format.
+    """
+    input_path = Path(image_path)
+
+    if not input_path.exists():
+        raise FileNotFoundError(f"Input image was not found: {input_path}")
+
+    try:
+        image = Image.open(input_path)
+        image = ImageOps.exif_transpose(image)
+        image = image.convert("RGB")
+        return np.array(image)
+    except Exception as error:
+        raise ValueError(f"Failed to load image: {error}") from error
+
 
 def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict:
     """
@@ -23,6 +43,9 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
 
     if not input_path.exists():
         raise FileNotFoundError(f"Input image was not found: {input_path}")
+    
+    image_rgb = load_image_rgb(input_path)
+    height, width = image_rgb.shape[:2]
 
     output_path = ensure_output_dir(output_dir)
 
@@ -33,6 +56,8 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
         "processing": {
             "method": "opencv_cartoon_avatar",
             "status": "not_implemented_yet",
+            "original_width": int(width),
+            "original_height": int(height),
         },
     }
 
