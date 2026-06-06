@@ -1,4 +1,3 @@
-// RAI/frontend/mobile/app/nutrition-targets.tsx
 import { useEffect, useState } from 'react';
 import {
   View,
