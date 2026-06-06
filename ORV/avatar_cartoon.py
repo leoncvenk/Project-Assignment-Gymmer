@@ -96,6 +96,101 @@ def center_crop_square(image_rgb: np.ndarray) -> np.ndarray:
 
     return cropped
 
+def detect_largest_face_box(image_rgb: np.ndarray) -> tuple[int, int, int, int] | None:
+    """
+    Detects the largest frontal face in the image using OpenCV Haar Cascade.
+
+    Returns:
+    - (x, y, width, height) if a face is detected
+    - None if no face is detected
+    """
+    gray_image = cv.cvtColor(image_rgb, cv.COLOR_RGB2GRAY)
+
+    cascade_path = cv.data.haarcascades + "haarcascade_frontalface_default.xml"
+    face_cascade = cv.CascadeClassifier(cascade_path)
+
+    if face_cascade.empty():
+        return None
+
+    faces = face_cascade.detectMultiScale(
+        gray_image,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(60, 60),
+    )
+
+    if len(faces) == 0:
+        return None
+
+    largest_face = max(faces, key=lambda face: face[2] * face[3])
+    x, y, width, height = largest_face
+
+    return int(x), int(y), int(width), int(height)
+
+
+def crop_face_region(
+    image_rgb: np.ndarray,
+    padding_ratio: float = 0.75,
+) -> tuple[np.ndarray, dict]:
+    """
+    Crops the image around the detected face.
+
+    If no face is detected, it falls back to centered square crop.
+    The crop is intentionally larger than the face so hair, ears and shoulders
+    can still remain visible.
+    """
+    height, width = image_rgb.shape[:2]
+    face_box = detect_largest_face_box(image_rgb)
+
+    if face_box is None:
+        fallback_crop = center_crop_square(image_rgb)
+        crop_height, crop_width = fallback_crop.shape[:2]
+
+        return fallback_crop, {
+            "face_detected": False,
+            "face_crop_used": False,
+            "face_box": None,
+            "face_crop_width": int(crop_width),
+            "face_crop_height": int(crop_height),
+        }
+
+    x, y, face_width, face_height = face_box
+
+    face_center_x = x + face_width // 2
+    face_center_y = y + face_height // 2
+
+    crop_size = int(max(face_width, face_height) * (1 + padding_ratio * 2))
+
+    # Move crop center slightly down so neck/shoulders are included
+    face_center_y = int(face_center_y + face_height * 0.25)
+
+    start_x = max(face_center_x - crop_size // 2, 0)
+    start_y = max(face_center_y - crop_size // 2, 0)
+    end_x = min(start_x + crop_size, width)
+    end_y = min(start_y + crop_size, height)
+
+    # Correct crop if it hits image border
+    start_x = max(end_x - crop_size, 0)
+    start_y = max(end_y - crop_size, 0)
+
+    cropped = image_rgb[start_y:end_y, start_x:end_x]
+    cropped = center_crop_square(cropped)
+
+    crop_height, crop_width = cropped.shape[:2]
+
+    return cropped, {
+        "face_detected": True,
+        "face_crop_used": True,
+        "face_box": {
+            "x": int(x),
+            "y": int(y),
+            "width": int(face_width),
+            "height": int(face_height),
+        },
+        "face_crop_width": int(crop_width),
+        "face_crop_height": int(crop_height),
+    }
+
 def preprocess_avatar_image(image_rgb: np.ndarray, max_size: int = 512) -> tuple[np.ndarray, dict]:
     """
     Prepares the image for cartoon avatar generation.
@@ -110,7 +205,7 @@ def preprocess_avatar_image(image_rgb: np.ndarray, max_size: int = 512) -> tuple
     resized_image = resize_image(image_rgb, max_size=max_size)
     resized_height, resized_width = resized_image.shape[:2]
 
-    cropped_image = center_crop_square(resized_image)
+    cropped_image, face_metadata = crop_face_region(resized_image)
     cropped_height, cropped_width = cropped_image.shape[:2]
 
     metadata = {
@@ -120,6 +215,7 @@ def preprocess_avatar_image(image_rgb: np.ndarray, max_size: int = 512) -> tuple
         "resized_height": int(resized_height),
         "cropped_width": int(cropped_width),
         "cropped_height": int(cropped_height),
+        **face_metadata,
     }
 
     return cropped_image, metadata
@@ -127,64 +223,139 @@ def preprocess_avatar_image(image_rgb: np.ndarray, max_size: int = 512) -> tuple
 def apply_bilateral_smoothing(
     image_rgb: np.ndarray,
     diameter: int = 9,
-    sigma_color: int = 75,
-    sigma_space: int = 75,
+    sigma_color: int = 100,
+    sigma_space: int = 100,
+    repeats: int = 3,
+    median_kernel_size: int = 5,
 ) -> np.ndarray:
     """
-    Applies bilateral filtering to smooth colors while preserving edges.
-    This helps create a cleaner cartoon-like appearance.
+    Stronger smoothing for a flatter avatar-like appearance.
+    Repeats bilateral filtering multiple times and finishes with median blur.
     """
-    smoothed = cv.bilateralFilter(
-        image_rgb,
-        diameter,
-        sigma_color,
-        sigma_space,
-    )
+    smoothed = image_rgb.copy()
+
+    for _ in range(repeats):
+        smoothed = cv.bilateralFilter(
+            smoothed,
+            diameter,
+            sigma_color,
+            sigma_space,
+        )
+
+    smoothed = cv.medianBlur(smoothed, median_kernel_size)
 
     return smoothed
 
-def quantize_colors(image_rgb: np.ndarray, color_count: int = 8) -> np.ndarray:
+def enhance_image_for_cartoon(
+    image_rgb: np.ndarray,
+    saturation_scale: float = 1.20,
+    value_contrast: float = 1.12,
+) -> np.ndarray:
     """
-    Reduces the number of colors in the image using K-means clustering.
-    Fewer colors create a flatter cartoon-like style.
+    Slightly boosts saturation and brightness contrast before quantization,
+    so important regions become more visually separated.
     """
-    pixels = image_rgb.reshape((-1, 3)).astype(np.float32)
+    hsv = cv.cvtColor(image_rgb, cv.COLOR_RGB2HSV).astype(np.float32)
+
+    hsv[:, :, 1] = np.clip(hsv[:, :, 1] * saturation_scale, 0, 255)
+    hsv[:, :, 2] = np.clip((hsv[:, :, 2] - 128) * value_contrast + 128, 0, 255)
+
+    enhanced_rgb = cv.cvtColor(hsv.astype(np.uint8), cv.COLOR_HSV2RGB)
+    return enhanced_rgb
+
+def quantize_colors(
+    image_rgb: np.ndarray,
+    color_count: int = 5,
+    lightness_boost: float = 1.20,
+    chroma_boost: float = 1.45,
+    round_step: int = 10,
+) -> np.ndarray:
+    """
+    Quantizes the image in LAB color space and exaggerates the cluster centers
+    so the final colors are more separated and more 'vector-like'.
+    """
+    image_lab = cv.cvtColor(image_rgb, cv.COLOR_RGB2LAB)
+    pixel_values = image_lab.reshape((-1, 3)).astype(np.float32)
 
     criteria = (
         cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER,
-        20,
-        1.0,
+        40,
+        0.2,
     )
 
-    _, labels, centers = cv.kmeans(
-        pixels,
+    _compactness, labels, centers = cv.kmeans(
+        pixel_values,
         color_count,
         None,
         criteria,
-        3,
+        5,
         cv.KMEANS_PP_CENTERS,
     )
 
-    centers = np.uint8(centers)
-    quantized_pixels = centers[labels.flatten()]
-    quantized_image = quantized_pixels.reshape(image_rgb.shape)
+    centers = centers.astype(np.float32)
 
-    return quantized_image
+    mean_center = np.mean(centers, axis=0)
+
+    # Increase separation between light/dark regions
+    centers[:, 0] = np.clip(
+        (centers[:, 0] - mean_center[0]) * lightness_boost + mean_center[0],
+        0,
+        255,
+    )
+
+    # Increase separation between color tones
+    centers[:, 1] = np.clip(
+        (centers[:, 1] - mean_center[1]) * chroma_boost + mean_center[1],
+        0,
+        255,
+    )
+    centers[:, 2] = np.clip(
+        (centers[:, 2] - mean_center[2]) * chroma_boost + mean_center[2],
+        0,
+        255,
+    )
+
+    # Snap colors to more distinct steps
+    centers = np.round(centers / round_step) * round_step
+    centers = np.clip(centers, 0, 255).astype(np.uint8)
+
+    quantized_lab = centers[labels.flatten()].reshape(image_lab.shape)
+    quantized_rgb = cv.cvtColor(quantized_lab, cv.COLOR_LAB2RGB)
+
+    return quantized_rgb
+
+def remove_small_components(binary_image: np.ndarray, min_area: int = 120) -> np.ndarray:
+    """
+    Removes very small connected components from a binary image.
+    Useful for removing tiny facial texture details and noise.
+    """
+    num_labels, labels, stats, _ = cv.connectedComponentsWithStats(binary_image, connectivity=8)
+
+    cleaned = np.zeros_like(binary_image)
+
+    for label_index in range(1, num_labels):  # skip background
+        area = stats[label_index, cv.CC_STAT_AREA]
+        if area >= min_area:
+            cleaned[labels == label_index] = 255
+
+    return cleaned
 
 def create_edge_mask(
     image_rgb: np.ndarray,
     blur_kernel_size: int = 7,
-    block_size: int = 9,
-    c_value: int = 2,
+    block_size: int = 15,
+    c_value: int = 8,
+    min_area: int = 220,
 ) -> np.ndarray:
     """
-    Creates a black/white edge mask from the image.
-
+    Creates a simplified edge mask with fewer small details.
     White areas represent flat color regions.
-    Black areas represent detected edges.
+    Black areas represent simplified outlines.
     """
-    gray_image = cv.cvtColor(image_rgb, cv.COLOR_RGB2GRAY)
+    if block_size % 2 == 0:
+        block_size += 1
 
+    gray_image = cv.cvtColor(image_rgb, cv.COLOR_RGB2GRAY)
     blurred_gray = cv.medianBlur(gray_image, blur_kernel_size)
 
     edge_mask = cv.adaptiveThreshold(
@@ -196,7 +367,23 @@ def create_edge_mask(
         c_value,
     )
 
-    return edge_mask
+    # Invert so black details become white components that we can clean
+    inverted_edges = 255 - edge_mask
+
+    # Remove tiny detail noise
+    cleaned_edges = remove_small_components(inverted_edges, min_area=min_area)
+
+    # Smooth and connect larger contours
+    kernel = np.ones((3, 3), np.uint8)
+    cleaned_edges = cv.morphologyEx(cleaned_edges, cv.MORPH_CLOSE, kernel, iterations=1)
+
+    # Optional: slightly thicken the remaining main contours
+    cleaned_edges = cv.dilate(cleaned_edges, kernel, iterations=1)
+
+    # Invert back: black contours, white flat regions
+    final_edge_mask = 255 - cleaned_edges
+
+    return final_edge_mask
 
 def combine_colors_with_edges(
     quantized_image: np.ndarray,
@@ -275,8 +462,18 @@ def generate_cartoon_avatar(
     )
 
     smoothed_image = apply_bilateral_smoothing(preprocessed_image)
-    quantized_image = quantize_colors(smoothed_image, color_count=color_count)
-    edge_mask = create_edge_mask(preprocessed_image)
+
+    enhanced_image = enhance_image_for_cartoon(smoothed_image)
+
+    quantized_image = quantize_colors(
+        enhanced_image,
+        color_count=color_count,
+        lightness_boost=1.25,
+        chroma_boost=1.50,
+        round_step=12,
+    )
+
+    edge_mask = create_edge_mask(smoothed_image)
     cartoon_image = combine_colors_with_edges(quantized_image, edge_mask)
 
     saved_avatar_path = save_rgb_image(cartoon_image, avatar_output_path)
@@ -289,11 +486,11 @@ def generate_cartoon_avatar(
             "method": "opencv_cartoon_avatar",
             "status": "completed",
             "max_size": int(max_size),
-            "smoothing": "bilateral_filter",
+            "smoothing": "bilateral_filter_x3_plus_median_blur",
             "color_quantization": "kmeans",
             "color_count": int(color_count),
-            "edge_detection": "adaptive_threshold",
-            "composition": "quantized_colors_with_edge_mask",
+            "edge_detection": "adaptive_threshold_cleaned",
+            "composition": "quantized_colors_with_simplified_edge_mask",
             "output_format": "png",
             **preprocessing_metadata,
         },
@@ -323,7 +520,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--colors",
         type=int,
-        default=8,
+        default=5,
         help="Number of colors used for K-means quantization.",
     )
 
