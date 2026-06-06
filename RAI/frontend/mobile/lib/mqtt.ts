@@ -1,8 +1,8 @@
 import Paho from 'paho-mqtt';
 
-// Pozabimo na .env in tunele, gremo direktno na javni oblak! Uporabljeno ker drugače mi ni delalo na telefonu.
-const MQTT_BROKER_URL = 'broker.emqx.io';
-const MQTT_PORT = 8084; // Varna vrata (WSS) za EMQX strežnik
+// Bere vrednosti iz .env (vsak član ekipe ima svojega)
+const MQTT_BROKER_URL = process.env.EXPO_PUBLIC_MQTT_BROKER_URL;
+const MQTT_PORT = parseInt(process.env.EXPO_PUBLIC_MQTT_PORT || '8083');
 
 let client: Paho.Client | null = null;
 
@@ -12,8 +12,14 @@ export const connectMqtt = (
   onConnectCallback: () => void,
   onMessageCallback: (message: Paho.Message) => void
 ) => {
-  const clientId = `gymmer_mobile_${deviceId}_${Math.random().toString(16).substr(2, 8)}`;
+  if (!MQTT_BROKER_URL) {
+    console.error('NAPAKA: EXPO_PUBLIC_MQTT_BROKER_URL ni nastavljen v .env!');
+    return;
+  }
 
+  const clientId = `gymmer_mobile_${deviceId}_${Math.random().toString(16).slice(2, 10)}`;
+
+  // Inicializacija - zdaj dinamično iz .env
   client = new Paho.Client(MQTT_BROKER_URL, MQTT_PORT, clientId);
 
   const lastWillMessage = new Paho.Message(
@@ -30,7 +36,7 @@ export const connectMqtt = (
 
   client.onConnectionLost = (responseObject) => {
     if (responseObject.errorCode !== 0) {
-      console.log('MQTT Connection Lost:', responseObject.errorMessage);
+      console.error('MQTT Connection Lost:', responseObject.errorMessage);
     }
   };
 
@@ -40,14 +46,14 @@ export const connectMqtt = (
 
   client.connect({
     onSuccess: () => {
-      console.log('Connected to MQTT via Cloud (EMQX)');
+      console.log(`Povezan na lokalni broker: ${MQTT_BROKER_URL}:${MQTT_PORT}`);
       onConnectCallback();
     },
     onFailure: (e) => {
       console.error('MQTT Connection failed:', e.errorMessage);
     },
     willMessage: lastWillMessage,
-    useSSL: true, // Obvezno vklopljeno za port 8084!
+    useSSL: false, // Lokalni brokerji preko WS običajno ne uporabljajo SSL
   });
 };
 
@@ -63,15 +69,19 @@ export const sendHeartbeat = (userId: string, deviceId: string) => {
 
     const message = new Paho.Message(payload);
     message.destinationName = topic;
+    message.qos = 1; // Poskusi dodati QoS 1 za zanesljivost
     client.send(message);
-    console.log('Heartbeat sent to:', topic);
+
+    // TOLE DODAJ:
+    console.log('Heartbeat poslan na:', topic);
+    console.log('Vsebina:', payload);
   } else {
     console.warn('Cannot send heartbeat, MQTT client not connected');
   }
 };
-
 export const disconnectMqtt = () => {
   if (client && client.isConnected()) {
     client.disconnect();
+    client = null;
   }
 };
