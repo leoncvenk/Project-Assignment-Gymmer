@@ -22,3 +22,5 @@ __pycache__/
 .DS_Store
 .vscode/
 .idea/
+
+test-images/results_avatar/
