@@ -215,6 +215,21 @@ def combine_colors_with_edges(
 
     return cartoon_image
 
+def save_rgb_image(image_rgb: np.ndarray, output_path: str | Path) -> Path:
+    """
+    Saves an RGB image to disk.
+    OpenCV expects BGR for imwrite, so we convert first.
+    """
+    output_file = Path(output_path)
+
+    image_bgr = cv.cvtColor(image_rgb, cv.COLOR_RGB2BGR)
+    success = cv.imwrite(str(output_file), image_bgr)
+
+    if not success:
+        raise ValueError(f"Failed to save image to: {output_file}")
+
+    return output_file
+
 def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict:
     """
     Generates a cartoon-style avatar from an input image.
@@ -225,34 +240,33 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
 
     if not input_path.exists():
         raise FileNotFoundError(f"Input image was not found: {input_path}")
-    
+
+    output_path = ensure_output_dir(output_dir)
+    avatar_output_path = create_output_path(input_path, output_path)
+
     image_rgb = load_image_rgb(input_path)
     preprocessed_image, preprocessing_metadata = preprocess_avatar_image(image_rgb)
 
     smoothed_image = apply_bilateral_smoothing(preprocessed_image)
-
     quantized_image = quantize_colors(smoothed_image)
-
     edge_mask = create_edge_mask(preprocessed_image)
-
     cartoon_image = combine_colors_with_edges(quantized_image, edge_mask)
 
-    output_path = ensure_output_dir(output_dir)
-
-    avatar_output_path = create_output_path(input_path, output_path)
+    saved_avatar_path = save_rgb_image(cartoon_image, avatar_output_path)
 
     return {
         "input_path": str(input_path),
         "output_dir": str(output_path),
-        "avatar_path": str(avatar_output_path),
+        "avatar_path": str(saved_avatar_path),
         "processing": {
             "method": "opencv_cartoon_avatar",
-            "status": "not_implemented_yet",
+            "status": "completed",
             "smoothing": "bilateral_filter",
             "color_quantization": "kmeans",
             "color_count": 8,
             "edge_detection": "adaptive_threshold",
             "composition": "quantized_colors_with_edge_mask",
+            "output_format": "png",
             **preprocessing_metadata,
         },
     }
