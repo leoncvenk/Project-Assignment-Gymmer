@@ -94,6 +94,34 @@ def center_crop_square(image_rgb: np.ndarray) -> np.ndarray:
 
     return cropped
 
+def preprocess_avatar_image(image_rgb: np.ndarray, max_size: int = 512) -> tuple[np.ndarray, dict]:
+    """
+    Prepares the image for cartoon avatar generation.
+
+    Steps:
+    - resize image while preserving aspect ratio
+    - crop the resized image to a centered square
+    - return the processed image and metadata
+    """
+    original_height, original_width = image_rgb.shape[:2]
+
+    resized_image = resize_image(image_rgb, max_size=max_size)
+    resized_height, resized_width = resized_image.shape[:2]
+
+    cropped_image = center_crop_square(resized_image)
+    cropped_height, cropped_width = cropped_image.shape[:2]
+
+    metadata = {
+        "original_width": int(original_width),
+        "original_height": int(original_height),
+        "resized_width": int(resized_width),
+        "resized_height": int(resized_height),
+        "cropped_width": int(cropped_width),
+        "cropped_height": int(cropped_height),
+    }
+
+    return cropped_image, metadata
+
 def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict:
     """
     Generates a cartoon-style avatar from an input image.
@@ -106,13 +134,7 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
         raise FileNotFoundError(f"Input image was not found: {input_path}")
     
     image_rgb = load_image_rgb(input_path)
-    height, width = image_rgb.shape[:2]
-
-    resized_image = resize_image(image_rgb)
-    resized_height, resized_width = resized_image.shape[:2]
-
-    cropped_image = center_crop_square(resized_image)
-    cropped_height, cropped_width = cropped_image.shape[:2]
+    preprocessed_image, preprocessing_metadata = preprocess_avatar_image(image_rgb)
 
     output_path = ensure_output_dir(output_dir)
 
@@ -125,12 +147,7 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
         "processing": {
             "method": "opencv_cartoon_avatar",
             "status": "not_implemented_yet",
-            "original_width": int(width),
-            "original_height": int(height),
-            "resized_width": int(resized_width),
-            "resized_height": int(resized_height),
-            "cropped_width": int(cropped_width),
-            "cropped_height": int(cropped_height),
+            **preprocessing_metadata,
         },
     }
 
