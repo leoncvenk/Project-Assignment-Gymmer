@@ -196,6 +196,25 @@ def create_edge_mask(
 
     return edge_mask
 
+def combine_colors_with_edges(
+    quantized_image: np.ndarray,
+    edge_mask: np.ndarray,
+) -> np.ndarray:
+    """
+    Combines the quantized color image with the edge mask.
+
+    White mask pixels keep the original quantized color.
+    Black mask pixels create dark cartoon outlines.
+    """
+    edge_mask_rgb = cv.cvtColor(edge_mask, cv.COLOR_GRAY2RGB)
+
+    cartoon_image = cv.bitwise_and(
+        quantized_image,
+        edge_mask_rgb,
+    )
+
+    return cartoon_image
+
 def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict:
     """
     Generates a cartoon-style avatar from an input image.
@@ -216,6 +235,8 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
 
     edge_mask = create_edge_mask(preprocessed_image)
 
+    cartoon_image = combine_colors_with_edges(quantized_image, edge_mask)
+
     output_path = ensure_output_dir(output_dir)
 
     avatar_output_path = create_output_path(input_path, output_path)
@@ -231,6 +252,7 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
             "color_quantization": "kmeans",
             "color_count": 8,
             "edge_detection": "adaptive_threshold",
+            "composition": "quantized_colors_with_edge_mask",
             **preprocessing_metadata,
         },
     }
