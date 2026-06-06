@@ -2,7 +2,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-
+from app.services.mqtt_service import mqtt_client
 from app.routes.health import router as health_router 
 from app.routes.foods import router as foods_router
 from app.core.database import connect_to_mongo, close_mongo_connection
