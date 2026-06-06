@@ -4,6 +4,7 @@ import numpy as np
 import argparse
 from uuid import uuid4
 from PIL import Image, ImageOps
+import json
 
 
 DEFAULT_OUTPUT_DIR = Path("test-images/results_avatar")
@@ -343,4 +344,4 @@ if __name__ == "__main__":
         color_count=args.colors,
         max_size=args.size,
     )
-    print(result)
+    print(json.dumps(result, indent=4))
