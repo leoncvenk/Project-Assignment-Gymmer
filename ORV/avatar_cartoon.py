@@ -231,6 +231,22 @@ def save_rgb_image(image_rgb: np.ndarray, output_path: str | Path) -> Path:
 
     return output_file
 
+def validate_avatar_parameters(color_count: int, max_size: int) -> None:
+    """
+    Validates cartoon avatar generation parameters.
+    """
+    if color_count < 2:
+        raise ValueError("color_count must be at least 2.")
+
+    if color_count > 32:
+        raise ValueError("color_count must not be greater than 32.")
+
+    if max_size < 128:
+        raise ValueError("max_size must be at least 128 pixels.")
+
+    if max_size > 2048:
+        raise ValueError("max_size must not be greater than 2048 pixels.")
+
 def generate_cartoon_avatar(
     image_path: str | Path,
     output_dir: str | Path = DEFAULT_OUTPUT_DIR,
@@ -243,6 +259,7 @@ def generate_cartoon_avatar(
     This function will be implemented step by step.
     """
     input_path = Path(image_path)
+    validate_avatar_parameters(color_count, max_size)
 
     if not input_path.exists():
         raise FileNotFoundError(f"Input image was not found: {input_path}")
