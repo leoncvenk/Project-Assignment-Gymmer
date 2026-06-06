@@ -231,7 +231,11 @@ def save_rgb_image(image_rgb: np.ndarray, output_path: str | Path) -> Path:
 
     return output_file
 
-def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict:
+def generate_cartoon_avatar(
+    image_path: str | Path,
+    output_dir: str | Path = DEFAULT_OUTPUT_DIR,
+    color_count: int = 8,
+) -> dict:
     """
     Generates a cartoon-style avatar from an input image.
 
@@ -249,7 +253,7 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
     preprocessed_image, preprocessing_metadata = preprocess_avatar_image(image_rgb)
 
     smoothed_image = apply_bilateral_smoothing(preprocessed_image)
-    quantized_image = quantize_colors(smoothed_image)
+    quantized_image = quantize_colors(smoothed_image, color_count=color_count)
     edge_mask = create_edge_mask(preprocessed_image)
     cartoon_image = combine_colors_with_edges(quantized_image, edge_mask)
 
@@ -264,7 +268,7 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
             "status": "completed",
             "smoothing": "bilateral_filter",
             "color_quantization": "kmeans",
-            "color_count": 8,
+            "color_count": int(color_count),
             "edge_detection": "adaptive_threshold",
             "composition": "quantized_colors_with_edge_mask",
             "output_format": "png",
@@ -293,9 +297,20 @@ def parse_arguments() -> argparse.Namespace:
         help="Directory where the generated avatar will be saved.",
     )
 
+    parser.add_argument(
+    "--colors",
+    type=int,
+    default=8,
+    help="Number of colors used for K-means quantization.",
+    )
+
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_arguments()
-    result = generate_cartoon_avatar(args.image_path, args.output_dir)
+    result = generate_cartoon_avatar(
+        args.image_path,
+        args.output_dir,
+        color_count=args.colors,
+    )
     print(result)
