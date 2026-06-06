@@ -122,6 +122,25 @@ def preprocess_avatar_image(image_rgb: np.ndarray, max_size: int = 512) -> tuple
 
     return cropped_image, metadata
 
+def apply_bilateral_smoothing(
+    image_rgb: np.ndarray,
+    diameter: int = 9,
+    sigma_color: int = 75,
+    sigma_space: int = 75,
+) -> np.ndarray:
+    """
+    Applies bilateral filtering to smooth colors while preserving edges.
+    This helps create a cleaner cartoon-like appearance.
+    """
+    smoothed = cv.bilateralFilter(
+        image_rgb,
+        diameter,
+        sigma_color,
+        sigma_space,
+    )
+
+    return smoothed
+
 def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict:
     """
     Generates a cartoon-style avatar from an input image.
@@ -136,6 +155,8 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
     image_rgb = load_image_rgb(input_path)
     preprocessed_image, preprocessing_metadata = preprocess_avatar_image(image_rgb)
 
+    smoothed_image = apply_bilateral_smoothing(preprocessed_image)
+
     output_path = ensure_output_dir(output_dir)
 
     avatar_output_path = create_output_path(input_path, output_path)
@@ -147,6 +168,7 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
         "processing": {
             "method": "opencv_cartoon_avatar",
             "status": "not_implemented_yet",
+            "smoothing": "bilateral_filter",
             **preprocessing_metadata,
         },
     }
