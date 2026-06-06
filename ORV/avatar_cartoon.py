@@ -169,6 +169,33 @@ def quantize_colors(image_rgb: np.ndarray, color_count: int = 8) -> np.ndarray:
 
     return quantized_image
 
+def create_edge_mask(
+    image_rgb: np.ndarray,
+    blur_kernel_size: int = 7,
+    block_size: int = 9,
+    c_value: int = 2,
+) -> np.ndarray:
+    """
+    Creates a black/white edge mask from the image.
+
+    White areas represent flat color regions.
+    Black areas represent detected edges.
+    """
+    gray_image = cv.cvtColor(image_rgb, cv.COLOR_RGB2GRAY)
+
+    blurred_gray = cv.medianBlur(gray_image, blur_kernel_size)
+
+    edge_mask = cv.adaptiveThreshold(
+        blurred_gray,
+        255,
+        cv.ADAPTIVE_THRESH_MEAN_C,
+        cv.THRESH_BINARY,
+        block_size,
+        c_value,
+    )
+
+    return edge_mask
+
 def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict:
     """
     Generates a cartoon-style avatar from an input image.
@@ -187,6 +214,8 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
 
     quantized_image = quantize_colors(smoothed_image)
 
+    edge_mask = create_edge_mask(preprocessed_image)
+
     output_path = ensure_output_dir(output_dir)
 
     avatar_output_path = create_output_path(input_path, output_path)
@@ -201,6 +230,7 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
             "smoothing": "bilateral_filter",
             "color_quantization": "kmeans",
             "color_count": 8,
+            "edge_detection": "adaptive_threshold",
             **preprocessing_metadata,
         },
     }
