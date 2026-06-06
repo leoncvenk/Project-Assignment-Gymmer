@@ -235,6 +235,7 @@ def generate_cartoon_avatar(
     image_path: str | Path,
     output_dir: str | Path = DEFAULT_OUTPUT_DIR,
     color_count: int = 8,
+    max_size: int = 512,
 ) -> dict:
     """
     Generates a cartoon-style avatar from an input image.
@@ -250,7 +251,10 @@ def generate_cartoon_avatar(
     avatar_output_path = create_output_path(input_path, output_path)
 
     image_rgb = load_image_rgb(input_path)
-    preprocessed_image, preprocessing_metadata = preprocess_avatar_image(image_rgb)
+    preprocessed_image, preprocessing_metadata = preprocess_avatar_image(
+        image_rgb,
+        max_size=max_size,
+    )
 
     smoothed_image = apply_bilateral_smoothing(preprocessed_image)
     quantized_image = quantize_colors(smoothed_image, color_count=color_count)
@@ -266,6 +270,7 @@ def generate_cartoon_avatar(
         "processing": {
             "method": "opencv_cartoon_avatar",
             "status": "completed",
+            "max_size": int(max_size),
             "smoothing": "bilateral_filter",
             "color_quantization": "kmeans",
             "color_count": int(color_count),
@@ -298,10 +303,17 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     parser.add_argument(
-    "--colors",
-    type=int,
-    default=8,
-    help="Number of colors used for K-means quantization.",
+        "--colors",
+        type=int,
+        default=8,
+        help="Number of colors used for K-means quantization.",
+    )
+
+    parser.add_argument(
+        "--size",
+        type=int,
+        default=512,
+        help="Maximum size of the longest image side before cropping.",
     )
 
     return parser.parse_args()
@@ -312,5 +324,6 @@ if __name__ == "__main__":
         args.image_path,
         args.output_dir,
         color_count=args.colors,
+        max_size=args.size,
     )
     print(result)
