@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.schemas import device_schema
 from app.core.security import get_current_user_id
 from app.core.database import get_db
+from app.services.mqtt_service import get_active_count
 
 router = APIRouter(
     prefix="/users/me/devices",
@@ -197,3 +198,7 @@ async def deactivate_current_device(
     return {
         "message": "Device deactivated successfully"
     }
+
+@router.get("/active-count")  #mqtt
+async def get_active_devices_count():
+    return {"active_devices": get_active_count()}
