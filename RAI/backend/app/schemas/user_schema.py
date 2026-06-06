@@ -21,3 +21,4 @@ class UserResponseSchema(BaseModel):
     roles: list[str]
     profile_completed: bool
     profile_image_url: str | None = None
+    profile_theme: dict | None = None
