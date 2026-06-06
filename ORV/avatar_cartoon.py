@@ -191,6 +191,87 @@ def crop_face_region(
         "face_crop_height": int(crop_height),
     }
 
+def simplify_background(
+    image_rgb: np.ndarray,
+    background_color: tuple[int, int, int] = (235, 235, 235),
+) -> tuple[np.ndarray, dict]:
+    """
+    Simplifies the background using GrabCut foreground extraction.
+
+    The likely foreground (face/head/shoulders) is preserved,
+    while the background is replaced with a flat solid color.
+    """
+    height, width = image_rgb.shape[:2]
+
+    # GrabCut expects BGR
+    image_bgr = cv.cvtColor(image_rgb, cv.COLOR_RGB2BGR)
+
+    mask = np.zeros((height, width), np.uint8)
+
+    # Rectangle a little inside the borders
+    rect_margin_x = max(int(width * 0.08), 8)
+    rect_margin_y = max(int(height * 0.08), 8)
+
+    rect = (
+        rect_margin_x,
+        rect_margin_y,
+        width - 2 * rect_margin_x,
+        height - 2 * rect_margin_y,
+    )
+
+    bg_model = np.zeros((1, 65), np.float64)
+    fg_model = np.zeros((1, 65), np.float64)
+
+    try:
+        cv.grabCut(
+            image_bgr,
+            mask,
+            rect,
+            bg_model,
+            fg_model,
+            5,
+            cv.GC_INIT_WITH_RECT,
+        )
+    except cv.error:
+        return image_rgb.copy(), {
+            "background_simplified": False,
+            "background_method": "grabcut_failed",
+            "background_color": background_color,
+        }
+
+    # probable/definite foreground -> 1, background -> 0
+    foreground_mask = np.where(
+        (mask == cv.GC_FGD) | (mask == cv.GC_PR_FGD),
+        255,
+        0
+    ).astype("uint8")
+
+    # Clean mask a little
+    kernel = np.ones((5, 5), np.uint8)
+    foreground_mask = cv.morphologyEx(foreground_mask, cv.MORPH_OPEN, kernel)
+    foreground_mask = cv.morphologyEx(foreground_mask, cv.MORPH_CLOSE, kernel)
+    foreground_mask = cv.GaussianBlur(foreground_mask, (5, 5), 0)
+
+    background = np.full_like(image_rgb, background_color, dtype=np.uint8)
+
+    alpha = foreground_mask.astype(np.float32) / 255.0
+    alpha = np.stack([alpha, alpha, alpha], axis=-1)
+
+    blended = (
+        image_rgb.astype(np.float32) * alpha
+        + background.astype(np.float32) * (1.0 - alpha)
+    ).astype(np.uint8)
+
+    return blended, {
+        "background_simplified": True,
+        "background_method": "grabcut_rect",
+        "background_color": {
+            "r": int(background_color[0]),
+            "g": int(background_color[1]),
+            "b": int(background_color[2]),
+        },
+    }
+
 def preprocess_avatar_image(image_rgb: np.ndarray, max_size: int = 512) -> tuple[np.ndarray, dict]:
     """
     Prepares the image for cartoon avatar generation.
@@ -208,6 +289,11 @@ def preprocess_avatar_image(image_rgb: np.ndarray, max_size: int = 512) -> tuple
     cropped_image, face_metadata = crop_face_region(resized_image)
     cropped_height, cropped_width = cropped_image.shape[:2]
 
+    background_metadata = {
+        "background_simplified": False,
+        "background_method": "disabled",
+    }
+
     metadata = {
         "original_width": int(original_width),
         "original_height": int(original_height),
@@ -216,6 +302,7 @@ def preprocess_avatar_image(image_rgb: np.ndarray, max_size: int = 512) -> tuple
         "cropped_width": int(cropped_width),
         "cropped_height": int(cropped_height),
         **face_metadata,
+        **background_metadata,
     }
 
     return cropped_image, metadata
