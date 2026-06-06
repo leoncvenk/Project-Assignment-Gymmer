@@ -76,6 +76,24 @@ def resize_image(image_rgb: np.ndarray, max_size: int = 512) -> np.ndarray:
 
     return resized
 
+def center_crop_square(image_rgb: np.ndarray) -> np.ndarray:
+    """
+    Crops the image to a centered square based on the shorter side.
+    """
+    height, width = image_rgb.shape[:2]
+
+    crop_size = min(width, height)
+
+    start_x = (width - crop_size) // 2
+    start_y = (height - crop_size) // 2
+
+    cropped = image_rgb[
+        start_y:start_y + crop_size,
+        start_x:start_x + crop_size,
+    ]
+
+    return cropped
+
 def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict:
     """
     Generates a cartoon-style avatar from an input image.
@@ -93,6 +111,9 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
     resized_image = resize_image(image_rgb)
     resized_height, resized_width = resized_image.shape[:2]
 
+    cropped_image = center_crop_square(resized_image)
+    cropped_height, cropped_width = cropped_image.shape[:2]
+
     output_path = ensure_output_dir(output_dir)
 
     avatar_output_path = create_output_path(input_path, output_path)
@@ -108,6 +129,8 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
             "original_height": int(height),
             "resized_width": int(resized_width),
             "resized_height": int(resized_height),
+            "cropped_width": int(cropped_width),
+            "cropped_height": int(cropped_height),
         },
     }
 
