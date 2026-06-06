@@ -21,12 +21,23 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "package": "com.anonymous.mobile"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a1a7b2e4-240d-4536-81f1-2809b13e388f"
       }
     }
   }
