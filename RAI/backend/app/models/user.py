@@ -15,3 +15,4 @@ class User:
     created_at: datetime
     updated_at: datetime
     profile_image_url: str | None = None
+    profile_theme: dict | None = None

@@ -18,6 +18,11 @@ export default function DashboardSidebar({ userData, activeTab, setActiveTab, on
   const [isHovered, setIsHovered] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
+  const profileBanner =
+  userData?.profile_theme?.banner_gradient ||
+  userData?.profileTheme?.banner_gradient ||
+  'linear-gradient(135deg, #3f3f4f, #2a2a2a)';
+
   // Close the profile menu automatically if the sidebar collapses
   useEffect(() => {
     if (!isHovered) {
@@ -116,11 +121,17 @@ export default function DashboardSidebar({ userData, activeTab, setActiveTab, on
           {/* Profile Trigger button */}
           <div 
             onClick={() => isHovered && setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className={`flex items-center rounded-md cursor-pointer transition-colors group ${
-              isProfileMenuOpen ? 'bg-[#3f3f4f]/80' : 'hover:bg-[#3f3f4f]/60'
-            } ${isHovered ? 'p-2 justify-between' : 'w-12 h-12 mx-auto justify-center'}`}
+            className={`relative overflow-hidden flex items-center rounded-xl cursor-pointer transition-all group ${
+              isHovered ? 'p-2 justify-between shadow-sm' : 'w-12 h-12 mx-auto justify-center'
+            }`}
+            style={{
+              background: isHovered ? profileBanner : 'transparent',
+            }}
           >
-            <div className="flex items-center gap-3 overflow-hidden">
+            {isHovered && (
+              <div className="absolute inset-0 bg-black/25 group-hover:bg-black/15 transition-colors" />
+            )}
+            <div className="relative z-10 flex items-center gap-3 overflow-hidden">
               <div className="relative flex-shrink-0">
                 {userData?.profileImage ? (
                   <img 
@@ -139,13 +150,13 @@ export default function DashboardSidebar({ userData, activeTab, setActiveTab, on
                 <span className="text-sm font-bold text-white truncate whitespace-nowrap">
                   {userData?.username || "Guest User"}
                 </span>
-                <span className="text-xs text-[#a1a1aa] truncate mt-0.5 whitespace-nowrap">
+                <span className="text-xs text-white/75 truncate mt-0.5 whitespace-nowrap">
                   {userData?.email || "guest@example.com"}
                 </span>
               </div>
             </div>
             {isHovered && (
-              <ChevronsUpDown className={`w-4 h-4 flex-shrink-0 transition-colors ${isProfileMenuOpen ? 'text-white' : 'text-[#a1a1aa] group-hover:text-white'}`} />
+              <ChevronsUpDown className={`relative z-10 w-4 h-4 flex-shrink-0 transition-colors ${isProfileMenuOpen ? 'text-white' : 'text-white/80 group-hover:text-white'}`} />
             )}
           </div>
         </div>

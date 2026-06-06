@@ -20,6 +20,16 @@ export default function SettingsDetails({ userData, setUserData }) {
   const [imageUploading, setImageUploading] = useState(false);
   const fileInputRef = useRef(null);
 
+  const profileBanner =
+  userData?.profile_theme?.banner_gradient ||
+  userData?.profileTheme?.banner_gradient ||
+  'linear-gradient(135deg, #3f3f4f, #2a2a2a)';
+
+  const bannerTextColor =
+    userData?.profile_theme?.text_color ||
+    userData?.profileTheme?.text_color ||
+    '#FFFFFF';
+
   useEffect(() => {
     if (userData?.username) {
       setDetailsFormData(prev => ({ ...prev, username: userData.username }));
@@ -243,6 +253,56 @@ export default function SettingsDetails({ userData, setUserData }) {
                 </div>
                 <p className="text-sm text-[#2b2b2b]"><span className="text-[#00a97f] font-semibold">{imageUploading ? 'Uploading...' : 'Click to upload'}</span> or drag and drop</p>
                 <p className="text-xs text-[#c5c5c5] mt-1">SVG, PNG, JPG or GIF (max. 2 MB)</p>
+              </div>
+            </div>
+          </div>
+
+                    {/* Banner */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-8">
+            <div>
+              <div className="text-sm font-semibold text-[#2b2b2b]">Your banner</div>
+              <div className="text-xs text-[#c5c5c5] mt-1">
+                This banner is generated from your profile photo.
+              </div>
+            </div>
+
+            <div className="lg:col-span-2 max-w-2xl">
+              <div
+                className="relative h-28 w-full overflow-hidden rounded-2xl border border-[#e5e5e5] shadow-sm"
+                style={{ background: profileBanner }}
+              >
+                <div className="absolute inset-0 bg-black/15" />
+
+                <div className="relative z-10 flex h-full items-center gap-4 px-6">
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-white p-[2px] shadow-md">
+                    {userData?.profileImage ? (
+                      <img
+                        src={userData.profileImage}
+                        alt="Profile banner avatar"
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center rounded-full bg-white/20">
+                        <User className="h-7 w-7 text-white" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <p
+                      className="truncate text-sm font-bold"
+                      style={{ color: bannerTextColor }}
+                    >
+                      {userData?.username || 'Guest User'}
+                    </p>
+                    <p
+                      className="mt-0.5 truncate text-xs opacity-80"
+                      style={{ color: bannerTextColor }}
+                    >
+                      {userData?.email || 'guest@example.com'}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
