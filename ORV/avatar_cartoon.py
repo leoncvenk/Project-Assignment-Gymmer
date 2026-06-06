@@ -1,6 +1,7 @@
 from pathlib import Path
 import cv2 as cv
 import numpy as np
+import argparse
 from uuid import uuid4
 from PIL import Image, ImageOps
 
@@ -271,7 +272,30 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
         },
     }
 
+def parse_arguments() -> argparse.Namespace:
+    """
+    Parses command-line arguments for cartoon avatar generation.
+    """
+    parser = argparse.ArgumentParser(
+        description="Generate a cartoon-style avatar from an input image."
+    )
+
+    parser.add_argument(
+        "image_path",
+        nargs="?",
+        default="test-images/burger.jpg",
+        help="Path to the input image.",
+    )
+
+    parser.add_argument(
+        "--output-dir",
+        default=str(DEFAULT_OUTPUT_DIR),
+        help="Directory where the generated avatar will be saved.",
+    )
+
+    return parser.parse_args()
 
 if __name__ == "__main__":
-    result = generate_cartoon_avatar("test-images/burger.jpg")
+    args = parse_arguments()
+    result = generate_cartoon_avatar(args.image_path, args.output_dir)
     print(result)
