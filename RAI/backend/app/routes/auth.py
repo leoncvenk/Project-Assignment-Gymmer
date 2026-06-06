@@ -8,6 +8,7 @@ from app.schemas.user_schema import CreateUserSchema, UserResponseSchema
 from app.services.auth_service import AuthService
 from app.models.user import User
 from app.services.auth_service import AuthService, get_authenticated_user
+from app.services.profile_theme_service import generate_profile_theme_for_image
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -153,9 +154,18 @@ async def upload_profile_image(
 
     profile_image_url = f"/uploads/profile-images/{filename}"
 
+    try:
+        profile_theme = generate_profile_theme_for_image(file_path)
+    except Exception as error:
+        print(f"Profile theme generation failed: {error}")
+        profile_theme = None
+
     updated_user = await auth_service.user_service.update_user(
         current_user.id,
-        {"profile_image_url": profile_image_url},
+        {
+            "profile_image_url": profile_image_url,
+            "profile_theme": profile_theme,
+        },
     )
 
     if updated_user is None:
