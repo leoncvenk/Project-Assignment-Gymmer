@@ -1,6 +1,7 @@
 from pathlib import Path
 import cv2 as cv
 import numpy as np
+from uuid import uuid4
 from PIL import Image, ImageOps
 
 
@@ -14,6 +15,25 @@ def ensure_output_dir(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> Path:
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     return output_path
+
+def create_output_path(
+    image_path: str | Path,
+    output_dir: str | Path = DEFAULT_OUTPUT_DIR,
+    suffix: str = "_cartoon",
+) -> Path:
+    """
+    Creates a unique output path for the generated cartoon avatar.
+
+    Example:
+    burger.jpg -> burger_cartoon_ab12cd.png
+    """
+    input_path = Path(image_path)
+    output_path = ensure_output_dir(output_dir)
+
+    safe_stem = input_path.stem.replace(" ", "_")
+    unique_id = uuid4().hex[:8]
+
+    return output_path / f"{safe_stem}{suffix}_{unique_id}.png"
 
 def load_image_rgb(image_path: str | Path) -> np.ndarray:
     """
@@ -49,10 +69,12 @@ def generate_cartoon_avatar(image_path: str | Path, output_dir: str | Path = DEF
 
     output_path = ensure_output_dir(output_dir)
 
+    avatar_output_path = create_output_path(input_path, output_path)
+
     return {
         "input_path": str(input_path),
         "output_dir": str(output_path),
-        "avatar_path": None,
+        "avatar_path": str(avatar_output_path),
         "processing": {
             "method": "opencv_cartoon_avatar",
             "status": "not_implemented_yet",
