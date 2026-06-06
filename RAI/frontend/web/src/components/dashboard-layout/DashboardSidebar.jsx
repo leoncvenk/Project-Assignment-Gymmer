@@ -50,12 +50,13 @@ export default function DashboardSidebar({ userData, activeTab, setActiveTab, on
           headers: {
             'Authorization': `Bearer ${token}`,
             'ngrok-skip-browser-warning': 'true', 
+            'Accept': 'application/json', 
           },
         });
 
         if (res.ok) {
           const data = await res.json();
-          if (isMounted) setActiveDevices(data.active_devices || 0);
+          if (isMounted) setActiveDevices(data.count ?? 0);
         }
       } catch (error) {
         console.log('Error fetching active devices:', error);

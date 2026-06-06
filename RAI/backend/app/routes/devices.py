@@ -199,6 +199,15 @@ async def deactivate_current_device(
         "message": "Device deactivated successfully"
     }
 
-@router.get("/active-count")  #mqtt
-async def get_active_devices_count():
-    return {"active_devices": get_active_count()}
+@router.get("/active-count")
+async def get_active_count_route(current_user_id: str = Depends(get_current_user_id)):
+    from app.services.mqtt_service import active_devices, clean_stale_devices
+    
+    clean_stale_devices() 
+    
+    count = 0
+    for device_id, data in active_devices.items():
+        if isinstance(data, dict) and data.get("user_id") == current_user_id:
+            count += 1
+            
+    return {"count": count}

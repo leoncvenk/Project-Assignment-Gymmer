@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Activity, MapPinned, Radio, Smartphone } from 'lucide-react-native';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,41 +16,34 @@ export default function ActivityScreen() {
   const [mqttConnected, setMqttConnected] = useState(false);
   const [activeDevicesCount, setActiveDevicesCount] = useState(0);
   const [userId, setUserId] = useState<string>('Loading...');
-  const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
 
-  // Reliable unique device ID generation on startup
+  const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
   const deviceId = useRef(`device_${Math.random().toString(16).slice(2, 8)}`).current;
 
   useEffect(() => {
     let isMounted = true;
     let countInterval: NodeJS.Timeout;
 
-    // Asynchronous initialization function
     const initializeLiveActivity = async () => {
       try {
         const token = await getAuthToken();
         if (!token) return;
 
-        // STEP 1: Get current user from API
         const user = await getCurrentUser(token);
-
         const currentUserId = (user as any).id || 'unknown_user';
 
         if (isMounted) {
           setUserId(currentUserId);
         }
 
-        // STEP 2: Connect to MQTT only after we have the User ID
         connectMqtt(
           currentUserId,
           deviceId,
           () => {
             if (isMounted) setMqttConnected(true);
 
-            // First heartbeat
             sendHeartbeat(currentUserId, deviceId);
 
-            // Regular heartbeat
             heartbeatInterval.current = setInterval(() => {
               sendHeartbeat(currentUserId, deviceId);
             }, 30000);
@@ -60,37 +53,31 @@ export default function ActivityScreen() {
           }
         );
 
-        // STEP 3: API call for active devices count
         const fetchActiveCount = async () => {
           try {
             const url = `${process.env.EXPO_PUBLIC_API_URL}/api/users/me/devices/active-count`;
+
             const res = await fetch(url, {
               headers: {
                 Authorization: `Bearer ${token}`,
-                'ngrok-skip-browser-warning': 'true',
-                'Bypass-Tunnel-Reminder': 'true',
+                Accept: 'application/json',
               },
             });
 
-            if (!res.ok) {
-              console.log(
-                `API currently unreachable (Status: ${res.status}). Waiting for next interval...`
-              );
-              return;
-            }
+            if (res.ok) {
+              const data = await res.json();
 
-            const rawText = await res.text();
-            const data = JSON.parse(rawText);
+              console.log('DEBUG API Response:', data);
 
-            if (isMounted) {
-              setActiveDevicesCount(data.active_devices || 0);
+              if (isMounted) {
+                setActiveDevicesCount(data.count ?? 0);
+              }
             }
-          } catch (error: any) {
-            console.log('Silent error fetching data:', error.message);
+          } catch (error) {
+            console.warn('API device counting is currently unreachable.');
           }
         };
 
-        // Run immediately and then every 15 seconds
         fetchActiveCount();
         countInterval = setInterval(fetchActiveCount, 15000);
       } catch (error) {
@@ -102,8 +89,15 @@ export default function ActivityScreen() {
 
     return () => {
       isMounted = false;
-      if (heartbeatInterval.current) clearInterval(heartbeatInterval.current);
-      if (countInterval) clearInterval(countInterval);
+
+      if (heartbeatInterval.current) {
+        clearInterval(heartbeatInterval.current);
+      }
+
+      if (countInterval) {
+        clearInterval(countInterval);
+      }
+
       disconnectMqtt();
     };
   }, [deviceId]);
@@ -186,10 +180,12 @@ export default function ActivityScreen() {
               <Text className="mb-3 font-semibold text-text">
                 Currently active devices (Live): {activeDevicesCount}
               </Text>
+
               <Text className="mt-1 text-sm text-muted">
                 The system automatically counts devices via MQTT heartbeat and Last Will mechanism,
                 without database overhead.
               </Text>
+
               <Text className="mt-3 text-xs text-muted/60">User ID: {userId}</Text>
             </View>
           </DashboardSectionCard>

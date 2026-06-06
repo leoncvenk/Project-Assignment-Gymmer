@@ -2,6 +2,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from app.services.mqtt_service import active_devices, clean_stale_devices
 from app.services.mqtt_service import mqtt_client
 from app.routes.health import router as health_router 
 from app.routes.foods import router as foods_router
@@ -46,10 +47,12 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     await connect_to_mongo()
+    mqtt_client.loop_start()  # MQTT se zažene skupaj z API-jem!
 
 @app.on_event("shutdown")
 async def shutdown():
     await close_mongo_connection()
+    mqtt_client.loop_stop()
 
 app.include_router(health_router)
 app.include_router(foods_router)
