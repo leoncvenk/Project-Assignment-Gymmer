@@ -15,7 +15,7 @@ export default function LegalLayout({ title, lastUpdated, children }) {
         className="w-full max-w-3xl z-10 flex flex-col max-h-[90vh]"
         style={{ fontFamily: "'Anonymous Pro', monospace" }}
       >
-        <div className="bg-[var(--surface)] border border-[var(--border)] p-8 rounded-3xl shadow-2xl flex flex-col h-full overflow-hidden">
+        <div className="bg-[var(--background)] border border-[var(--border)] p-8 rounded-3xl shadow-2xl flex flex-col h-full overflow-hidden">
           
           {/* Header */}
           <div className="flex items-center justify-between mb-6 pb-6 border-b border-[var(--border)] shrink-0">
