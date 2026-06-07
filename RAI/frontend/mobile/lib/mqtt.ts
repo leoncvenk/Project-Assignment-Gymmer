@@ -60,6 +60,16 @@ const buildLocationPayload = (
   timestamp: new Date().toISOString(),
 });
 
+const buildHeartbeatPayload = (
+  userId: string,
+  deviceId: string
+): HeartbeatPayload => ({
+  userId,
+  deviceId,
+  status: 'online',
+  timestamp: new Date().toISOString(),
+});
+
 export const connectMqtt = (
   userId: string,
   deviceId: string,
