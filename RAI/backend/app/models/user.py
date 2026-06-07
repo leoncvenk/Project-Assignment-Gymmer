@@ -16,3 +16,5 @@ class User:
     updated_at: datetime
     profile_image_url: str | None = None
     profile_theme: dict | None = None
+    cartoon_avatar_url: str | None = None
+    use_cartoon_avatar: bool = False
