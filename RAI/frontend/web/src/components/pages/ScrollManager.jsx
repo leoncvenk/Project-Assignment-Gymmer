@@ -9,19 +9,17 @@ export default function ScrollManager() {
 
   useEffect(() => {
     const getPageOrder = () => {
-      const isLoggedIn = !!localStorage.getItem("access_token");
-      
       return [
-        "/",                                      
-        isLoggedIn ? "/dashboard" : "/profile",   
-        "/food",                                 
-        "/running",                              
-        "/workout"                                
+        "/",
+        "/food",
+        "/running",
+        "/workout"
       ];
     };
 
     // Core navigation logic
     const handleNavigate = (direction) => {
+      if (location.pathname.startsWith("/dashboard")) return;
       if (isThrottled.current) return;
 
       const currentPageOrder = getPageOrder(); // Vedno vzame svež vrstni red
