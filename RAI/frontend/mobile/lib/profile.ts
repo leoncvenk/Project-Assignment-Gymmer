@@ -2,7 +2,7 @@ import { api } from './api';
 import { ActivityLevel, GoalType, Sex } from 'types/profile';
 
 export async function createProfile(token: string, data: any) {
-  const response = await api.put('/users/me/profile', data, {
+  const response = await api.post('/users/me/profile', data, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
