@@ -27,6 +27,7 @@ export default function AppLayout() {
     mqttConnected: false,
     activeDevicesCount: 0,
     userId: 'Loading...',
+    deviceId: '',
     notifications: { nutrition: true, activity: false },
   });
 
