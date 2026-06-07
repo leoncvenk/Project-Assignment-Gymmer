@@ -64,7 +64,7 @@ export default function AppLayout() {
 
       const user = await getCurrentUser(token);
       const currentUserId = (user as any).id || 'unknown_user';
-      setData((prev) => ({ ...prev, userId: currentUserId }));
+      setData((prev) => ({ ...prev, userId: currentUserId, deviceId, }));
 
       await initMqtt(currentUserId);
 
