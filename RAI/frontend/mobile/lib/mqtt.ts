@@ -130,12 +130,7 @@ export const connectMqtt = (
 export const sendHeartbeat = (userId: string, deviceId: string) => {
   if (client && client.isConnected()) {
     const topic = `gymmer/live/${userId}/${deviceId}/heartbeat`;
-    const payload = JSON.stringify({
-      userId,
-      deviceId,
-      status: 'online',
-      timestamp: new Date().toISOString(),
-    });
+    const payload = JSON.stringify(buildHeartbeatPayload(userId, deviceId));
 
     const message = new Paho.Message(payload);
     message.destinationName = topic;
