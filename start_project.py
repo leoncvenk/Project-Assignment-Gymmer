@@ -52,7 +52,7 @@ def setup_envs():
     rai_backend_env = f"""MONGO_URI={mongo_uri}
 DB_NAME=gymmer
 TEST_DB_NAME=rai_test_local
-ORV_API_URL=http://127.0.0.1:8001
+ORV_API_URL=http://{ip_address}:8001
 """
     write_env("RAI/backend/.env", rai_backend_env)
 
@@ -72,83 +72,65 @@ def run_cmd(cmd, cwd=".", wait=True):
     else:
         return subprocess.Popen(cmd, cwd=cwd, shell=use_shell)
 
-def get_venv_python(cwd):
-    if platform.system() == "Windows":
-        return os.path.join(".venv", "Scripts", "python.exe")
-    else:
-        return os.path.join(".venv", "bin", "python")
-
-def setup_python_project(cwd):
-    print(f"\n--- Checking python project : {cwd} ---")
-    
-    venv_path = os.path.join(cwd, ".venv")
-    if not os.path.exists(venv_path):
-        print(f"Creating venv in {cwd}...")
-        run_cmd([sys.executable, "-m", "venv", ".venv"], cwd=cwd)
-    
-    py_exec = get_venv_python(cwd)
-    run_cmd([py_exec, "-m", "pip", "install", "-r", "requirements.txt"], cwd=cwd)
-    return py_exec
-
 def main():
     setup_envs()
-    
     processes = []
 
     try:
-        print("\n--- NPO Running Docker (Docker Compose) ---")
+        print("\n--- Starting NPO Docker Services ---")
         run_cmd(["docker", "compose", "up", "-d"], cwd="NPO")
 
-        orv_py = setup_python_project("ORV")
-        print("Starting ORV API (port 8001)...")
-        processes.append(run_cmd([orv_py, "api.py"], cwd="ORV", wait=False))
+        print("\n--- Starting RAI & ORV Docker Containers ---")
+        run_cmd(["docker", "compose", "up", "-d", "--build"], cwd=".")
 
-        rai_py = setup_python_project("RAI/backend")
-        print("Starting RAI Backend (port 8000)...")
-        processes.append(run_cmd([rai_py, "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"], cwd="RAI/backend", wait=False))
-
-        print("\n--- Preparing RAI Mobile Frontend ---")
+        print("\n--- Preparing RAI Mobile Frontend (Native Expo) ---")
         run_cmd(["npm", "install"], cwd="RAI/frontend/mobile")
-        print("Starting Expo mobile app...")
         processes.append(run_cmd(["npx", "expo", "start"], cwd="RAI/frontend/mobile", wait=False))
 
-        print("\n--- Preparing RAI Web Frontend ---")
-        run_cmd(["npm", "install"], cwd="RAI/frontend/web")
-        print("Starting React web app...")
-        processes.append(run_cmd(["npm", "run", "dev"], cwd="RAI/frontend/web", wait=False))
-
-        print("\nWaiting for services to initialize... (5 seconds)")
-        time.sleep(5)
+        print("\nWaiting for all containers and services to initialize... (8 seconds)")
+        time.sleep(8)
 
         local_ip = get_default_ip()
         
         print("\n" + "="*60)
-        print("ALL SYSTEMS ARE RUNNING!")
+        print("✅ ALL SYSTEMS ARE RUNNING IN DOCKER!")
         print("="*60)
         print("You can access the services at the following URLs:\n")
         print(f"RAI Backend API Docs:   http://localhost:8000/docs")
         print(f"ORV API Docs:           http://localhost:8001/docs")
-        print(f"Mobile API Target:      http://{local_ip}:8000")
         print(f"Web Frontend (Local):   http://localhost:5173")
         print(f"Web Frontend (Network): http://{local_ip}:5173")
+        print(f"Mobile API Target:      http://{local_ip}:8000")
         print("\nMobile Frontend:")
         print("Check the Expo logs above to scan the QR code with your phone.")
         print("\nHow to stop:")
-        print("Press CTRL+C in this terminal to safely stop all processes.")
+        print("Press CTRL+C in this terminal to safely stop all containers and processes.")
         print("="*60 + "\n")
         
         for p in processes:
             p.wait()
 
     except KeyboardInterrupt:
-        print("\n\nStopping processes...")
+        print("\n\n Stopping processes and shutting down Docker containers...")
+        # Terminate Expo
         for p in processes:
             p.terminate()
-        print("Processes successfully stopped.")
+        
+        # Shutdown Root Docker containers
+        print("\nShutting down RAI & ORV containers...")
+        run_cmd(["docker", "compose", "down"], cwd=".")
+        
+        # Shutdown NPO Docker containers
+        print("\nShutting down NPO containers...")
+        run_cmd(["docker", "compose", "down"], cwd="NPO")
+        
+        print("\n✅ All processes and containers successfully stopped.")
     except Exception as e:
-        print(f"\nAn error occurred: {e}")
+        print(f"\n❌ An error occurred: {e}")
         for p in processes:
             p.terminate()
+        run_cmd(["docker", "compose", "down"], cwd=".")
+        run_cmd(["docker", "compose", "down"], cwd="NPO")
 
 if __name__ == "__main__":
     main()
