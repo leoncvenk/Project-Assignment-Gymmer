@@ -22,3 +22,4 @@ class UserResponseSchema(BaseModel):
     profile_completed: bool
     profile_image_url: str | None = None
     profile_theme: dict | None = None
+    cartoon_avatar_url: str | None = None
