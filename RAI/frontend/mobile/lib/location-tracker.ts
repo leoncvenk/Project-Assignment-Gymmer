@@ -81,6 +81,10 @@ export function useLocationTracker(userId: string | null | undefined, deviceId?:
 
         setCurrentLocation(coords);
 
+        if (userId && deviceId) {
+          sendLocationUpdate(userId, deviceId, coords);
+        }
+
         setRoute((prevRoute) => {
           const updatedRoute = [...prevRoute, coords];
 
