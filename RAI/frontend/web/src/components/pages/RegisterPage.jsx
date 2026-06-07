@@ -6,6 +6,7 @@ import AuthLayout from "../layout/AuthLayout";
 import FormInput from "../ui/FormInput";
 import PasswordInput from "../ui/PasswordInput";
 import SocialAuth from "../ui/SocialAuth";
+import Navigation from "../ui/Navigation";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -41,11 +42,8 @@ export default function RegisterPage() {
 
     try {
       const registerResponse = await fetch("http://127.0.0.1:8000/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: data.username, email: data.email, password: data.password }),
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: data.username, email: data.email, password: data.password }),
       });
-
       const registerData = await registerResponse.json();
 
       if (!registerResponse.ok) {
@@ -55,11 +53,8 @@ export default function RegisterPage() {
       }
 
       const loginResponse = await fetch("http://127.0.0.1:8000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: data.email, password: data.password }),
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.email, password: data.password }),
       });
-
       const loginData = await loginResponse.json();
 
       if (loginResponse.ok) {
@@ -76,57 +71,46 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthLayout>
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-        className="w-full max-w-[500px] bg-[var(--surface-dark)] border border-[var(--border)] rounded-2xl p-8 shadow-2xl"
-      >
-        <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-6">Sign up</h1>
-
-        <AnimatePresence>
-          {error && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0, marginBottom: 0 }} animate={{ opacity: 1, height: "auto", marginBottom: 24 }} exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-lg text-sm flex items-center gap-3">
-                <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        <form onSubmit={handleFormSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormInput label="First Name" id="name" placeholder="John" required />
-            <FormInput label="Last Name" id="surname" placeholder="Doe" required />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormInput label="Username" id="username" placeholder="johndoe" required />
-            <FormInput label="Birthdate" id="birthdate" type="date" required />
-          </div>
-
-          <FormInput label="Email" id="email" type="email" placeholder="your@email.com" required />
-          <FormInput label="Phone" id="phone" type="tel" placeholder="+1 (555) 000-0000" optional />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <PasswordInput label="Password" id="password" />
-            <PasswordInput label="Repeat Password" id="repeatPassword" />
-          </div>
-
-          <button type="submit" disabled={loading} className={`w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--text-primary)] font-medium py-2.5 rounded-xl transition-colors mt-4 ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}>
-            {loading ? "Creating..." : "Sign up"}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-[var(--muted)] mt-6">
-          Already have an account? <Link to="/profile" className="text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline transition-colors">Sign in</Link>
-        </p>
-
-        <SocialAuth mode="Sign up" />
-      </motion.div>
-    </AuthLayout>
+    <>
+      <Navigation />
+      <AuthLayout>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-[500px] bg-[var(--surface-dark)] border border-[var(--border)] rounded-2xl p-8 shadow-2xl relative z-10 mt-16">
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-6">Sign up</h1>
+          <AnimatePresence>
+            {error && (
+              <motion.div initial={{ opacity: 0, height: 0, marginBottom: 0 }} animate={{ opacity: 1, height: "auto", marginBottom: 24 }} exit={{ opacity: 0, height: 0, marginBottom: 0 }} className="overflow-hidden">
+                <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-lg text-sm flex items-center gap-3">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <span>{error}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <form onSubmit={handleFormSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormInput label="First Name" id="name" placeholder="John" required />
+              <FormInput label="Last Name" id="surname" placeholder="Doe" required />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormInput label="Username" id="username" placeholder="johndoe" required />
+              <FormInput label="Birthdate" id="birthdate" type="date" required />
+            </div>
+            <FormInput label="Email" id="email" type="email" placeholder="your@email.com" required />
+            <FormInput label="Phone" id="phone" type="tel" placeholder="+1 (555) 000-0000" optional />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <PasswordInput label="Password" id="password" />
+              <PasswordInput label="Repeat Password" id="repeatPassword" />
+            </div>
+            <button type="submit" disabled={loading} className={`w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--text-primary)] font-medium py-2.5 rounded-xl transition-colors mt-4 ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}>
+              {loading ? "Creating..." : "Sign up"}
+            </button>
+          </form>
+          <p className="text-center text-sm text-[var(--muted)] mt-6">
+            Already have an account? <Link to="/profile" className="text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline transition-colors">Sign in</Link>
+          </p>
+          <SocialAuth mode="Sign up" />
+        </motion.div>
+      </AuthLayout>
+    </>
   );
 }

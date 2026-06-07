@@ -2,112 +2,58 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Ruler, Weight, Target, Activity, User, Heart, Settings, AlertCircle } from 'lucide-react';
+import Navigation from "../ui/Navigation";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    height: '',
-    weight: '',
-    targetWeight: '',
-    age: '',
-    sex: 'male',
-    activityLevel: 'sedentary',
-    goalType: 'maintain_weight',
-  });
-  
+  const [formData, setFormData] = useState({ height: '', weight: '', targetWeight: '', age: '', sex: 'male', activityLevel: 'sedentary', goalType: 'maintain_weight' });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // Funkcija za čiščenje FastAPI napak
   const parseError = (data) => {
     if (typeof data.detail === "string") return data.detail;
     if (Array.isArray(data.detail)) {
       const err = data.detail[0];
       const field = err.loc[err.loc.length - 1];
-      
-      const fieldNames = {
-        height_cm: "Višina",
-        weight_kg: "Teža",
-        goal_weight_kg: "Ciljna teža",
-        age: "Starost"
-      };
-
+      const fieldNames = { height_cm: "Višina", weight_kg: "Teža", goal_weight_kg: "Ciljna teža", age: "Starost" };
       return `${fieldNames[field] || field}: ${err.msg}`;
     }
     return "Prišlo je do nepredvidene napake.";
   };
 
   const validateInputs = () => {
-    const h = parseFloat(formData.height);
-    const w = parseFloat(formData.weight);
-    const tw = parseFloat(formData.targetWeight);
-    const a = parseInt(formData.age);
-
+    const h = parseFloat(formData.height); const w = parseFloat(formData.weight); const tw = parseFloat(formData.targetWeight); const a = parseInt(formData.age);
     if (h < 100 || h > 250) return "Height must be between 100 cm and 250 cm.";
     if (w < 40 || w > 300) return "Weight must be between 40 kg and 300 kg.";
     if (tw < 40 || tw > 300) return "Goal weight must be between 40 kg and 300 kg.";
     if (a < 15 || a > 99) return "Age must be between 15 and 99 years.";
-
-    // Dodatna logika: Če želi shujšati, mora biti ciljna teža manjša od trenutne
-    if (formData.goalType === 'lose_weight' && tw >= w) {
-      return "For weight loss, goal weight must be lower than current weight.";
-    }
-    // Če se želi zrediti, mora biti ciljna teža večja
-    if (formData.goalType === 'gain_weight' && tw <= w) {
-      return "For weight gain, goal weight must be higher than current weight.";
-    }
-
-    return null; // Vse je v redu
+    if (formData.goalType === 'lose_weight' && tw >= w) return "For weight loss, goal weight must be lower than current weight.";
+    if (formData.goalType === 'gain_weight' && tw <= w) return "For weight gain, goal weight must be higher than current weight.";
+    return null; 
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
-    // Najprej preverimo, če so vneseni podatki logični
     const validationError = validateInputs();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+    if (validationError) return setError(validationError);
 
     setLoading(true);
-
-    const payload = {
-      height_cm: parseFloat(formData.height),
-      weight_kg: parseFloat(formData.weight),
-      goal_weight_kg: parseFloat(formData.targetWeight),
-      age: parseInt(formData.age),
-      sex: formData.sex,
-      activity_level: formData.activityLevel,
-      goal_type: formData.goalType
-    };
+    const payload = { height_cm: parseFloat(formData.height), weight_kg: parseFloat(formData.weight), goal_weight_kg: parseFloat(formData.targetWeight), age: parseInt(formData.age), sex: formData.sex, activity_level: formData.activityLevel, goal_type: formData.goalType };
 
     try {
       const response = await fetch("http://127.0.0.1:8000/users/me/profile", {
-        method: "PUT", 
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('access_token')}` 
-        },
-        body: JSON.stringify(payload),
+        method: "PUT", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem('access_token')}` }, body: JSON.stringify(payload),
       });
-
       const responseData = await response.json();
-
       if (!response.ok) {
         setError(parseError(responseData));
         setLoading(false);
         return;
       }
-
-      // Uspešno posodobljeno!
       navigate('/food'); 
-      
     } catch (err) {
       console.error("Network Fetch Error:", err);
       setError("Network error: Make sure your backend (uvicorn) is running.");
@@ -118,14 +64,8 @@ export default function ProfilePage() {
 
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_top,_var(--surface)_0%,_var(--background)_45%,_var(--surface-dark)_100%)] overflow-x-hidden px-4 pt-24 pb-12 text-[var(--text-primary)]">
-      
-      <motion.div 
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-        className="w-full max-w-2xl z-10"
-        style={{ fontFamily: "'Anonymous Pro', monospace" }}
-      >
+      <Navigation />
+      <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }} className="w-full max-w-2xl z-10" style={{ fontFamily: "'Anonymous Pro', monospace" }}>
         <div className="w-full rounded-3xl border border-[var(--border)] bg-[var(--surface-dark)]/90 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur-md sm:p-8">
           
           <div className="mb-7 text-left">
@@ -133,15 +73,9 @@ export default function ProfilePage() {
             <p className="max-w-md text-sm leading-relaxed text-[var(--muted)]">Fill in all details to sync with Gymmer's backend.</p>
           </div>
 
-          {/* Prikaz napak nad obrazcem */}
           <AnimatePresence>
             {error && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                animate={{ opacity: 1, height: "auto", marginBottom: 20 }}
-                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                className="overflow-hidden"
-              >
+              <motion.div initial={{ opacity: 0, height: 0, marginBottom: 0 }} animate={{ opacity: 1, height: "auto", marginBottom: 20 }} exit={{ opacity: 0, height: 0, marginBottom: 0 }} className="overflow-hidden">
                 <div className="flex items-center gap-3 rounded-2xl border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-400">
                   <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-400" />
                   <span>{error}</span>
@@ -151,8 +85,6 @@ export default function ProfilePage() {
           </AnimatePresence>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            
-            {/* Height & Weight */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Height (cm)</label>
@@ -170,7 +102,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Target Weight & Age */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Goal Weight (kg)</label>
@@ -188,7 +119,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Sex Selection */}
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Sex</label>
               <div className="relative">
@@ -200,7 +130,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Activity Level */}
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Activity Level</label>
               <div className="relative">
@@ -215,7 +144,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Goal Type */}
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Primary Goal</label>
               <div className="relative">
@@ -228,11 +156,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <motion.button 
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-              type="submit" disabled={loading}
-              className={`mt-6 w-full rounded-2xl bg-[var(--accent)] py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-[var(--text-inverse)] shadow-[0_0_22px_rgba(0,169,127,0.35)] transition-all ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:bg-[var(--accent-hover)] hover:shadow-[0_0_30px_rgba(0,169,127,0.55)]'}`}
-            >
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading} className={`mt-6 w-full rounded-2xl bg-[var(--accent)] py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-[var(--text-inverse)] shadow-[0_0_22px_rgba(0,169,127,0.35)] transition-all ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:bg-[var(--accent-hover)] hover:shadow-[0_0_30px_rgba(0,169,127,0.55)]'}`}>
               {loading ? 'SAVING...' : 'COMPLETE SETUP'}
             </motion.button>
           </form>
