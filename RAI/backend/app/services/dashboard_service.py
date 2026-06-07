@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from app.services.food_service import FoodService
 
 from app.schemas.dashboard_schema import (
     DashboardEntrySchema,
@@ -35,6 +36,8 @@ class DashboardService:
     def __init__(self):
         self.user_service = UserService()
 
+        self.food_service = FoodService()
+
         self.food_entry_service = FoodEntryService()
 
         self.summary_service = NutritionSummaryService()
@@ -67,24 +70,29 @@ class DashboardService:
             if entry.consumed_at.date() == dashboard_date
         ]
 
-        dashboard_entries = [
-            DashboardEntrySchema(
-                id=entry.id,
-                food_id=entry.food_id,
+        dashboard_entries = []
 
-                quantity_g=entry.quantity_g,
+        for entry in filtered_entries:
+            food = await self.food_service.get_food_by_id(entry.food_id)
 
-                calories=entry.calories,
-                protein_g=entry.protein_g,
-                carbs_g=entry.carbs_g,
-                fat_g=entry.fat_g,
+            dashboard_entries.append(
+                DashboardEntrySchema(
+                    id=entry.id,
+                    food_id=entry.food_id,
+                    food_name=food.name if food is not None else None,
 
-                meal_type=entry.meal_type,
+                    quantity_g=entry.quantity_g,
 
-                consumed_at=entry.consumed_at,
+                    calories=entry.calories,
+                    protein_g=entry.protein_g,
+                    carbs_g=entry.carbs_g,
+                    fat_g=entry.fat_g,
+
+                    meal_type=entry.meal_type,
+
+                    consumed_at=entry.consumed_at,
+                )
             )
-            for entry in filtered_entries
-        ]
 
         meals = []
 

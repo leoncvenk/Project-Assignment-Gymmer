@@ -11,6 +11,7 @@ export default function NutritionMealsPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState('breakfast');
+  const [selectedDate, setSelectedDate] = useState('2026-05-10');
 
   const getHeaders = useCallback(() => ({
     "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
@@ -19,20 +20,34 @@ export default function NutritionMealsPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+
     try {
       const [dashRes, weeklyRes] = await Promise.all([
-        fetch("http://127.0.0.1:8000/users/me/dashboard", { headers: getHeaders() }),
-        fetch("http://127.0.0.1:8000/users/me/dashboard/weekly", { headers: getHeaders() })
+        fetch(`http://127.0.0.1:8000/users/me/dashboard?date=${selectedDate}`, {
+          headers: getHeaders(),
+        }),
+        fetch(`http://127.0.0.1:8000/users/me/dashboard/weekly?date=${selectedDate}`, {
+          headers: getHeaders(),
+        }),
       ]);
 
-      if (dashRes.ok) setDashboardData(await dashRes.json());
-      if (weeklyRes.ok) setWeeklyData(await weeklyRes.json());
+      if (dashRes.ok) {
+        setDashboardData(await dashRes.json());
+      } else {
+        console.error("Dashboard request failed:", dashRes.status, await dashRes.text());
+      }
+
+      if (weeklyRes.ok) {
+        setWeeklyData(await weeklyRes.json());
+      } else {
+        console.error("Weekly dashboard request failed:", weeklyRes.status, await weeklyRes.text());
+      }
     } catch (err) {
       console.error("Error fetching data:", err);
     } finally {
       setLoading(false);
     }
-  }, [getHeaders]);
+  }, [getHeaders, selectedDate]);
 
   useEffect(() => {
     fetchData();
@@ -46,8 +61,27 @@ export default function NutritionMealsPage() {
     );
   }
 
-  const summary = dashboardData?.summary || { calories: 0, protein: 0, carbs: 0, fat: 0 };
-  const currentMealData = dashboardData?.meals?.[selectedMealType] || { entries: [], total_calories: 0 };
+  const rawSummary = dashboardData?.summary;
+
+  const summary = {
+    calories: rawSummary?.total_calories ?? 0,
+    protein: rawSummary?.total_protein_g ?? 0,
+    carbs: rawSummary?.total_carbs_g ?? 0,
+    fat: rawSummary?.total_fat_g ?? 0,
+  };
+
+  const mealsArray = dashboardData?.meals || [];
+
+  const currentMealData =
+    mealsArray.find((meal) => meal.meal_type === selectedMealType) || {
+      meal_type: selectedMealType,
+      entries: [],
+      total_calories: 0,
+      total_protein_g: 0,
+      total_carbs_g: 0,
+      total_fat_g: 0,
+      entry_count: 0,
+    };
 
   return (
     <div className="flex flex-col w-full h-full bg-[#ffffff] font-sans text-[#2b2b2b] p-6 overflow-y-auto custom-scrollbar">
@@ -55,8 +89,17 @@ export default function NutritionMealsPage() {
       <header className="flex-shrink-0 flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold mb-1">Nutrition & Meals</h1>
-          <p className="text-xs text-gray-500">Track your daily intake and analyze your macro breakdown.</p>
+          <p className="text-xs text-gray-500">
+            Track your daily intake and analyze your macro breakdown.
+          </p>
         </div>
+
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#2b2b2b] outline-none focus:border-[#00a97f]"
+        />
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -74,11 +117,12 @@ export default function NutritionMealsPage() {
         onOpenModal={() => setIsModalOpen(true)}
       />
 
-      <AddFoodModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        mealType={selectedMealType} 
-        onFoodAdded={fetchData} 
+      <AddFoodModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        mealType={selectedMealType}
+        selectedDate={selectedDate}
+        onFoodAdded={fetchData}
       />
     </div>
   );

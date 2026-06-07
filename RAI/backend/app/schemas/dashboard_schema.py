@@ -47,6 +47,7 @@ class DashboardProgressSchema(BaseModel):
 class DashboardEntrySchema(BaseModel):
     id: str
     food_id: str
+    food_name: str | None = None
 
     quantity_g: float = Field(..., gt=0)
 

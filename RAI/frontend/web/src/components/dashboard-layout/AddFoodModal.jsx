@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, X, AlertCircle } from 'lucide-react';
 
-export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded }) {
+export default function AddFoodModal({ isOpen, onClose, mealType, selectedDate, onFoodAdded }) {
   const [mode, setMode] = useState('search');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -40,15 +40,28 @@ export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded })
     if (mode === 'search' && searchQuery.length > 2) {
       const delay = setTimeout(async () => {
         try {
-          const res = await fetch(`http://127.0.0.1:8000/foods?name=${searchQuery}`, { headers: getHeaders() });
+          const res = await fetch(
+            `http://127.0.0.1:8000/foods?query=${encodeURIComponent(searchQuery)}&limit=20`,
+            { headers: getHeaders() }
+          );
+
           if (res.ok) {
             const data = await res.json();
             setSearchResults(Array.isArray(data) ? data : (data.items || data.data || []));
+          } else {
+            console.error("Food search failed:", res.status, await res.text());
+            setSearchResults([]);
           }
-        } catch (err) { console.error("Search error:", err); }
+        } catch (err) {
+          console.error("Search error:", err);
+          setSearchResults([]);
+        }
       }, 500);
+
       return () => clearTimeout(delay);
     }
+
+    setSearchResults([]);
   }, [searchQuery, mode]);
 
   const handleSubmitEntry = async () => {
@@ -61,7 +74,12 @@ export default function AddFoodModal({ isOpen, onClose, mealType, onFoodAdded })
       const res = await fetch("http://127.0.0.1:8000/users/me/food-entries", {
         method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ food_id: selectedFood.id, meal_type: mealType, quantity_g: parseFloat(quantity) })
+        body: JSON.stringify({
+          food_id: selectedFood.id,
+          meal_type: mealType,
+          quantity_g: parseFloat(quantity),
+          consumed_at: `${selectedDate}T12:00:00.000Z`
+        })
       });
       if (res.ok) {
         onFoodAdded();
