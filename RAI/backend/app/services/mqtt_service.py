@@ -3,23 +3,15 @@ import json
 import logging
 import os
 from dotenv import load_dotenv
-from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
-root_dir = Path(__file__).resolve().parents[4] 
-env_path = root_dir / 'NPO' / '.env'
-
-if env_path.exists():
-    load_dotenv(dotenv_path=env_path)
-    print(f"DEBUG: .env loaded from: {env_path}")
-else:
-    print(f"WARNING: .env file does not exist at {env_path}, using default values.")
+# Load environment variables automatically from the .env file
+load_dotenv()
 
 MQTT_BROKER = os.getenv("MQTT_BROKER_HOST", "127.0.0.1")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
 
 print(f"DEBUG: Configuration - Broker: {MQTT_BROKER}, Port: {MQTT_PORT}")
-
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 active_devices = {}

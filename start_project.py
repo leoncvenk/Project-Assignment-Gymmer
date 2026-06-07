@@ -55,6 +55,8 @@ def setup_envs():
 DB_NAME=gymmer
 TEST_DB_NAME=rai_test_local
 ORV_API_URL=http://{ip_address}:8001
+MQTT_BROKER_HOST={ip_address}
+MQTT_PORT=1883
 """
     write_env("RAI/backend/.env", rai_backend_env)
 
