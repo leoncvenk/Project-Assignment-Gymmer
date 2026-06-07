@@ -39,7 +39,7 @@ export const connectMqtt = (
       timestamp: new Date().toISOString(),
     })
   );
-  lastWillMessage.destinationName = `gymmer/live/${userId}/${deviceId}/heartbeat`;
+  lastWillMessage.destinationName = getStatusTopic(userId, deviceId);
   lastWillMessage.retained = true;
   lastWillMessage.qos = 1;
 
