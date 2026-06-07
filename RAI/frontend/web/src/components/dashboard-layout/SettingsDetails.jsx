@@ -18,6 +18,7 @@ export default function SettingsDetails({ userData, setUserData }) {
   const [detailsSuccess, setDetailsSuccess] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [cartoonLoading, setCartoonLoading] = useState(false);
   const fileInputRef = useRef(null);
 
   const profileBanner =
@@ -29,6 +30,16 @@ export default function SettingsDetails({ userData, setUserData }) {
     userData?.profile_theme?.text_color ||
     userData?.profileTheme?.text_color ||
     '#FFFFFF';
+
+  const originalProfileImage =
+  userData?.profileImage || buildImageUrl(userData?.profile_image_url);
+
+  const cartoonProfileImage = buildImageUrl(userData?.cartoon_avatar_url);
+
+  const displayedProfileImage =
+    userData?.use_cartoon_avatar && cartoonProfileImage
+      ? cartoonProfileImage
+      : originalProfileImage;
 
   useEffect(() => {
     if (userData?.username) {
@@ -134,6 +145,83 @@ export default function SettingsDetails({ userData, setUserData }) {
     }
   };
 
+  const handleCartoonify = async () => {
+    if (!originalProfileImage) {
+      setDetailsError('Upload a profile image before generating a cartoon avatar.');
+      return;
+    }
+
+    setCartoonLoading(true);
+    setDetailsError(null);
+    setDetailsSuccess(false);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me/cartoon-avatar`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setDetailsError(data.detail || 'Failed to generate cartoon avatar.');
+        return;
+      }
+
+      setUserData(prev => ({
+        ...prev,
+        ...data,
+        profileImage: buildImageUrl(data.profile_image_url),
+        cartoonAvatar: buildImageUrl(data.cartoon_avatar_url),
+      }));
+
+      setDetailsSuccess(true);
+      setTimeout(() => setDetailsSuccess(false), 3000);
+    } catch {
+      setDetailsError('Network error. Is your backend running?');
+    } finally {
+      setCartoonLoading(false);
+    }
+  };
+
+  const handleRestoreOriginal = async () => {
+    setCartoonLoading(true);
+    setDetailsError(null);
+    setDetailsSuccess(false);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me/cartoon-avatar/revert`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setDetailsError(data.detail || 'Failed to restore original profile image.');
+        return;
+      }
+
+      setUserData(prev => ({
+        ...prev,
+        ...data,
+        profileImage: buildImageUrl(data.profile_image_url),
+        cartoonAvatar: buildImageUrl(data.cartoon_avatar_url),
+      }));
+
+      setDetailsSuccess(true);
+      setTimeout(() => setDetailsSuccess(false), 3000);
+    } catch {
+      setDetailsError('Network error. Is your backend running?');
+    } finally {
+      setCartoonLoading(false);
+    }
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     handleProfileImageUpload(e.dataTransfer.files?.[0]);
@@ -212,16 +300,18 @@ export default function SettingsDetails({ userData, setUserData }) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-8">
             <div>
               <div className="text-sm font-semibold text-[#2b2b2b]">Your photo</div>
-              <div className="text-xs text-[#c5c5c5] mt-1">This will be displayed on your profile.</div>
+              <div className="text-xs text-[#c5c5c5] mt-1">
+                This will be displayed on your profile.
+              </div>
             </div>
+
             <div className="lg:col-span-2 flex flex-col sm:flex-row items-start gap-6 max-w-2xl">
-              
               {/* Image / Fallback Container */}
-              {userData?.profileImage ? (
-                <img 
-                  src={userData.profileImage} 
-                  alt="Avatar" 
-                  className="w-16 h-16 rounded-full object-cover border border-[#e5e5e5] flex-shrink-0" 
+              {displayedProfileImage ? (
+                <img
+                  src={displayedProfileImage}
+                  alt="Avatar"
+                  className="w-16 h-16 rounded-full object-cover border border-[#e5e5e5] flex-shrink-0"
                 />
               ) : (
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center border border-[#e5e5e5] flex-shrink-0">
@@ -229,30 +319,83 @@ export default function SettingsDetails({ userData, setUserData }) {
                 </div>
               )}
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/svg+xml,image/png,image/jpeg,image/gif"
-                className="hidden"
-                onChange={(e) => handleProfileImageUpload(e.target.files?.[0])}
-              />
+              <div className="flex-1 w-full flex flex-col gap-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/svg+xml,image/png,image/jpeg,image/gif"
+                  className="hidden"
+                  onChange={(e) => handleProfileImageUpload(e.target.files?.[0])}
+                />
 
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => fileInputRef.current?.click()}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
-                }}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
-                className={`flex-1 w-full border-2 border-dashed border-[#e5e5e5] rounded-2xl p-6 flex flex-col items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer group ${imageUploading ? 'opacity-60 pointer-events-none' : ''}`}
-              >
-                <div className="w-10 h-10 bg-white border border-[#e5e5e5] rounded-full flex items-center justify-center mb-3 group-hover:shadow-sm transition-all">
-                  <UploadCloud className="w-5 h-5 text-[#2b2b2b]" />
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                  className={`w-full border-2 border-dashed border-[#e5e5e5] rounded-2xl p-6 flex flex-col items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer group ${
+                    imageUploading ? 'opacity-60 pointer-events-none' : ''
+                  }`}
+                >
+                  <div className="w-10 h-10 bg-white border border-[#e5e5e5] rounded-full flex items-center justify-center mb-3 group-hover:shadow-sm transition-all">
+                    <UploadCloud className="w-5 h-5 text-[#2b2b2b]" />
+                  </div>
+
+                  <p className="text-sm text-[#2b2b2b]">
+                    <span className="text-[#00a97f] font-semibold">
+                      {imageUploading ? 'Uploading...' : 'Click to upload'}
+                    </span>{' '}
+                    or drag and drop
+                  </p>
+
+                  <p className="text-xs text-[#c5c5c5] mt-1">
+                    SVG, PNG, JPG or GIF (max. 2 MB)
+                  </p>
                 </div>
-                <p className="text-sm text-[#2b2b2b]"><span className="text-[#00a97f] font-semibold">{imageUploading ? 'Uploading...' : 'Click to upload'}</span> or drag and drop</p>
-                <p className="text-xs text-[#c5c5c5] mt-1">SVG, PNG, JPG or GIF (max. 2 MB)</p>
+
+                <div className="w-full flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCartoonify}
+                    disabled={cartoonLoading || imageUploading || !originalProfileImage}
+                    className={`px-5 py-2.5 text-sm font-semibold text-white bg-[#00a97f] rounded-xl hover:bg-[#008a68] transition-colors ${
+                      cartoonLoading || imageUploading || !originalProfileImage
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    {cartoonLoading ? 'Generating...' : 'Cartoonify!'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleRestoreOriginal}
+                    disabled={
+                      cartoonLoading ||
+                      !userData?.cartoon_avatar_url ||
+                      !userData?.use_cartoon_avatar
+                    }
+                    className={`px-5 py-2.5 text-sm font-semibold text-[#2b2b2b] bg-white border border-[#e5e5e5] rounded-xl hover:bg-gray-50 transition-colors ${
+                      cartoonLoading ||
+                      !userData?.cartoon_avatar_url ||
+                      !userData?.use_cartoon_avatar
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    Restore original
+                  </button>
+                </div>
+
+                <p className="text-xs text-[#c5c5c5]">
+                  {userData?.use_cartoon_avatar
+                    ? 'Current photo: Cartoon avatar'
+                    : 'Current photo: Original profile photo'}
+                </p>
               </div>
             </div>
           </div>
@@ -275,9 +418,9 @@ export default function SettingsDetails({ userData, setUserData }) {
 
                 <div className="relative z-10 flex h-full items-center gap-4 px-6">
                   <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-white p-[2px] shadow-md">
-                    {userData?.profileImage ? (
+                    {displayedProfileImage ? (
                       <img
-                        src={userData.profileImage}
+                        src={displayedProfileImage}
                         alt="Profile banner avatar"
                         className="h-full w-full rounded-full object-cover"
                       />
