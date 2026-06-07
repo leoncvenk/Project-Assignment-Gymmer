@@ -166,6 +166,7 @@ async def upload_profile_image(
         {
             "profile_image_url": profile_image_url,
             "profile_theme": profile_theme,
+            "use_cartoon_avatar": False,
         },
     )
 

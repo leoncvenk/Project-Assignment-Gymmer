@@ -27,6 +27,7 @@ def _user_from_document(document: dict) -> User:
         profile_image_url=document.get("profile_image_url"),
         profile_theme=document.get("profile_theme"),
         cartoon_avatar_url=document.get("cartoon_avatar_url"),
+        use_cartoon_avatar=document.get("use_cartoon_avatar", False),
     )
 
 
