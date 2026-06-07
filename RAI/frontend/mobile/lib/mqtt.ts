@@ -46,6 +46,20 @@ type StatusPayload = {
   timestamp: string;
 };
 
+const buildLocationPayload = (
+  userId: string,
+  deviceId: string,
+  coords: LocationCoords
+): LocationPayload => ({
+  userId,
+  deviceId,
+  latitude: coords.latitude,
+  longitude: coords.longitude,
+  accuracy: coords.accuracy ?? null,
+  speed: coords.speed ?? null,
+  timestamp: new Date().toISOString(),
+});
+
 export const connectMqtt = (
   userId: string,
   deviceId: string,
