@@ -63,7 +63,9 @@ class UserService:
         return user
 
     async def get_user_by_username(self, username: str) -> User | None:
-        document = await self.collection.find_one({"username": username})
+        document = await self.collection.find_one({
+            "username": {"$regex": f"^{username.strip()}$", "$options": "i"}
+        })
 
         if document is None:
             return None

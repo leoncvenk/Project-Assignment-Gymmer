@@ -82,7 +82,20 @@ export default function SettingsDetails({ userData, setUserData }) {
         return;
       }
 
-      setUserData(prev => ({ ...prev, username: detailsFormData.username }));
+      const data = await response.json();
+
+      setUserData(prev => ({
+        ...prev,
+        ...data,
+        profileImage: buildImageUrl(data.profile_image_url),
+        cartoonAvatar: buildImageUrl(data.cartoon_avatar_url),
+      }));
+
+      setDetailsFormData(prev => ({
+        ...prev,
+        username: data.username,
+      }));
+
       setDetailsSuccess(true);
       setTimeout(() => setDetailsSuccess(false), 3000);
     } catch {
