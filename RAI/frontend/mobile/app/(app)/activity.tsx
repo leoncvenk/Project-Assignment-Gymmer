@@ -1,4 +1,4 @@
-import { Activity, MapPinned, Radio, Smartphone } from 'lucide-react-native';
+import { Activity, MapPinned, Radio, Smartphone, Footprints } from 'lucide-react-native';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DashboardSectionCard from 'components/cards/DashboardSectionCard';
@@ -6,9 +6,13 @@ import DashboardStatCard from 'components/cards/DashboardStatCard';
 import PrimaryButton from 'components/ui/PrimaryButton';
 import { layout } from 'constants/theme';
 import { useGlobalData } from './_layout';
+import { useStepCounter } from 'lib/step-counter';
 
 export default function ActivityScreen() {
   const { mqttConnected, activeDevicesCount, userId } = useGlobalData();
+  
+  // Initialize the custom step counter hook
+  const steps = useStepCounter();
 
   function handleStartActivity() {
     console.log('Activity started');
@@ -24,11 +28,22 @@ export default function ActivityScreen() {
           paddingBottom: layout.floatingTabBarSafePadding + 140,
         }}
         showsVerticalScrollIndicator={false}>
+        
         <View className="mb-8">
           <Text className="text-4xl font-bold text-text">Live Activity</Text>
           <Text className="mt-3 text-base text-muted">
             Track real-time movement, GPS location, and connected devices.
           </Text>
+        </View>
+
+        {/* Step Counter Pill */}
+        <View className="mb-6 flex-row">
+          <View className="flex-row items-center gap-3 rounded-full border border-accent bg-accent/10 px-4 py-2">
+            <Footprints size={20} color="#00a97f" />
+            <Text className="font-semibold text-text">
+              {steps} steps today
+            </Text>
+          </View>
         </View>
 
         <View className="mb-4 flex-row gap-4">
