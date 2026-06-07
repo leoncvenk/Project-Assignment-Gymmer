@@ -1,109 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
 import { Activity, MapPinned, Radio, Smartphone } from 'lucide-react-native';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Constants from 'expo-constants';
-
 import DashboardSectionCard from 'components/cards/DashboardSectionCard';
 import DashboardStatCard from 'components/cards/DashboardStatCard';
 import PrimaryButton from 'components/ui/PrimaryButton';
 import { layout } from 'constants/theme';
-
-import { getAuthToken, getCurrentUser } from 'lib/auth';
-import { connectMqtt, sendHeartbeat, disconnectMqtt } from 'lib/mqtt';
+import { useGlobalData } from './_layout';
 
 export default function ActivityScreen() {
-  const [mqttConnected, setMqttConnected] = useState(false);
-  const [activeDevicesCount, setActiveDevicesCount] = useState(0);
-  const [userId, setUserId] = useState<string>('Loading...');
-
-  const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
-  const deviceId = useRef(`device_${Math.random().toString(16).slice(2, 8)}`).current;
-
-  useEffect(() => {
-    let isMounted = true;
-    let countInterval: NodeJS.Timeout;
-
-    const initializeLiveActivity = async () => {
-      try {
-        const token = await getAuthToken();
-        if (!token) return;
-
-        const user = await getCurrentUser(token);
-        const currentUserId = (user as any).id || 'unknown_user';
-
-        if (isMounted) {
-          setUserId(currentUserId);
-        }
-
-        connectMqtt(
-          currentUserId,
-          deviceId,
-          () => {
-            if (isMounted) setMqttConnected(true);
-
-            sendHeartbeat(currentUserId, deviceId);
-
-            heartbeatInterval.current = setInterval(() => {
-              sendHeartbeat(currentUserId, deviceId);
-            }, 30000);
-          },
-          (message) => {
-            console.log('MQTT message received:', message.payloadString);
-          }
-        );
-
-        const fetchActiveCount = async () => {
-          try {
-            const url = `${process.env.EXPO_PUBLIC_API_URL}/api/users/me/devices/active-count`;
-
-            const res = await fetch(url, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-              },
-            });
-
-            if (res.ok) {
-              const data = await res.json();
-
-              console.log('DEBUG API Response:', data);
-
-              if (isMounted) {
-                setActiveDevicesCount(data.count ?? 0);
-              }
-            }
-          } catch (error) {
-            console.warn('API device counting is currently unreachable.');
-          }
-        };
-
-        fetchActiveCount();
-        countInterval = setInterval(fetchActiveCount, 15000);
-      } catch (error) {
-        console.error('Error initializing Live Activity:', error);
-      }
-    };
-
-    initializeLiveActivity();
-
-    return () => {
-      isMounted = false;
-
-      if (heartbeatInterval.current) {
-        clearInterval(heartbeatInterval.current);
-      }
-
-      if (countInterval) {
-        clearInterval(countInterval);
-      }
-
-      disconnectMqtt();
-    };
-  }, [deviceId]);
+  const { mqttConnected, activeDevicesCount, userId } = useGlobalData();
 
   function handleStartActivity() {
-    console.log('Activity started (TODO: publish location to MQTT)');
+    console.log('Activity started');
   }
 
   return (
@@ -118,7 +26,6 @@ export default function ActivityScreen() {
         showsVerticalScrollIndicator={false}>
         <View className="mb-8">
           <Text className="text-4xl font-bold text-text">Live Activity</Text>
-
           <Text className="mt-3 text-base text-muted">
             Track real-time movement, GPS location, and connected devices.
           </Text>
@@ -131,7 +38,6 @@ export default function ActivityScreen() {
             description="no session"
             icon={<Activity size={20} color="#00a97f" />}
           />
-
           <DashboardStatCard
             title="MQTT"
             value={mqttConnected ? 'Online' : 'Offline'}
@@ -147,7 +53,6 @@ export default function ActivityScreen() {
             description="no signal"
             icon={<MapPinned size={20} color="#00a97f" />}
           />
-
           <DashboardStatCard
             title="Devices"
             value={`${activeDevicesCount}`}
@@ -162,9 +67,7 @@ export default function ActivityScreen() {
             subtitle="Real-time route tracking will appear here.">
             <View className="h-56 items-center justify-center rounded-3xl bg-card">
               <MapPinned size={42} color="#00a97f" />
-
               <Text className="mt-4 text-lg font-semibold text-textOnDark">No active route</Text>
-
               <Text className="mt-2 text-center text-sm text-muted">
                 Start an activity to begin GPS tracking.
               </Text>
@@ -178,14 +81,8 @@ export default function ActivityScreen() {
             subtitle="Heartbeat and device state are shown here.">
             <View className="rounded-2xl border border-muted bg-background p-4">
               <Text className="mb-3 font-semibold text-text">
-                Currently active devices (Live): {activeDevicesCount}
+                Currently active devices: {activeDevicesCount}
               </Text>
-
-              <Text className="mt-1 text-sm text-muted">
-                The system automatically counts devices via MQTT heartbeat and Last Will mechanism,
-                without database overhead.
-              </Text>
-
               <Text className="mt-3 text-xs text-muted/60">User ID: {userId}</Text>
             </View>
           </DashboardSectionCard>
