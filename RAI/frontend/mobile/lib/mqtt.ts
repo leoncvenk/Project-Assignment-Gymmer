@@ -6,6 +6,15 @@ const MQTT_PORT = parseInt(process.env.EXPO_PUBLIC_MQTT_PORT || '8083');
 
 let client: Paho.Client | null = null;
 
+const getHeartbeatTopic = (userId: string, deviceId: string) =>
+  `gymmer/live/${userId}/${deviceId}/heartbeat`;
+
+const getLocationTopic = (userId: string, deviceId: string) =>
+  `gymmer/live/${userId}/${deviceId}/location`;
+
+const getStatusTopic = (userId: string, deviceId: string) =>
+  `gymmer/live/${userId}/${deviceId}/status`;
+
 export const connectMqtt = (
   userId: string,
   deviceId: string,
