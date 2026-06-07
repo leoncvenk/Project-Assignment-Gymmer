@@ -2,7 +2,7 @@ import { Activity, MapPinned, Radio, Smartphone, Footprints } from 'lucide-react
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Polyline } from 'react-native-maps';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import DashboardSectionCard from 'components/cards/DashboardSectionCard';
 import DashboardStatCard from 'components/cards/DashboardStatCard';
@@ -27,34 +27,109 @@ function calculateDistance(points: { latitude: number; longitude: number }[]) {
 
 export default function ActivityScreen() {
   const { mqttConnected, activeDevicesCount, userId } = useGlobalData();
-  const localSteps = useStepCounter();
-  const [serverSteps, setServerSteps] = useState(0);
 
-  const { isTracking, currentLocation, route, startTracking, stopTracking } = useLocationTracker();
+  const rawLocalSteps = useStepCounter();
+
+  const lastRawSteps = useRef(rawLocalSteps);
+  const isInitialized = useRef(false);
+  const sessionStartTimeRef = useRef<number | null>(null);
+
+  const [serverSteps, setServerSteps] = useState(0);
+  const [serverDistance, setServerDistance] = useState(0);
+  const [serverActiveMinutes, setServerActiveMinutes] = useState(0);
+
+  const [sessionSteps, setSessionSteps] = useState(0);
+  const [isReady, setIsReady] = useState(false);
+
+  const { isTracking, currentLocation, route, startTracking, stopTracking } =
+    useLocationTracker(userId);
 
   useEffect(() => {
+    if (!userId) return;
+
     async function loadInitialData() {
       const data = await fetchActivityData();
-      if (data) setServerSteps(data.steps);
+      if (data) {
+        setServerSteps(data.steps || 0);
+        setServerDistance(data.distance_meters || 0);
+        setServerActiveMinutes(data.active_minutes || 0);
+      }
     }
     loadInitialData();
-  }, []);
+
+    setSessionSteps(0);
+    lastRawSteps.current = rawLocalSteps;
+    isInitialized.current = false;
+    setIsReady(false);
+
+    const timer = setTimeout(() => {
+      isInitialized.current = true;
+      setIsReady(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [userId]);
+
+  useEffect(() => {
+    const diff = rawLocalSteps - lastRawSteps.current;
+
+    if (diff > 0) {
+      if (!isInitialized.current) {
+        isInitialized.current = true;
+        setIsReady(true);
+      } else {
+        setSessionSteps((prev) => prev + diff);
+      }
+    }
+
+    lastRawSteps.current = rawLocalSteps;
+  }, [rawLocalSteps]);
+
+  const displaySteps = serverSteps + sessionSteps;
 
   async function handleToggleActivity() {
     if (isTracking) {
       stopTracking();
       console.log('Activity stopped. Route length:', route.length);
 
-      const distance = calculateDistance(route);
-      const updatedData = await syncActivityData(localSteps, distance, 0);
-      if (updatedData) setServerSteps(updatedData.steps);
+      const sessionDistance = calculateDistance(route);
+      let sessionMinutes = 0;
+
+      if (sessionStartTimeRef.current) {
+        const elapsedMs = Date.now() - sessionStartTimeRef.current;
+        sessionMinutes = Math.round(elapsedMs / 60000);
+        sessionStartTimeRef.current = null;
+      }
+
+      const totalDailyDistance = serverDistance + sessionDistance;
+      const totalDailyMinutes = serverActiveMinutes + sessionMinutes;
+
+      const updatedData = await syncActivityData(
+        displaySteps,
+        totalDailyDistance,
+        totalDailyMinutes
+      );
+
+      if (updatedData) {
+        setServerSteps(updatedData.steps);
+        setServerDistance(updatedData.distance_meters);
+        setServerActiveMinutes(updatedData.active_minutes);
+        setSessionSteps(0);
+      }
     } else {
       startTracking();
+      sessionStartTimeRef.current = Date.now();
       console.log('Activity started');
     }
   }
 
-  const displaySteps = Math.max(localSteps, serverSteps);
+  if (!userId || !isReady) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background">
+        <Text className="text-lg text-muted">Syncing device sensors...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-background">

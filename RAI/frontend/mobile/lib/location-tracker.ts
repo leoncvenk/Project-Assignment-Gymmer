@@ -2,10 +2,7 @@ import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const ROUTE_KEY = '@gymmer_route_coords';
-const DATE_KEY = '@gymmer_route_date';
-
-export function useLocationTracker() {
+export function useLocationTracker(userId: string | null | undefined) {
   const [isTracking, setIsTracking] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<{
     latitude: number;
@@ -16,6 +13,11 @@ export function useLocationTracker() {
 
   useEffect(() => {
     async function loadSavedRoute() {
+      if (!userId) return;
+
+      const ROUTE_KEY = `@gymmer_route_coords_${userId}`;
+      const DATE_KEY = `@gymmer_route_date_${userId}`;
+
       try {
         const savedRoute = await AsyncStorage.getItem(ROUTE_KEY);
         const savedDate = await AsyncStorage.getItem(DATE_KEY);
@@ -42,10 +44,17 @@ export function useLocationTracker() {
     }
 
     loadSavedRoute();
-  }, []);
+  }, [userId]);
 
   async function startTracking() {
+    if (!userId) {
+      console.log('Cannot start tracking: No user ID');
+      return;
+    }
+
+    const ROUTE_KEY = `@gymmer_route_coords_${userId}`;
     const { status } = await Location.requestForegroundPermissionsAsync();
+
     if (status !== 'granted') {
       console.log('Location permission denied.');
       return;
@@ -81,6 +90,7 @@ export function useLocationTracker() {
 
     setSubscription(sub);
   }
+
   function stopTracking() {
     if (subscription) {
       subscription.remove();
