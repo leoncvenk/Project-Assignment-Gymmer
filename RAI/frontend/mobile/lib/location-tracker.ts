@@ -3,7 +3,7 @@ import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { sendLocationUpdate } from './mqtt';
 
-export function useLocationTracker(userId: string | null | undefined) {
+export function useLocationTracker(userId: string | null | undefined, deviceId?: string) {
   const [isTracking, setIsTracking] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<{
     latitude: number;
