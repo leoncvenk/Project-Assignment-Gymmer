@@ -36,7 +36,6 @@ export default function EditProfileScreen() {
     { label: 'Gain weight', value: 'gain_weight' },
   ];
 
-  // Ob odprtju zaslona potegnemo tvoje obstoječe podatke
   useEffect(() => {
     async function fetchCurrentProfile() {
       try {
@@ -45,7 +44,6 @@ export default function EditProfileScreen() {
 
         const profileData = await getProfile(token);
 
-        // Polja se napolnijo s trenutnimi podatki
         setHeightCm(profileData.height_cm?.toString() || '');
         setWeightKg(profileData.weight_kg?.toString() || '');
         setGoalWeightKg(profileData.goal_weight_kg?.toString() || '');
@@ -54,7 +52,7 @@ export default function EditProfileScreen() {
         setActivityLevel(profileData.activity_level || 'moderate');
         setGoalType(profileData.goal_type || 'lose_weight');
       } catch (error) {
-        console.error('Napaka pri nalaganju podatkov profila:', error);
+        console.error('Error loading profile data:', error);
       } finally {
         setLoading(false);
       }
@@ -83,12 +81,12 @@ export default function EditProfileScreen() {
         goal_type: goalType,
       };
 
-      console.log('Pošiljam podatke:', data);
+      console.log('Sending data:', data);
 
       await updateProfile(token, data);
       router.back();
     } catch (error: any) {
-      console.log('PODROBNA NAPAKA:', error);
+      console.error('DETAILED ERROR:', error);
 
       if (isAxiosError(error)) {
         Alert.alert('Update failed', JSON.stringify(error.response?.data ?? error.message));
@@ -97,6 +95,7 @@ export default function EditProfileScreen() {
       }
     }
   }
+
   if (loading) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-background">
@@ -107,15 +106,16 @@ export default function EditProfileScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <View className="flex-row items-center px-6 py-4">
-        <ArrowLeft size={24} color="#f2f2f2" onPress={() => router.back()} />
-        <Text className="ml-4 text-xl font-bold text-text">Edit Profile</Text>
+      <View className="flex-row items-center px-6 pb-2 pt-4">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="-ml-2 mr-4 rounded-full bg-card p-2">
+          <ArrowLeft size={24} color="#00a97f" />
+        </TouchableOpacity>
+        <Text className="text-2xl font-bold text-text">Edit Profile</Text>
       </View>
 
-      <ScrollView
-        className="flex-1 px-6"
-        contentContainerClassName="py-4"
-        showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
         <View className="mb-6">
           <Text className="text-base text-muted">
             Update your body stats to recalculate your nutrition targets.
@@ -217,16 +217,13 @@ export default function EditProfileScreen() {
           </View>
         </View>
 
-        {/* GUMBI NA DNU (Shrani in Prekliči) */}
         <View className="mb-10 mt-6 gap-3">
           <PrimaryButton title="Save changes" onPress={handleSave} />
 
           <TouchableOpacity
             onPress={() => router.back()}
-            className="rounded-2xl border border-sidebar bg-sidebar py-4">
-            <Text className="text-center text-base font-semibold text-white">
-              Cancel without saving
-            </Text>
+            className="items-center rounded-2xl border border-muted bg-sidebar py-4">
+            <Text className="font-bold text-textOnDark">Cancel without saving</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
