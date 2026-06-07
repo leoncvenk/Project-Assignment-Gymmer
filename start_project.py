@@ -48,6 +48,8 @@ def setup_envs():
 
     if roboflow_key:
         write_env("ORV/.env", f"ROBOFLOW_API_KEY={roboflow_key}\n")
+    else:
+        write_env("ORV/.env", "") # <-- Docker won't start if .env is missing
 
     rai_backend_env = f"""MONGO_URI={mongo_uri}
 DB_NAME=gymmer
