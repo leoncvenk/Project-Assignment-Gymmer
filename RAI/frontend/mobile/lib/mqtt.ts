@@ -70,6 +70,17 @@ const buildHeartbeatPayload = (
   timestamp: new Date().toISOString(),
 });
 
+const buildStatusPayload = (
+  userId: string,
+  deviceId: string,
+  status: 'online' | 'offline'
+): StatusPayload => ({
+  userId,
+  deviceId,
+  status,
+  timestamp: new Date().toISOString(),
+});
+
 export const connectMqtt = (
   userId: string,
   deviceId: string,
