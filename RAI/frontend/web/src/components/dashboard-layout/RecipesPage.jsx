@@ -101,14 +101,14 @@ export default function RecipesPage() {
     const params = new URLSearchParams();
 
     params.set("page", String(nextPage));
-    params.set("limit", "10");
+    params.set("limit", "8");
 
-    if (category === "high_protein") {
-      params.set("category", "high_protein");
-    }
-
-    if (category === "most_popular") {
-      params.set("category", "most_popular");
+    if (
+      category === "high_protein" ||
+      category === "most_popular" ||
+      category === "all_recipes"
+    ) {
+      params.set("category", category);
     }
 
     return `${API_BASE_URL}/recipes?${params.toString()}`;
@@ -121,7 +121,9 @@ export default function RecipesPage() {
       setLoading(true);
       setError("");
 
-      const response = await fetch(buildRecipesUrl(category, nextPage));
+      const url = buildRecipesUrl(category, nextPage);
+
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error("Failed to fetch recipes.");
