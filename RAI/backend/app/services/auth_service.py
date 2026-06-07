@@ -40,13 +40,16 @@ class AuthService:
     ) -> User:
         updates = {}
 
-        if data.username is not None and data.username != current_user.username:
-            existing_user = await self.user_service.get_user_by_username(data.username)
+        if data.username is not None:
+            username = data.username.strip()
 
-            if existing_user is not None and existing_user.id != current_user.id:
-                raise ValueError("Username already exists")
+            if username != current_user.username:
+                existing_user = await self.user_service.get_user_by_username(username)
 
-            updates["username"] = data.username
+                if existing_user is not None and existing_user.id != current_user.id:
+                    raise ValueError("Username already exists")
+
+                updates["username"] = username
 
         if data.email is not None and str(data.email) != current_user.email:
             existing_user = await self.user_service.get_user_by_email(str(data.email))
