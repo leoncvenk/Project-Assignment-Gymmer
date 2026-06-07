@@ -13,7 +13,6 @@ export function useLocationTracker(userId: string | null | undefined) {
 
   useEffect(() => {
     async function loadSavedRoute() {
-      // Varnostni pregled: ne naloži ničesar, če uporabnik ni prijavljen
       if (!userId) return;
 
       const ROUTE_KEY = `@gymmer_route_coords_${userId}`;
@@ -45,7 +44,7 @@ export function useLocationTracker(userId: string | null | undefined) {
     }
 
     loadSavedRoute();
-  }, [userId]); // Hook se bo ponovno izvedel, če se userId spremeni
+  }, [userId]);
 
   async function startTracking() {
     if (!userId) {
