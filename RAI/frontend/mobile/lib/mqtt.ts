@@ -98,12 +98,7 @@ export const connectMqtt = (
   client = new Paho.Client(MQTT_BROKER_URL, MQTT_PORT, clientId);
 
   const lastWillMessage = new Paho.Message(
-    JSON.stringify({
-      userId,
-      deviceId,
-      status: 'offline',
-      timestamp: new Date().toISOString(),
-    })
+    JSON.stringify(buildStatusPayload(userId, deviceId, 'offline'))
   );
   lastWillMessage.destinationName = getStatusTopic(userId, deviceId);
   lastWillMessage.retained = true;
