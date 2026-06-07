@@ -104,13 +104,13 @@ export const connectMqtt = (
   lastWillMessage.retained = true;
   lastWillMessage.qos = 1;
 
-  client.onConnectionLost = (responseObject) => {
+  client.onConnectionLost = (responseObject: any) => {
     if (responseObject.errorCode !== 0) {
       console.error('MQTT Connection Lost:', responseObject.errorMessage);
     }
   };
 
-  client.onMessageArrived = (message) => {
+  client.onMessageArrived = (message: Paho.Message) => {
     onMessageCallback(message);
   };
 
@@ -119,7 +119,7 @@ export const connectMqtt = (
       console.log(`Povezan na lokalni broker: ${MQTT_BROKER_URL}:${MQTT_PORT}`);
       onConnectCallback();
     },
-    onFailure: (e) => {
+    onFailure: (e: any) => {
       console.error('MQTT Connection failed:', e.errorMessage);
     },
     willMessage: lastWillMessage,
