@@ -214,8 +214,8 @@ def save_to_json(data, filename):
 
 if __name__ == "__main__":
 
-    LIMIT = 5
-    PAGE = 3
+    LIMIT = 24
+    PAGE = 1
 
     all_recipes = {}
 
