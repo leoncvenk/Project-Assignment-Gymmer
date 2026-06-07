@@ -26,7 +26,7 @@ function calculateDistance(points: { latitude: number; longitude: number }[]) {
 }
 
 export default function ActivityScreen() {
-  const { mqttConnected, activeDevicesCount, userId } = useGlobalData();
+  const { mqttConnected, activeDevicesCount, userId, deviceId } = useGlobalData();
 
   const rawLocalSteps = useStepCounter();
 
@@ -42,7 +42,7 @@ export default function ActivityScreen() {
   const [isReady, setIsReady] = useState(false);
 
   const { isTracking, currentLocation, route, startTracking, stopTracking } =
-    useLocationTracker(userId);
+    useLocationTracker(userId, deviceId);
 
   useEffect(() => {
     if (!userId) return;
