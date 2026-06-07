@@ -16,42 +16,12 @@ export default function ActivitiesTab({ userData }) {
   const [isViewingReport, setIsViewingReport] = useState(false);
 
   const [weeklyData, setWeeklyData] = useState({
-    Mon: 45, Tue: 60, Wed: 30, Thu: 90, Fri: 0, Sat: 120, Sun: 45
+    Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0
   });
 
-  const [activities, setActivities] = useState([
-    {
-      id: 1,
-      title: 'Morning Run & Sprints',
-      type: 'Cardio',
-      duration: '45 min',
-      calories: 420,
-      feeling: '🤩',
-      image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=800',
-      description: 'Felt amazing today! Pushed my limits on the last 2km. The weather was perfect for an outdoor session.',
-      date: 'Wed, 07:30 AM',
-      shared: true
-    },
-    {
-      id: 2,
-      title: 'Upper Body Power',
-      type: 'Strength',
-      duration: '60 min',
-      calories: 310,
-      feeling: '🙂',
-      image: null,
-      description: 'Focused on bench press and overhead presses. Hit a new PR on the incline bench!',
-      date: 'Tue, 18:15 PM',
-      shared: false
-    }
-  ]);
+  const [activities, setActivities] = useState([]);
 
-  const [weeklyPlan, setWeeklyPlan] = useState([
-    { id: 1, day: 'Monday', title: 'Legs & Core', desc: 'Squats, Lunges, Planks • 45 min', completed: true, current: false },
-    { id: 2, day: 'Wednesday', title: 'Cardio & HIIT', desc: 'Sprints, Burpees, Jump Rope • 30 min', completed: false, current: true },
-    { id: 3, day: 'Friday', title: 'Upper Body Focus', desc: 'Pull-ups, Push-ups, Rows • 60 min', completed: false, current: false },
-    { id: 4, day: 'Sunday', title: 'Active Recovery', desc: 'Yoga, Stretching, Light Walk • 45 min', completed: false, current: false }
-  ]);
+  const [weeklyPlan, setWeeklyPlan] = useState([]);
 
   const handleSaveActivity = (newActivity, durationNum, formDay) => {
     setActivities([newActivity, ...activities]);

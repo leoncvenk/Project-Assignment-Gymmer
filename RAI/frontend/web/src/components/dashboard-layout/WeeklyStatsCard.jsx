@@ -1,5 +1,4 @@
 import React from 'react';
-import { TrendingUp } from 'lucide-react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,13 +14,15 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 export default function WeeklyStatsCard({ weeklyData, totalHoursDisplay, onViewReport }) {
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  
+  const values = daysOfWeek.map(day => weeklyData?.[day] || 0);
+  const hasActivityData = values.some(value => Number(value) > 0);
+
   const chartData = {
     labels: daysOfWeek,
     datasets: [
       {
         label: 'Active Time (min)',
-        data: daysOfWeek.map(day => weeklyData[day]),
+        data: values,
         backgroundColor: (context) => {
           const value = context.dataset.data[context.dataIndex];
           return value >= 60 ? '#00a97f' : 'rgba(0, 169, 127, 0.4)';
@@ -51,32 +52,48 @@ export default function WeeklyStatsCard({ weeklyData, totalHoursDisplay, onViewR
             const val = context.raw;
             if (val >= 60) return `${Math.floor(val / 60)}h ${val % 60}m`;
             return `${val}m`;
-          }
-        }
+          },
+        },
       },
     },
     scales: {
-      x: { grid: { display: false, drawBorder: false }, ticks: { color: '#9ca3af', font: { size: 10 } }, border: { display: false } },
-      y: { display: false, grid: { display: false }, max: Math.max(...Object.values(weeklyData), 140) + 20 }
+      x: {
+        grid: { display: false, drawBorder: false },
+        ticks: { color: '#9ca3af', font: { size: 10 } },
+        border: { display: false },
+      },
+      y: {
+        display: false,
+        grid: { display: false },
+        max: Math.max(...values, 140) + 20,
+      },
     },
-    animation: { duration: 1000, easing: 'easeOutQuart' }
+    animation: { duration: 1000, easing: 'easeOutQuart' },
   };
 
   return (
     <div className="border border-gray-200 rounded-xl p-5 bg-white shadow-sm flex-shrink-0">
       <div className="flex justify-between items-end mb-4">
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Active Time</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+            Active Time
+          </h3>
           <div className="flex items-baseline gap-2">
-            <h2 className="text-2xl font-bold text-[#2b2b2b]">{totalHoursDisplay}<span className="text-sm font-normal text-gray-500 ml-1">hrs</span></h2>
-            <span className="flex items-center text-[10px] font-medium text-[#00a97f] bg-[#e6f7f2] px-1.5 py-0.5 rounded-full">
-              <TrendingUp className="w-2.5 h-2.5 mr-0.5" /> 8%
-            </span>
+            <h2 className="text-2xl font-bold text-[#2b2b2b]">
+              {totalHoursDisplay}
+              <span className="text-sm font-normal text-gray-500 ml-1">hrs</span>
+            </h2>
           </div>
         </div>
-        <button 
+
+        <button
           onClick={onViewReport}
-          className="text-[10px] font-semibold text-[#00a97f] hover:underline cursor-pointer"
+          disabled={!hasActivityData}
+          className={`text-[10px] font-semibold transition-colors ${
+            hasActivityData
+              ? 'text-[#00a97f] hover:underline cursor-pointer'
+              : 'text-gray-300 cursor-not-allowed'
+          }`}
         >
           View Report
         </button>
@@ -87,7 +104,18 @@ export default function WeeklyStatsCard({ weeklyData, totalHoursDisplay, onViewR
       </div>
 
       <div className="h-32 w-full relative">
-        <Bar data={chartData} options={chartOptions} />
+        {hasActivityData ? (
+          <Bar data={chartData} options={chartOptions} />
+        ) : (
+          <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 text-center">
+            <div>
+              <p className="text-xs font-semibold text-[#2b2b2b]">No activity data yet.</p>
+              <p className="mt-1 text-[10px] text-gray-500">
+                Logged workouts will appear here.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

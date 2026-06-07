@@ -94,6 +94,15 @@ export default function WeeklyPlanCard({ weeklyPlan, onAddPlan, onToggleItem, on
       </AnimatePresence>
 
       <div className="flex flex-col divide-y divide-gray-100">
+        {weeklyPlan.length === 0 && !isAddingPlan && (
+          <div className="flex flex-col items-center justify-center px-6 py-10 text-center">
+            <p className="text-sm font-semibold text-[#2b2b2b]">No weekly plan yet.</p>
+            <p className="mt-1 text-xs text-gray-500">
+              Add your first planned workout with the plus button.
+            </p>
+          </div>
+        )}
+        
         <AnimatePresence>
           {weeklyPlan.map((item) => (
             <motion.div 
