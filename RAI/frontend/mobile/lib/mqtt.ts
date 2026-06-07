@@ -144,6 +144,30 @@ export const sendHeartbeat = (userId: string, deviceId: string) => {
     console.warn('Cannot send heartbeat, MQTT client not connected');
   }
 };
+
+export const sendLocationUpdate = (
+  userId: string,
+  deviceId: string,
+  coords: LocationCoords
+) => {
+  if (client && client.isConnected()) {
+    const topic = getLocationTopic(userId, deviceId);
+    const payload = JSON.stringify(
+      buildLocationPayload(userId, deviceId, coords)
+    );
+
+    const message = new Paho.Message(payload);
+    message.destinationName = topic;
+    message.qos = 0;
+    client.send(message);
+
+    console.log('Location update sent to:', topic);
+    console.log('Location payload:', payload);
+  } else {
+    console.warn('Cannot send location update, MQTT client not connected');
+  }
+};
+
 export const disconnectMqtt = () => {
   if (client && client.isConnected()) {
     client.disconnect();
