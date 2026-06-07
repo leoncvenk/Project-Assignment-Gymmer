@@ -15,6 +15,23 @@ const getLocationTopic = (userId: string, deviceId: string) =>
 const getStatusTopic = (userId: string, deviceId: string) =>
   `gymmer/live/${userId}/${deviceId}/status`;
 
+type LocationCoords = {
+  latitude: number;
+  longitude: number;
+  accuracy?: number | null;
+  speed?: number | null;
+};
+
+type LocationPayload = {
+  userId: string;
+  deviceId: string;
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+  speed: number | null;
+  timestamp: string;
+};
+
 export const connectMqtt = (
   userId: string,
   deviceId: string,
