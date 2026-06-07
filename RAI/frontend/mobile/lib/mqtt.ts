@@ -39,6 +39,13 @@ type HeartbeatPayload = {
   timestamp: string;
 };
 
+type StatusPayload = {
+  userId: string;
+  deviceId: string;
+  status: 'online' | 'offline';
+  timestamp: string;
+};
+
 export const connectMqtt = (
   userId: string,
   deviceId: string,
