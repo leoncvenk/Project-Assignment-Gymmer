@@ -1,29 +1,55 @@
-// lib/step-counter.ts
 import { useState, useEffect } from 'react';
 import { Accelerometer } from 'expo-sensors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STEPS_KEY = '@gymmer_steps';
+const DATE_KEY = '@gymmer_steps_date';
 
 export function useStepCounter() {
   const [steps, setSteps] = useState(0);
 
   useEffect(() => {
+    async function loadSteps() {
+      try {
+        const savedSteps = await AsyncStorage.getItem(STEPS_KEY);
+        const savedDate = await AsyncStorage.getItem(DATE_KEY);
+        const today = new Date().toDateString();
+
+        if (savedDate === today && savedSteps) {
+          setSteps(parseInt(savedSteps, 10));
+        } else {
+          await AsyncStorage.setItem(DATE_KEY, today);
+          await AsyncStorage.setItem(STEPS_KEY, '0');
+          setSteps(0);
+        }
+      } catch (error) {
+        console.error('Napaka pri nalaganju korakov:', error);
+      }
+    }
+
+    loadSteps();
+  }, []);
+
+  useEffect(() => {
     let isStepping = false;
 
-    // Set the frequency of updates (100ms = 10 updates per second)
     Accelerometer.setUpdateInterval(100);
 
     const subscription = Accelerometer.addListener(({ x, y, z }) => {
-      // Calculate the total magnitude of the 3D acceleration vector
       const magnitude = Math.sqrt(x * x + y * y + z * z);
-
-      // Standard gravity is 1G. A step impact usually exceeds 1.2G.
       const threshold = 1.2;
 
-      // Register a step if the force crosses the threshold and we aren't already mid-step
       if (magnitude > threshold && !isStepping) {
         isStepping = true;
-        setSteps((prev) => prev + 1);
+
+        setSteps((prev) => {
+          const newSteps = prev + 1;
+          AsyncStorage.setItem(STEPS_KEY, newSteps.toString()).catch((err) =>
+            console.error('Napaka pri shranjevanju:', err)
+          );
+          return newSteps;
+        });
       } else if (magnitude < 1.0) {
-        // Reset the lock when the acceleration drops below gravity
         isStepping = false;
       }
     });
