@@ -8,6 +8,8 @@ export function useLocationTracker(userId: string | null | undefined) {
   const [currentLocation, setCurrentLocation] = useState<{
     latitude: number;
     longitude: number;
+    accuracy?: number | null;
+    speed?: number | null;
   } | null>(null);
   const [route, setRoute] = useState<{ latitude: number; longitude: number }[]>([]);
   const [subscription, setSubscription] = useState<Location.LocationSubscription | null>(null);
