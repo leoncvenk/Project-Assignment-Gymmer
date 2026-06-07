@@ -9,6 +9,7 @@ from app.services.auth_service import AuthService
 from app.models.user import User
 from app.services.auth_service import AuthService, get_authenticated_user
 from app.services.profile_theme_service import generate_profile_theme_for_image
+from app.services.cartoon_avatar_service import generate_cartoon_avatar_for_image
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -165,6 +166,54 @@ async def upload_profile_image(
         {
             "profile_image_url": profile_image_url,
             "profile_theme": profile_theme,
+        },
+    )
+
+    if updated_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    return updated_user
+
+@router.post(
+    "/me/cartoon-avatar",
+    response_model=UserResponseSchema,
+    summary="Generate current user's cartoon avatar",
+    description="Generates a cartoon avatar from the current user's profile image.",
+)
+async def generate_cartoon_avatar(
+    current_user: User = Depends(get_authenticated_user),
+):
+    if not current_user.profile_image_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Upload a profile image before generating a cartoon avatar.",
+        )
+
+    relative_image_path = current_user.profile_image_url.lstrip("/")
+    image_path = Path(relative_image_path)
+
+    if not image_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Profile image file was not found on the server.",
+        )
+
+    try:
+        cartoon_avatar_url = generate_cartoon_avatar_for_image(image_path)
+    except Exception as error:
+        print(f"Cartoon avatar generation failed: {error}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Cartoon avatar generation failed.",
+        )
+
+    updated_user = await auth_service.user_service.update_user(
+        current_user.id,
+        {
+            "cartoon_avatar_url": cartoon_avatar_url,
         },
     )
 
