@@ -75,6 +75,8 @@ export function useLocationTracker(userId: string | null | undefined, deviceId?:
         const coords = {
           latitude: newLocation.coords.latitude,
           longitude: newLocation.coords.longitude,
+          accuracy: newLocation.coords.accuracy,
+          speed: newLocation.coords.speed,
         };
 
         setCurrentLocation(coords);
