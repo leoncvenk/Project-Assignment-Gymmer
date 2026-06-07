@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { sendLocationUpdate } from './mqtt';
 
 export function useLocationTracker(userId: string | null | undefined) {
   const [isTracking, setIsTracking] = useState(false);
