@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
   LayoutDashboard, 
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 
 export default function DashboardSidebar({ userData, activeTab, setActiveTab, onLogout }) {
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   
@@ -93,10 +95,27 @@ export default function DashboardSidebar({ userData, activeTab, setActiveTab, on
           isHovered ? 'w-[280px]' : 'w-[88px]'
         }`}
       >
-        <div className={`flex items-center pt-6 pb-4 transition-all duration-300 ${isHovered ? 'px-6 gap-3' : 'px-0 justify-center'}`}>
-          <img src="/images/gymmerLogo.svg" alt="Gymmer Logo" className="w-8 h-8 object-contain flex-shrink-0" />
-          <span className={`font-semibold text-lg text-[#ffffff] whitespace-nowrap transition-all duration-300 ${isHovered ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}>GYMMER</span>
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          title="Back to home"
+          className={`flex items-center pt-6 pb-4 transition-all duration-300 cursor-pointer hover:opacity-80 ${
+            isHovered ? 'px-6 gap-3' : 'px-0 justify-center'
+          }`}
+        >
+          <img
+            src="/images/gymmerLogo.svg"
+            alt="Gymmer Logo"
+            className="w-8 h-8 object-contain flex-shrink-0"
+          />
+          <span
+            className={`font-semibold text-lg text-[#ffffff] whitespace-nowrap transition-all duration-300 ${
+              isHovered ? 'opacity-100 w-auto' : 'opacity-0 w-0'
+            }`}
+          >
+            GYMMER
+          </span>
+        </button>
 
         <nav className="flex-1 space-y-1.5 overflow-hidden mt-2">
           {navItems.map((item) => (

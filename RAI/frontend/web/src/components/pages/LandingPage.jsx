@@ -1,6 +1,14 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem("access_token");
+
+  const handleGoToDashboard = () => {
+    navigate(isLoggedIn ? "/dashboard" : "/profile");
+  };
+
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[var(--background)] overflow-hidden">
       {/* Center Text Area */}
@@ -9,8 +17,6 @@ export default function LandingPage() {
           initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.98 }}
           className="group flex flex-col items-center justify-center text-center select-none transition-all duration-500 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] hover:drop-shadow-[0_0_30px_var(--accent)]"
         >
           <h1 
@@ -20,35 +26,24 @@ export default function LandingPage() {
             GYMMER
           </h1>
 
-          <p className="text-sm sm:text-xl md:text-1xl uppercase tracking-[0.3em] text-[var(--muted)] font-medium transition-colors duration-300 group-hover:text-[var(--accent)]"
-             style={{ fontFamily: 'Chopsic, sans-serif' }}
+          <p
+            className="text-sm sm:text-xl md:text-1xl uppercase tracking-[0.3em] text-[var(--muted)] font-medium transition-colors duration-300 group-hover:text-[var(--accent)]"
+            style={{ fontFamily: 'Chopsic, sans-serif' }}
           >
             Everything you need in one app
           </p>
+
+          <motion.button
+            type="button"
+            onClick={handleGoToDashboard}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+            className="mt-10 px-8 py-3 rounded-full bg-[var(--accent)] text-black text-sm font-bold uppercase tracking-[0.18em] shadow-lg hover:opacity-90 transition-opacity"
+          >
+            {isLoggedIn ? "Go to dashboard" : "Sign in or register"}
+          </motion.button>
         </motion.div>
       </div>
-
-      {/* Bottom Scroll Indicator */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5}}
-        className="absolute bottom-8 flex flex-col items-center justify-center text-[var(--accent)] animate-bounce"
-      >
-        <svg 
-          width="28" 
-          height="28" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2.5" 
-          strokeLinecap="round" 
-          strokeLinejoin="round"
-        >
-          <path d="m7 6 5 5 5-5" />
-          <path d="m7 13 5 5 5-5" />
-        </svg>
-      </motion.div>
     </div>
   );
 }
