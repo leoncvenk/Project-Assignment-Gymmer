@@ -4,7 +4,7 @@ import Paho from 'paho-mqtt';
 const MQTT_BROKER_URL = process.env.EXPO_PUBLIC_MQTT_BROKER_URL;
 const MQTT_PORT = parseInt(process.env.EXPO_PUBLIC_MQTT_PORT || '8083');
 
-let client: Paho.Client | null = null;
+let client: any = null;
 
 const getHeartbeatTopic = (userId: string, deviceId: string) =>
   `gymmer/live/${userId}/${deviceId}/heartbeat`;
@@ -85,7 +85,7 @@ export const connectMqtt = (
   userId: string,
   deviceId: string,
   onConnectCallback: () => void,
-  onMessageCallback: (message: Paho.Message) => void
+  onMessageCallback: (message: any) => void
 ) => {
   if (!MQTT_BROKER_URL) {
     console.error('NAPAKA: EXPO_PUBLIC_MQTT_BROKER_URL ni nastavljen v .env!');
@@ -110,7 +110,7 @@ export const connectMqtt = (
     }
   };
 
-  client.onMessageArrived = (message: Paho.Message) => {
+  client.onMessageArrived = (message: any) => {
     onMessageCallback(message);
   };
 
