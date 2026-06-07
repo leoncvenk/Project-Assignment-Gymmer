@@ -24,15 +24,6 @@ export default function LandingPage() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="flex flex-col items-center max-w-5xl"
         >
-          {/* Logo */}
-          <motion.img
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            src="/images/gymmerLogo.svg"
-            alt="Gymmer Logo"
-            className="w-28 h-28 mb-8 object-contain"
-          />
 
           {/* Typography */}
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter leading-[1.1] text-[#ffffff] mb-6">

@@ -30,13 +30,6 @@ export default function Navigation() {
         >
           <Menu size={36} strokeWidth={2.5} />
         </button>
-
-        <Link
-          to="/profile"
-          className="text-lg font-bold text-[#f2f2f2] hover:text-[#00a97f] transition-colors px-4 py-2 uppercase tracking-wide cursor-pointer bg-[#2b2b2b]/50 rounded-lg backdrop-blur-sm"
-        >
-          Login
-        </Link>
       </header>
 
       {/* Drawer Menu */}
@@ -60,7 +53,6 @@ export default function Navigation() {
             >
               <div className="p-6 flex items-center justify-between border-b border-[#2b2b2b]">
                 <div className="flex items-center gap-3">
-                  <img src="/images/gymmerLogo.svg" alt="Logo" className="w-8 h-8" />
                   <span className="text-2xl font-black tracking-widest text-[#00a97f]">
                     GYMMER
                   </span>
