@@ -215,6 +215,31 @@ async def generate_cartoon_avatar(
         current_user.id,
         {
             "cartoon_avatar_url": cartoon_avatar_url,
+            "use_cartoon_avatar": True,
+        },
+    )
+
+    if updated_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    return updated_user
+
+@router.post(
+    "/me/cartoon-avatar/revert",
+    response_model=UserResponseSchema,
+    summary="Revert current user's profile image to original",
+    description="Switches the current user back from cartoon avatar to the original profile image.",
+)
+async def revert_cartoon_avatar(
+    current_user: User = Depends(get_authenticated_user),
+):
+    updated_user = await auth_service.user_service.update_user(
+        current_user.id,
+        {
+            "use_cartoon_avatar": False,
         },
     )
 
