@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Search, 
   LayoutDashboard, 
   Apple, 
   ChefHat, 
@@ -9,7 +8,6 @@ import {
   LifeBuoy, 
   Settings, 
   X, 
-  Play, 
   ChevronsUpDown,
   User,
   LogOut,

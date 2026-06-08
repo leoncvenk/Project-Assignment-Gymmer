@@ -85,7 +85,10 @@ export default function AddFoodModal({ isOpen, onClose, mealType, selectedDate, 
         onFoodAdded();
         handleClose();
       } else { setError("Failed to add food entry."); }
-    } catch (err) { setError("Network error."); }
+    } catch (err) { 
+      console.error(err);
+      setError("Network error."); 
+    }
     finally { setLoading(false); }
   };
 

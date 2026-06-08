@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Home, Activity, Flame, Utensils, User, UserPlus, Shield, FileText } from "lucide-react";
 
 export default function Navigation() {
