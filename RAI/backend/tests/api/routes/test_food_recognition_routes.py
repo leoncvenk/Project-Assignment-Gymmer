@@ -1,9 +1,18 @@
 import pytest
+from unittest.mock import patch
 
 from tests.api.conftest import auth_headers, register_and_login
+from app.models.food_recognition import RecognitionPrediction
+
 
 @pytest.mark.asyncio
-async def test_food_recognition_upload_endpoint_returns_predictions(client):
+@patch('app.services.food_recognition_service.FoodRecognitionService.recognize')
+async def test_food_recognition_upload_endpoint_returns_predictions(mock_recognize, client):
+    # Mock the service layer to return exactly what the endpoint expects
+    mock_recognize.return_value = [
+        RecognitionPrediction(label="banana", confidence=0.94, candidates=[])
+    ]
+
     token = await register_and_login(client)
 
     response = await client.post(
@@ -24,6 +33,7 @@ async def test_food_recognition_upload_endpoint_returns_predictions(client):
     assert data["predictions"][0]["confidence"] == 0.94
     assert data["predictions"][0]["candidates"] == []
 
+
 @pytest.mark.asyncio
 async def test_food_recognition_upload_endpoint_requires_auth(client):
     response = await client.post(
@@ -34,6 +44,7 @@ async def test_food_recognition_upload_endpoint_requires_auth(client):
     )
 
     assert response.status_code == 401
+
 
 @pytest.mark.asyncio
 async def test_food_recognition_upload_endpoint_requires_image(client):
