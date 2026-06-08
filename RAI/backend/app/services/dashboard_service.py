@@ -51,6 +51,9 @@ class DashboardService:
     ) -> DashboardResponseSchema:
         user = await self.user_service.get_user_by_id(user_id)
 
+        if not user:
+            raise ValueError(f"User with ID {user_id} not found")
+
         summary = await self.summary_service.get_daily_summary(
             user_id=user_id,
             summary_date=dashboard_date,

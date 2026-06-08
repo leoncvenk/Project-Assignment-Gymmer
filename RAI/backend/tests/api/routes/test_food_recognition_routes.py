@@ -8,9 +8,8 @@ from app.models.food_recognition import RecognitionPrediction
 @pytest.mark.asyncio
 @patch('app.services.food_recognition_service.FoodRecognitionService.recognize')
 async def test_food_recognition_upload_endpoint_returns_predictions(mock_recognize, client):
-    # Mock the service layer to return exactly what the endpoint expects
     mock_recognize.return_value = [
-        RecognitionPrediction(label="banana", confidence=0.94, candidates=[])
+        RecognitionPrediction(label="banana", confidence=0.94)
     ]
 
     token = await register_and_login(client)

@@ -9,8 +9,8 @@ from app.services.food_recognition_service import FoodRecognitionService
 @patch('app.services.food_recognition_service.FoodRecognitionService._predict_with_orv')
 async def test_food_recognition_service_returns_predictions(mock_predict):
     # Mock the internal HTTP-calling method to avoid real network requests
-    mock_predict.return_value = [
-        RecognitionPrediction(label="banana", confidence=0.94, candidates=[])
+    mock_recognize.return_value = [
+        RecognitionPrediction(label="banana", confidence=0.94)
     ]
     
     service = FoodRecognitionService()
