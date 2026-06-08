@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-from app.models.food_recognition import RecognitionPrediction
+from app.models.food_recognition import RecognitionPrediction, FoodRecognitionResult
 from app.services.food_recognition_service import FoodRecognitionService
 
 
@@ -24,6 +24,7 @@ async def test_food_recognition_service_returns_predictions(mock_predict, mock_s
 
     pred = predictions[0]
 
-    assert isinstance(pred, RecognitionPrediction)
+    assert isinstance(pred, FoodRecognitionResult) 
     assert pred.label == "banana"
     assert pred.confidence == 0.94
+    assert pred.candidates == []
