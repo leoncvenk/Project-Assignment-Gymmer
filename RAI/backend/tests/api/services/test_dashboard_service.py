@@ -72,7 +72,7 @@ async def test_get_dashboard_without_target_returns_empty_target_state(services)
     user = await create_user(user_service)
 
     dashboard = await dashboard_service.get_dashboard(
-        user_id=user.id,
+        user_id=str(user.id),
         dashboard_date=date(2026, 5, 10),
     )
 
@@ -115,7 +115,7 @@ async def test_get_dashboard_with_target_returns_remaining_and_progress(services
     )
 
     await target_service.create_or_replace_target(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateNutritionTargetSchema(
             calorie_target=2200,
             protein_target_g=180,
@@ -125,7 +125,7 @@ async def test_get_dashboard_with_target_returns_remaining_and_progress(services
     )
 
     await entry_service.create_entry(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateFoodEntrySchema(
             food_id=food.id,
             quantity_g=100,
@@ -135,7 +135,7 @@ async def test_get_dashboard_with_target_returns_remaining_and_progress(services
     )
 
     dashboard = await dashboard_service.get_dashboard(
-        user_id=user.id,
+        user_id=str(user.id),
         dashboard_date=date(2026, 5, 10),
     )
 
@@ -191,7 +191,7 @@ async def test_get_dashboard_ignores_entries_from_other_dates(services):
     )
 
     await target_service.create_or_replace_target(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateNutritionTargetSchema(
             calorie_target=2000,
             protein_target_g=150,
@@ -201,7 +201,7 @@ async def test_get_dashboard_ignores_entries_from_other_dates(services):
     )
 
     await entry_service.create_entry(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateFoodEntrySchema(
             food_id=food.id,
             quantity_g=100,
@@ -211,7 +211,7 @@ async def test_get_dashboard_ignores_entries_from_other_dates(services):
     )
 
     await entry_service.create_entry(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateFoodEntrySchema(
             food_id=food.id,
             quantity_g=100,
@@ -221,7 +221,7 @@ async def test_get_dashboard_ignores_entries_from_other_dates(services):
     )
 
     dashboard = await dashboard_service.get_dashboard(
-        user_id=user.id,
+        user_id=str(user.id),
         dashboard_date=date(2026, 5, 10),
     )
 
@@ -255,7 +255,7 @@ async def test_get_dashboard_ignores_other_users_entries_and_targets(services):
     )
 
     await target_service.create_or_replace_target(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateNutritionTargetSchema(
             calorie_target=2200,
             protein_target_g=180,
@@ -265,7 +265,7 @@ async def test_get_dashboard_ignores_other_users_entries_and_targets(services):
     )
 
     await target_service.create_or_replace_target(
-        user_id=other_user.id,
+        user_id=str(other_user.id),
         data=CreateNutritionTargetSchema(
             calorie_target=3000,
             protein_target_g=250,
@@ -275,7 +275,7 @@ async def test_get_dashboard_ignores_other_users_entries_and_targets(services):
     )
 
     await entry_service.create_entry(
-        user_id=other_user.id,
+        user_id=str(other_user.id),
         data=CreateFoodEntrySchema(
             food_id=food.id,
             quantity_g=300,
@@ -285,7 +285,7 @@ async def test_get_dashboard_ignores_other_users_entries_and_targets(services):
     )
 
     dashboard = await dashboard_service.get_dashboard(
-        user_id=user.id,
+        user_id=str(user.id),
         dashboard_date=date(2026, 5, 10),
     )
 
@@ -321,7 +321,7 @@ async def test_get_dashboard_groups_entries_by_meal(services):
     )
 
     await target_service.create_or_replace_target(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateNutritionTargetSchema(
             calorie_target=2200,
             protein_target_g=180,
@@ -331,7 +331,7 @@ async def test_get_dashboard_groups_entries_by_meal(services):
     )
 
     await entry_service.create_entry(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateFoodEntrySchema(
             food_id=food.id,
             quantity_g=100,
@@ -341,7 +341,7 @@ async def test_get_dashboard_groups_entries_by_meal(services):
     )
 
     await entry_service.create_entry(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateFoodEntrySchema(
             food_id=food.id,
             quantity_g=200,
@@ -351,7 +351,7 @@ async def test_get_dashboard_groups_entries_by_meal(services):
     )
 
     dashboard = await dashboard_service.get_dashboard(
-        user_id=user.id,
+        user_id=str(user.id),
         dashboard_date=date(2026, 5, 10),
     )
 
@@ -391,7 +391,7 @@ async def test_get_weekly_dashboard_returns_monday_to_sunday_week(services):
     user = await create_user(user_service)
 
     dashboard = await dashboard_service.get_weekly_dashboard(
-        user_id=user.id,
+        user_id=str(user.id),
         target_date=date(2026, 5, 14),  # Thursday
     )
 
@@ -415,7 +415,7 @@ async def test_get_weekly_dashboard_returns_zero_days_without_entries(services):
     user = await create_user(user_service)
 
     dashboard = await dashboard_service.get_weekly_dashboard(
-        user_id=user.id,
+        user_id=str(user.id),
         target_date=date(2026, 5, 14),
     )
 
@@ -452,7 +452,7 @@ async def test_get_weekly_dashboard_includes_entries_on_correct_days(services):
     )
 
     await entry_service.create_entry(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateFoodEntrySchema(
             food_id=food.id,
             quantity_g=100,
@@ -461,7 +461,7 @@ async def test_get_weekly_dashboard_includes_entries_on_correct_days(services):
     )
 
     await entry_service.create_entry(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateFoodEntrySchema(
             food_id=food.id,
             quantity_g=200,
@@ -470,7 +470,7 @@ async def test_get_weekly_dashboard_includes_entries_on_correct_days(services):
     )
 
     dashboard = await dashboard_service.get_weekly_dashboard(
-        user_id=user.id,
+        user_id=str(user.id),
         target_date=date(2026, 5, 14),
     )
 
@@ -511,7 +511,7 @@ async def test_get_weekly_dashboard_ignores_other_users_entries(services):
     )
 
     await entry_service.create_entry(
-        user_id=other_user.id,
+        user_id=str(other_user.id),
         data=CreateFoodEntrySchema(
             food_id=food.id,
             quantity_g=300,
@@ -520,7 +520,7 @@ async def test_get_weekly_dashboard_ignores_other_users_entries(services):
     )
 
     dashboard = await dashboard_service.get_weekly_dashboard(
-        user_id=user.id,
+        user_id=str(user.id),
         target_date=date(2026, 5, 14),
     )
 
@@ -551,7 +551,7 @@ async def test_get_weekly_dashboard_includes_target_comparison(services):
     )
 
     await target_service.create_or_replace_target(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateNutritionTargetSchema(
             calorie_target=2200,
             protein_target_g=180,
@@ -561,7 +561,7 @@ async def test_get_weekly_dashboard_includes_target_comparison(services):
     )
 
     await entry_service.create_entry(
-        user_id=user.id,
+        user_id=str(user.id),
         data=CreateFoodEntrySchema(
             food_id=food.id,
             quantity_g=100,
@@ -570,7 +570,7 @@ async def test_get_weekly_dashboard_includes_target_comparison(services):
     )
 
     dashboard = await dashboard_service.get_weekly_dashboard(
-        user_id=user.id,
+        user_id=str(user.id),
         target_date=date(2026, 5, 14),
     )
 

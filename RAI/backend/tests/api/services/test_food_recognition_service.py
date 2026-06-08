@@ -1,19 +1,30 @@
 import pytest
+from unittest.mock import patch
 
-from app.models.food_recognition import RecognitionPrediction
+from app.models.food_recognition import RecognitionPrediction, FoodRecognitionResult
 from app.services.food_recognition_service import FoodRecognitionService
 
 
 @pytest.mark.asyncio
-async def test_food_recognition_service_returns_predictions():
+@patch('app.services.food_service.FoodService.search_foods')
+@patch('app.services.food_recognition_service.FoodRecognitionService._predict_with_orv')
+async def test_food_recognition_service_returns_predictions(mock_predict, mock_search_foods):
+    mock_search_foods.return_value = []
+
+    prediction = RecognitionPrediction(label="banana", confidence=0.94)
+    prediction.candidates = []
+        
+    mock_predict.return_value = [prediction]
+        
     service = FoodRecognitionService()
 
-    predictions = await service.recognize(b"fake-image-bytes")
+    predictions = await service.recognize(b"fake-image-bytes", "banana.jpg", "image/jpeg")
 
     assert len(predictions) == 1
 
-    prediction = predictions[0]
+    pred = predictions[0]
 
-    assert isinstance(prediction, RecognitionPrediction)
-    assert prediction.label == "banana"
-    assert prediction.confidence == 0.94
+    assert isinstance(pred, FoodRecognitionResult) 
+    assert pred.label == "banana"
+    assert pred.confidence == 0.94
+    assert pred.candidates == []

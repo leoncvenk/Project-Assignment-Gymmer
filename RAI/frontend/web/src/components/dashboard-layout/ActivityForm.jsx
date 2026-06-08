@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Clock, Flame, Image as ImageIcon, Share2, X } from 'lucide-react';
 

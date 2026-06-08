@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, X, AlertCircle } from 'lucide-react';
 
@@ -85,7 +85,10 @@ export default function AddFoodModal({ isOpen, onClose, mealType, selectedDate, 
         onFoodAdded();
         handleClose();
       } else { setError("Failed to add food entry."); }
-    } catch (err) { setError("Network error."); }
+    } catch (err) { 
+      console.error(err);
+      setError("Network error."); 
+    }
     finally { setLoading(false); }
   };
 

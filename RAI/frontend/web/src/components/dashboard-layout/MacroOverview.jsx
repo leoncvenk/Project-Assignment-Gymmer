@@ -1,4 +1,3 @@
-import React from 'react';
 import { Flame, Beef, Wheat, Droplet } from 'lucide-react';
 
 export default function MacroOverview({ summary }) {

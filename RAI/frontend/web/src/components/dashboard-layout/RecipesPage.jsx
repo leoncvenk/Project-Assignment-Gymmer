@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, ArrowLeft, Flame, Star, BookOpen, ChefHat } from "lucide-react";
 import RecipeCategories from "./RecipeCategories";

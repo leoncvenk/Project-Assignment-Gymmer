@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Calendar,
   UserPlus,
@@ -35,63 +35,63 @@ export default function HomeScreen({ setActiveTab }) {
   const [loadingDashboard, setLoadingDashboard] = useState(false);
   const [dashboardError, setDashboardError] = useState("");
 
-  const fetchHomeDashboardData = async () => {
-    try {
-      setLoadingDashboard(true);
-      setDashboardError("");
+useEffect(() => {
+    const fetchHomeDashboardData = async () => {
+      try {
+        setLoadingDashboard(true);
+        setDashboardError("");
 
-      const token =
-        localStorage.getItem("access_token") ||
-        localStorage.getItem("token") ||
-        localStorage.getItem("authToken");
+        const token =
+          localStorage.getItem("access_token") ||
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken");
 
-      if (!token) {
-        throw new Error("No authentication token found.");
-      }
-
-      const activityResponse = await fetch(
-        `${API_BASE_URL}/users/me/activity/history?range=${selectedRange}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        if (!token) {
+          throw new Error("No authentication token found.");
         }
-      );
 
-      if (!activityResponse.ok) {
-        throw new Error("Failed to fetch activity history.");
+        const activityResponse = await fetch(
+          `${API_BASE_URL}/users/me/activity/history?range=${selectedRange}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!activityResponse.ok) {
+          throw new Error("Failed to fetch activity history.");
+        }
+
+        const activityData = await activityResponse.json();
+
+        setDashboardStats({
+          steps: activityData.total_steps || 0,
+          caloriesBurned: 0,
+          activeMinutes: activityData.total_active_minutes || 0,
+          averageHeartRate: 0,
+        });
+
+        setActivityPoints(activityData.points || []);
+
+        const recipesResponse = await fetch(
+          `${API_BASE_URL}/recipes?category=high_protein&page=1&limit=2`
+        );
+
+        if (!recipesResponse.ok) {
+          throw new Error("Failed to fetch recipes.");
+        }
+
+        const recipesData = await recipesResponse.json();
+        setTrendingRecipes(recipesData.recipes || []);
+      } catch (err) {
+        console.error(err);
+        setDashboardError("Dashboard data could not be loaded.");
+      } finally {
+        setLoadingDashboard(false);
       }
+    };
 
-      const activityData = await activityResponse.json();
-
-      setDashboardStats({
-        steps: activityData.total_steps || 0,
-        caloriesBurned: 0,
-        activeMinutes: activityData.total_active_minutes || 0,
-        averageHeartRate: 0,
-      });
-
-      setActivityPoints(activityData.points || []);
-
-      const recipesResponse = await fetch(
-        `${API_BASE_URL}/recipes?category=high_protein&page=1&limit=2`
-      );
-
-      if (!recipesResponse.ok) {
-        throw new Error("Failed to fetch recipes.");
-      }
-
-      const recipesData = await recipesResponse.json();
-      setTrendingRecipes(recipesData.recipes || []);
-    } catch (err) {
-      console.error(err);
-      setDashboardError("Dashboard data could not be loaded.");
-    } finally {
-      setLoadingDashboard(false);
-    }
-  };
-
-  useEffect(() => {
     fetchHomeDashboardData();
   }, [selectedRange]);
 
