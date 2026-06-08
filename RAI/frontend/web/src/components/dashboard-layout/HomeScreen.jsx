@@ -65,7 +65,6 @@ useEffect(() => {
 
         const activityData = await activityResponse.json();
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDashboardStats({
           steps: activityData.total_steps || 0,
           caloriesBurned: 0,
