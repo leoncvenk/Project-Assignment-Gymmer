@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import ActivityForm from './ActivityForm';

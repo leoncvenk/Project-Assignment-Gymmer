@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "framer-motion";
 import { Heart, ExternalLink, Flame, CheckCircle2, ChefHat, List, Clock } from "lucide-react";
 

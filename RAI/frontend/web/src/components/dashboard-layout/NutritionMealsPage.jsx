@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AddFoodModal from "./AddFoodModal";
 import MacroOverview from "./MacroOverview";
 import WeeklyTrendsChart from "./WeeklyTrendsChart";
